@@ -114,6 +114,14 @@ SOURCE=.\fcgid_conf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\fcgid_filter.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\fcgid_filter.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\fcgid_global.h
 # End Source File
 # Begin Source File
