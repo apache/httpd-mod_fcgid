@@ -356,8 +356,8 @@ const char *set_server_config(cmd_parms * cmd, void *dummy,
 	filepath[APR_PATH_MAX - 1] = '\0';
 
 	/* Get file device id and inode */
-	if ((rv = apr_lstat(&finfo, filepath, APR_FINFO_INODE | APR_FINFO_DEV,
-						cmd->temp_pool)) != APR_SUCCESS) {
+	if ((rv = apr_stat(&finfo, filepath, APR_FINFO_INODE | APR_FINFO_DEV,
+					   cmd->temp_pool)) != APR_SUCCESS) {
 		return apr_psprintf(cmd->pool,
 							"can't get fastcgi file info: %s, errno: %d",
 							filepath, apr_get_os_error());
@@ -507,8 +507,8 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 	wrapper->wrapper_path[APR_PATH_MAX - 1] = '\0';
 
 	/* Is the wrapper exist? */
-	if ((rv = apr_lstat(&finfo, wrapper->wrapper_path, APR_FINFO_NORM,
-						cmd->temp_pool)) != APR_SUCCESS) {
+	if ((rv = apr_stat(&finfo, wrapper->wrapper_path, APR_FINFO_NORM,
+					   cmd->temp_pool)) != APR_SUCCESS) {
 		return apr_psprintf(cmd->pool,
 							"can't get fastcgi file info: %s, errno: %d",
 							wrapper->wrapper_path, apr_get_os_error());

@@ -116,9 +116,18 @@ static int fcgid_handler(request_rec * r)
 	p = r->main ? r->main->pool : r->pool;
 
 	/* Build the command line */
-	if ((rv =
-		 cgi_build_command(&command, &argv, r, p, &e_info)) != APR_SUCCESS)
-	{
+	if (get_wrapper_info(r->filename, r->server)) {
+		if ((rv =
+			 default_build_command(&command, &argv, r, p,
+								   &e_info)) != APR_SUCCESS) {
+			ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
+						  "mod_fcgid: don't know how to spawn wrapper child process: %s",
+						  r->filename);
+			return HTTP_INTERNAL_SERVER_ERROR;
+		}
+	} else if ((rv =
+				cgi_build_command(&command, &argv, r, p,
+								  &e_info)) != APR_SUCCESS) {
 		ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
 					  "mod_fcgid: don't know how to spawn child process: %s",
 					  r->filename);

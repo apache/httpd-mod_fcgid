@@ -1,3 +1,7 @@
+version 0.74 ( Jun 23rd 2004 )
+1. Bug fix. Ignore script checking while running in Win32 PHP wrapper mode.
+2. Indent the code with K&R style.
+
 version 0.72 ( Jun 13rd 2004 )
 1. Bug fix. Trim the padding nuls at the end of data. (Thank rick.stewart at theinternetco.net)
 
