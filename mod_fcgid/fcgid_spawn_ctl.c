@@ -19,7 +19,7 @@ static int g_termination_score;
 static int g_spawn_score;
 static int g_score_uplimit;
 static int g_max_process;
-static int g_total_process = 0;
+static int g_total_process;
 static int g_max_class_process;
 
 static void

@@ -1,5 +1,5 @@
 version 0.78 ( Jul 25th 2004 )
-1. Duplex pipe(UNIX) and condition signal(Win32) is supported, Apache now will get notification once FastCGI process is spawned.
+1. Duplex channel added, Apache now will get notification once FastCGI process is spawned.
 
 version 0.77 ( Jul 9th 2004 )
 1. Organize the configuration again

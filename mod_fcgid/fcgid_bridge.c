@@ -13,7 +13,7 @@
 #include "fcgid_spawn_ctl.h"
 #include "fcgid_protocol.h"
 #define FCGID_APPLY_TRY_COUNT 2
-#define FCGID_REQUEST_COUNT 2
+#define FCGID_REQUEST_COUNT 3
 
 static int g_variables_inited = 0;
 static int g_busy_timeout;

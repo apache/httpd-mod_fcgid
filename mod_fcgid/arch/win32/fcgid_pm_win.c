@@ -9,6 +9,8 @@
 
 static apr_thread_t *g_thread = NULL;
 static apr_queue_t *g_msgqueue = NULL;
+static apr_queue_t *g_notifyqueue = NULL;
+static apr_thread_mutex_t *g_reqlock = NULL;
 static apr_thread_t *g_wakeup_thread = NULL;
 static int g_must_exit = 0;
 static int g_wakeup_timeout = 3;
@@ -49,12 +51,24 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 	/* Initialize spawn controler */
 	spawn_control_init(main_server, pconf);
 
-	/* Create a message queue */
+	/* Create a message queues */
 	if ((rv = apr_queue_create(&g_msgqueue, FCGID_MSGQUEUE_SIZE,
-							   pconf)) != APR_SUCCESS) {
+							   pconf)) != APR_SUCCESS
+		|| (rv = apr_queue_create(&g_notifyqueue, FCGID_MSGQUEUE_SIZE,
+								  pconf)) != APR_SUCCESS) {
 		/* Fatal error */
 		ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
 					 "mod_fcgid: can't create message queue");
+		exit(1);
+	}
+
+	/* Create request lock */
+	if ((rv = apr_thread_mutex_create(&g_reqlock,
+									  APR_THREAD_MUTEX_DEFAULT,
+									  pconf)) != APR_SUCCESS) {
+		/* Fatal error */
+		ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+					 "mod_fcgid: Can't create request mutex");
 		exit(1);
 	}
 
@@ -90,9 +104,11 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 	return APR_SUCCESS;
 }
 
-apr_status_t procmgr_post_spawn_cmd(const fcgid_command * command)
+apr_status_t procmgr_post_spawn_cmd(const fcgid_command * command,
+									server_rec * main_server)
 {
-	if (g_thread && g_msgqueue && !g_must_exit) {
+	if (g_thread && g_msgqueue && !g_must_exit
+		&& g_reqlock && g_notifyqueue) {
 		apr_status_t rv;
 
 		/* 
@@ -105,17 +121,61 @@ apr_status_t procmgr_post_spawn_cmd(const fcgid_command * command)
 			return APR_ENOMEM;
 		memcpy(postcmd, command, sizeof(*command));
 
-		/* Try push the message */
-		if ((rv = apr_queue_trypush(g_msgqueue, postcmd)) != APR_SUCCESS) {
-			free(postcmd);
+		/* Get request lock first */
+		if ((rv = apr_thread_mutex_lock(g_reqlock)) != APR_SUCCESS) {
+			ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+						 "mod_fcgid: can't get request lock");
 			return rv;
+		}
+
+		/* Try push the message */
+		if ((rv = apr_queue_push(g_msgqueue, postcmd)) != APR_SUCCESS) {
+			apr_thread_mutex_unlock(g_reqlock);
+			free(postcmd);
+			ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+						 "mod_fcgid: can't push request message");
+			return rv;
+		} else {
+			/* Wait the respond from process manager */
+			char *notifybyte = NULL;
+
+			if ((rv =
+				 apr_queue_pop(g_notifyqueue,
+							   &notifybyte)) != APR_SUCCESS) {
+				apr_thread_mutex_lock(g_reqlock);
+				ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+							 "mod_fcgid: can't pop notify message");
+				return rv;
+			}
+		}
+
+		/* Release the lock now */
+		if (apr_thread_mutex_unlock(g_reqlock) != APR_SUCCESS) {
+			/* It's a fatal error */
+			ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+						 "mod_fcgid: can't release request lock");
+			exit(1);
 		}
 	}
 
 	return APR_SUCCESS;
 }
 
-apr_status_t procmgr_peek_cmd(fcgid_command * command)
+apr_status_t procmgr_finish_notify(server_rec * main_server)
+{
+	apr_status_t rv;
+	char *notify = NULL;
+
+	if ((rv = apr_queue_push(g_notifyqueue, notify)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+					 "mod_fcgid: can't send spawn notify");
+	}
+
+	return rv;
+}
+
+apr_status_t procmgr_peek_cmd(fcgid_command * command,
+							  server_rec * main_server)
 {
 	apr_status_t rv = APR_SUCCESS;
 	fcgid_command *peakcmd = NULL;
@@ -128,6 +188,7 @@ apr_status_t procmgr_peek_cmd(fcgid_command * command)
 				/* Copy the command, and then free the memory */
 				memcpy(command, peakcmd, sizeof(*peakcmd));
 				free(peakcmd);
+
 				return APR_SUCCESS;
 			}
 		}
