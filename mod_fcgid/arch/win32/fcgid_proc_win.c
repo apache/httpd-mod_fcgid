@@ -494,13 +494,18 @@ handle_fcgi_body(server_rec * main_server,
 			apr_bucket_free(readbuf);
 			return TRUE;
 		} else if (header->type == FCGI_STDOUT) {
+			apr_bucket *bucket_stdout;
+
+			if (readsize - header->paddingLength == 0) {
+				apr_bucket_free(readbuf);
+				return TRUE;
+			}
 			/* Append the respond to brigade_stdout */
-			apr_bucket *bucket_stdout = apr_bucket_heap_create(readbuf,
-															   readsize -
-															   header->
-															   paddingLength,
-															   apr_bucket_free,
-															   alloc);
+			bucket_stdout = apr_bucket_heap_create(readbuf,
+												   readsize -
+												   header->
+												   paddingLength,
+												   apr_bucket_free, alloc);
 
 			if (!bucket_stdout) {
 				apr_bucket_free(readbuf);

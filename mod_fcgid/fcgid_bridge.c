@@ -116,6 +116,7 @@ bridge_request_once(request_rec * r, const char *argv0,
 	int i, communicate_error;
 	apr_status_t rv;
 	apr_bucket_brigade *brigade_stdout;
+	apr_bucket *bucket_eos;
 
 	if (!g_variables_inited) {
 		g_connect_timeout = get_ipc_connect_timeout(r->server);
@@ -229,6 +230,16 @@ bridge_request_once(request_rec * r, const char *argv0,
 
 	/* Now I will release the process slot as soon as I can */
 	return_procnode(r->server, procnode, communicate_error);
+
+	/* Append eos bucket */
+	bucket_eos = apr_bucket_eos_create(r->connection->bucket_alloc);
+	if (!bucket_eos) {
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
+					 "mod_fcgid: can alloc memory for eos bucket");
+		apr_brigade_destroy(brigade_stdout);
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
+	APR_BRIGADE_INSERT_TAIL(brigade_stdout, bucket_eos);
 
 	/* Now pass the output brigade to output filter */
 	if (!communicate_error) {
