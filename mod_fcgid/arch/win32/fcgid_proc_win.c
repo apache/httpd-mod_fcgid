@@ -256,12 +256,15 @@ static apr_status_t ipc_handle_cleanup(void *thehandle)
 {
 	fcgid_namedpipe_handle *handle = thehandle;
 
-	if (handle->handle_pipe != INVALID_HANDLE_VALUE)
-		CloseHandle(handle->handle_pipe);
-	if (handle->overlap_read.hEvent != NULL)
-		CloseHandle(handle->overlap_read.hEvent);
-	if (handle->overlap_write.hEvent != NULL)
-		CloseHandle(handle->overlap_write.hEvent);
+	/* Sanity check */
+	if (handle) {
+		if (handle->handle_pipe != INVALID_HANDLE_VALUE)
+			CloseHandle(handle->handle_pipe);
+		if (handle->overlap_read.hEvent != NULL)
+			CloseHandle(handle->overlap_read.hEvent);
+		if (handle->overlap_write.hEvent != NULL)
+			CloseHandle(handle->overlap_write.hEvent);
+	}
 
 	return APR_SUCCESS;
 }
@@ -274,7 +277,7 @@ proc_connect_ipc(server_rec * main_server,
 	fcgid_namedpipe_handle *handle_info;
 
 	ipc_handle->ipc_handle_info =
-		(fcgid_namedpipe_handle *) apr_pcalloc(ipc_handle->request_pool,
+		(fcgid_namedpipe_handle *) apr_pcalloc(ipc_handle->request->pool,
 											   sizeof
 											   (fcgid_namedpipe_handle));
 	if (!ipc_handle->ipc_handle_info)
@@ -287,8 +290,9 @@ proc_connect_ipc(server_rec * main_server,
 		CreateEvent(NULL, FALSE, FALSE, NULL);
 	handle_info->overlap_write.hEvent =
 		CreateEvent(NULL, FALSE, FALSE, NULL);
+	handle_info->handle_pipe = INVALID_HANDLE_VALUE;
 
-	apr_pool_cleanup_register(ipc_handle->request_pool,
+	apr_pool_cleanup_register(ipc_handle->request->pool,
 							  handle_info,
 							  ipc_handle_cleanup, apr_pool_cleanup_null);
 
@@ -335,219 +339,63 @@ proc_connect_ipc(server_rec * main_server,
 	return APR_SUCCESS;
 }
 
-static BOOL
-read_fcgi_header(server_rec * main_server,
-				 fcgid_ipc * ipc_handle, FCGI_Header * header)
+apr_status_t proc_read_ipc(server_rec * main_server,
+						   fcgid_ipc * ipc_handle, const char *buffer,
+						   apr_size_t * size)
 {
-	apr_size_t has_read = 0;
-	char *readbuf = (char *) header;
 	apr_status_t rv;
 	fcgid_namedpipe_handle *handle_info;
+	DWORD bytesread;
 
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
-	memset(header, 0, sizeof(*header));
 
-	while (has_read < sizeof(*header)) {
-		DWORD bytesread;
+	if (ReadFile(handle_info->handle_pipe, (LPVOID) buffer,
+				 *size, &bytesread, &handle_info->overlap_read)) {
+		*size = bytesread;
+		return APR_SUCCESS;
+	} else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
+		ap_log_error(APLOG_MARK, APLOG_WARNING, APR_FROM_OS_ERROR(rv),
+					 main_server, "mod_fcgid: can't read from pipe");
+		return rv;
+	} else {
+		/* it's ERROR_IO_PENDING */
+		DWORD transferred;
+		DWORD dwWaitResult
+			= WaitForSingleObject(handle_info->overlap_read.hEvent,
+								  ipc_handle->communation_timeout * 1000);
 
-		if (ReadFile(handle_info->handle_pipe, readbuf + has_read,
-					 sizeof(*header) - has_read,
-					 &bytesread, &handle_info->overlap_read)) {
-			has_read += bytesread;
-			continue;
-		} else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
-			ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-						 main_server,
-						 "mod_fcgid: can't read header from pipe");
-			return FALSE;
+		if (dwWaitResult == WAIT_OBJECT_0) {
+			if (!GetOverlappedResult(handle_info->handle_pipe,
+									 &handle_info->overlap_read,
+									 &transferred, FALSE /* don't wait */ )
+				|| transferred == 0) {
+				rv = apr_get_os_error();
+				ap_log_error(APLOG_MARK, APLOG_WARNING,
+							 rv, main_server,
+							 "mod_fcgid: get overlap result error");
+				return rv;
+			}
+
+			*size = transferred;
+			return APR_SUCCESS;
 		} else {
-			/* it's ERROR_IO_PENDING */
-			DWORD transferred;
-			DWORD dwWaitResult
-				= WaitForSingleObject(handle_info->overlap_read.hEvent,
-									  ipc_handle->communation_timeout *
-									  1000);
-			if (dwWaitResult == WAIT_OBJECT_0) {
-				if (!GetOverlappedResult(handle_info->handle_pipe,
-										 &handle_info->overlap_read,
-										 &transferred,
-										 FALSE /* don't wait */ )
-					|| transferred == 0) {
-					ap_log_error(APLOG_MARK, APLOG_WARNING,
-								 apr_get_os_error(), main_server,
-								 "mod_fcgid: get overlap result error");
-					return FALSE;
-				}
-
-				has_read += transferred;
-				continue;
-			} else {
-				ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-							 main_server,
-							 "mod_fcgid: read header timeout from pipe");
-				return FALSE;
-			}
+			ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
+						 main_server, "mod_fcgid: read timeout from pipe");
+			return APR_ETIMEDOUT;
 		}
 	}
-
-	return TRUE;
 }
 
-static BOOL
-handle_fcgi_body(server_rec * main_server,
-				 fcgid_ipc * ipc_handle,
-				 FCGI_Header * header,
-				 apr_bucket_brigade * brigade_recv,
-				 apr_bucket_alloc_t * alloc)
-{
-	fcgid_namedpipe_handle *handle_info;
-	apr_status_t rv;
-	apr_size_t readsize, has_read;
-	char *readbuf;
-
-	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
-
-	if (header->type == FCGI_STDERR
-		|| header->type == FCGI_STDOUT || header->type == FCGI_END_REQUEST)
-	{
-		readsize = header->contentLengthB1;
-		readsize <<= 8;
-		readsize += header->contentLengthB0;
-		readsize += header->paddingLength;
-		readbuf = apr_bucket_alloc(readsize + 1 /* ending '\0' */ , alloc);
-		if (!readbuf) {
-			ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-						 main_server,
-						 "mod_fcgid: can't alloc memory for respond: %d",
-						 readsize + 1);
-			return FALSE;
-		}
-
-		/* Read the respond from fastcgi server */
-		has_read = 0;
-		while (has_read < readsize) {
-			DWORD bytesread;
-
-			if (ReadFile(handle_info->handle_pipe, readbuf + has_read,
-						 readsize - has_read, &bytesread,
-						 &handle_info->overlap_read)) {
-				has_read += bytesread;
-				continue;
-			} else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
-				ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-							 main_server,
-							 "mod_fcgid: can't read from pipe");
-				apr_bucket_free(readbuf);
-				return FALSE;
-			} else {
-				/* it's ERROR_IO_PENDING */
-				DWORD transferred;
-				DWORD dwWaitResult
-					= WaitForSingleObject(handle_info->overlap_read.hEvent,
-										  ipc_handle->communation_timeout *
-										  1000);
-				if (dwWaitResult == WAIT_OBJECT_0) {
-					if (!GetOverlappedResult(handle_info->handle_pipe,
-											 &handle_info->overlap_read,
-											 &transferred,
-											 FALSE /* don't wait */ )
-						|| transferred == 0) {
-						ap_log_error(APLOG_MARK, APLOG_WARNING,
-									 apr_get_os_error(), main_server,
-									 "mod_fcgid: get overlap result error");
-						apr_bucket_free(readbuf);
-						return FALSE;
-					}
-
-					has_read += transferred;
-					continue;
-				} else {
-					ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-								 main_server,
-								 "mod_fcgid: read timeout from pipe");
-					apr_bucket_free(readbuf);
-					return FALSE;
-				}
-			}
-		}
-		readbuf[readsize] = '\0';
-
-		/* Now dispatch the respond */
-		if (header->type == FCGI_STDERR) {
-			/* Write to log, skip the empty contain, and empty line */
-			int content_len = header->contentLengthB1;
-
-			content_len <<= 8;
-			content_len += header->contentLengthB0;
-			if (!((content_len == 1 && readbuf[0] == '\r')
-				  || (content_len == 1 && readbuf[0] == '\n')
-				  || (content_len == 2 && readbuf[0] == '\r'
-					  && readbuf[1] == '\n') || content_len == 0)) {
-				ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-							 main_server, "mod_fcgid: cgi stderr log: %s",
-							 readbuf);
-			}
-			apr_bucket_free(readbuf);
-			return TRUE;
-		} else if (header->type == FCGI_END_REQUEST) {
-			/* End of the respond */
-			apr_bucket_free(readbuf);
-			return TRUE;
-		} else if (header->type == FCGI_STDOUT) {
-			apr_bucket *bucket_stdout;
-
-			if (readsize - header->paddingLength == 0) {
-				apr_bucket_free(readbuf);
-				return TRUE;
-			}
-			/* Append the respond to brigade_stdout */
-			bucket_stdout = apr_bucket_heap_create(readbuf,
-												   readsize -
-												   header->
-												   paddingLength,
-												   apr_bucket_free, alloc);
-
-			if (!bucket_stdout) {
-				apr_bucket_free(readbuf);
-				ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-							 main_server,
-							 "mod_fcgid: can't alloc memory for stdout bucket");
-				return FALSE;
-			}
-
-			/* Append it now */
-			APR_BRIGADE_INSERT_TAIL(brigade_recv, bucket_stdout);
-			return TRUE;
-		}
-	}
-
-	/* I have no idea about the type of the header */
-	ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-				 main_server, "mod_fcgid: invalid respond type: %d",
-				 header->type);
-	return FALSE;
-}
-
-apr_status_t
-proc_bridge_request(server_rec * main_server,
-					fcgid_ipc * ipc_handle,
-					apr_bucket_brigade * birgade_send,
-					apr_bucket_brigade * brigade_recv,
-					apr_bucket_alloc_t * alloc)
+apr_status_t proc_write_ipc(server_rec * main_server,
+							fcgid_ipc * ipc_handle,
+							apr_bucket_brigade * birgade_send)
 {
 	fcgid_namedpipe_handle *handle_info;
 	apr_bucket *bucket_request;
 	apr_status_t rv;
-	FCGI_Header fcgi_header;
 	DWORD transferred;
 
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
-
-	/* 
-	   Try read data to brigade_recv and write data from birgade_send
-	   Loop until get read/write error or get "end request" struct 
-	   from fastcgi application server
-	 */
 
 	APR_BRIGADE_FOREACH(bucket_request, birgade_send) {
 		char *write_buf;
@@ -580,8 +428,8 @@ proc_bridge_request(server_rec * main_server,
 				has_write += byteswrite;
 				continue;
 			} else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
-				ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-							 main_server,
+				ap_log_error(APLOG_MARK, APLOG_WARNING,
+							 APR_FROM_OS_ERROR(rv), main_server,
 							 "mod_fcgid: can't write to pipe");
 				return rv;
 			} else {
@@ -616,23 +464,17 @@ proc_bridge_request(server_rec * main_server,
 		}
 	}
 
-	/* Now I have send all to fastcgi server, and not get the "end request"
-	   respond yet, so I keep reading until I get one */
-	while (1) {
-		if (!read_fcgi_header(main_server, ipc_handle, &fcgi_header)
-			|| !handle_fcgi_body(main_server, ipc_handle, &fcgi_header,
-								 brigade_recv, alloc))
-			return APR_ESPIPE;
-		if (fcgi_header.type == FCGI_END_REQUEST)
-			return APR_SUCCESS;
-	}
+	return APR_SUCCESS;
 }
 
 apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle)
 {
-	return apr_pool_cleanup_run(ipc_handle->request_pool,
-								ipc_handle->ipc_handle_info,
-								ipc_handle_cleanup);
+	apr_status_t rv = apr_pool_cleanup_run(ipc_handle->request->pool,
+										   ipc_handle->ipc_handle_info,
+										   ipc_handle_cleanup);
+
+	ipc_handle->ipc_handle_info = NULL;
+	return rv;
 }
 
 void

@@ -12,6 +12,7 @@
 #include "fcgid_conf.h"
 #include "fcgid_spawn_ctl.h"
 #include "fcgid_protocol.h"
+#include "fcgid_bucket.h"
 #define FCGID_APPLY_TRY_COUNT 2
 #define FCGID_REQUEST_COUNT 3
 
@@ -102,198 +103,267 @@ return_procnode(server_rec * main_server,
 	safe_unlock(main_server);
 }
 
+apr_status_t bucket_ctx_cleanup(void *thectx)
+{
+	/* Cleanup jobs:
+	   1. Free bucket buffer
+	   2. Return procnode
+	   NOTE: ipc will be clean when request pool cleanup, so I don't need to close it here
+	 */
+	fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) thectx;
+	server_rec *main_server = ctx->ipc.request->server;
+
+	/* Free bucket buffer */
+	if (ctx->buffer)
+		apr_bucket_destroy(ctx->buffer);
+
+	if (ctx->procnode) {
+		/* Return procnode
+		   I will return this slot to idle(or error) list except:
+		   I take too much time on this request( greater than get_busy_timeout() ),
+		   so the process manager may have put this slot from busy list to error
+		   list, and the contain of this slot may have been modified
+		   In this case I will do nothing and return, let the process manager 
+		   do the job   
+		 */
+		if (apr_time_sec(apr_time_now()) -
+			apr_time_sec(ctx->procnode->last_active_time) >
+			g_busy_timeout) {
+			/* Do nothing but print log */
+			ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+						 main_server,
+						 "mod_fcgid: process busy timeout, take %d seconds for this request",
+						 apr_time_sec(apr_time_now()) -
+						 apr_time_sec(ctx->procnode->last_active_time));
+		} else if (ctx->has_error) {
+			ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
+			return_procnode(main_server, ctx->procnode,
+							1 /* communication error */ );
+		} else
+			return_procnode(main_server, ctx->procnode,
+							0 /* communication ok */ );
+	}
+
+	return APR_SUCCESS;
+}
+
+static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
+{
+	apr_bucket_brigade *bb = (apr_bucket_brigade *) arg;
+	const char *dst_end = buf + len - 1;	/* leave room for terminating null */
+	char *dst = buf;
+	apr_bucket *e = APR_BRIGADE_FIRST(bb);
+	apr_status_t rv;
+	int done = 0;
+
+	while ((dst < dst_end) && !done && !APR_BUCKET_IS_EOS(e)) {
+		const char *bucket_data;
+		apr_size_t bucket_data_len;
+		const char *src;
+		const char *src_end;
+		apr_bucket *next;
+
+		rv = apr_bucket_read(e, &bucket_data, &bucket_data_len,
+							 APR_BLOCK_READ);
+		if (!APR_STATUS_IS_SUCCESS(rv)) {
+			return 0;
+		}
+
+		/* Move on to next bucket if it's fastcgi header bucket */
+		if (e->type == &ap_bucket_type_fcgid_header
+			|| e->type == &apr_bucket_type_immortal) {
+			next = APR_BUCKET_NEXT(e);
+			apr_bucket_delete(e);
+			e = next;
+			continue;
+		}
+
+		if (bucket_data_len == 0)
+			return 0;
+
+		src = bucket_data;
+		src_end = bucket_data + bucket_data_len;
+		while ((src < src_end) && (dst < dst_end) && !done) {
+			if (*src == '\n') {
+				done = 1;
+			} else if (*src != '\r') {
+				*dst++ = *src;
+			}
+			src++;
+		}
+
+		if (src < src_end) {
+			apr_bucket_split(e, src - bucket_data);
+		}
+		next = APR_BUCKET_NEXT(e);
+		apr_bucket_delete(e);
+		e = next;
+	}
+	*dst = 0;
+	return 1;
+}
+
 static int
-bridge_request_once(request_rec * r, const char *argv0,
-					fcgid_wrapper_conf * wrapper_conf,
-					apr_bucket_brigade * output_brigade)
+handle_request(request_rec * r, const char *argv0,
+			   fcgid_wrapper_conf * wrapper_conf,
+			   apr_bucket_brigade * output_brigade)
 {
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
 	server_rec *main_server = r->server;
-	apr_time_t begin_request_time;
 	fcgid_command fcgi_request;
-	fcgid_procnode *procnode;
-	fcgid_ipc ipc_handle;
-	int i, communicate_error;
+	fcgid_bucket_ctx *bucket_ctx;
+	int i, stopping;
 	apr_status_t rv;
 	apr_bucket_brigade *brigade_stdout;
-	apr_bucket *bucket_eos;
+	char sbuf[MAX_STRING_LEN];
+	const char *location;
 
 	if (!g_variables_inited) {
 		g_connect_timeout = get_ipc_connect_timeout(r->server);
 		g_comm_timeout = get_ipc_comm_timeout(r->server);
 		g_busy_timeout = get_busy_timeout(r->server);
+		if (g_comm_timeout == 0)
+			g_comm_timeout = 1;
 		g_variables_inited = 1;
 	}
 
-	/* Apply a free process slot, send a spawn request if I can't get one */
-	for (i = 0; i < FCGID_APPLY_TRY_COUNT; i++) {
-		int mpm_state = 0;
-		apr_ino_t inode =
-			wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
-		apr_dev_t deviceid =
-			wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
-		apr_size_t shareid =
-			wrapper_conf ? wrapper_conf->share_group_id : 0;
+	bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
+	if (!bucket_ctx)
+		return HTTP_INTERNAL_SERVER_ERROR;
+	bucket_ctx->ipc.connect_timeout = g_connect_timeout;
+	bucket_ctx->ipc.communation_timeout = g_comm_timeout;
+	bucket_ctx->ipc.request = r;
+	apr_pool_cleanup_register(request_pool, bucket_ctx,
+							  bucket_ctx_cleanup, apr_pool_cleanup_null);
 
-		procnode =
-			apply_free_procnode(r->server, inode, deviceid, shareid);
-		if (procnode)
-			break;
+	/* Try to get a connected ipc handle */
+	stopping = 0;
+	for (i = 0; i < FCGID_REQUEST_COUNT && !stopping; i++) {
+		/* Apply a free process slot, send a spawn request if I can't get one */
+		for (i = 0; i < FCGID_APPLY_TRY_COUNT && !stopping; i++) {
+			int mpm_state = 0;
+			apr_ino_t inode =
+				wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
+			apr_dev_t deviceid =
+				wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
+			apr_size_t shareid =
+				wrapper_conf ? wrapper_conf->share_group_id : 0;
 
-		/* Send a spawn request and wait a second if I can't apply one */
-		strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
-		fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-		if (wrapper_conf) {
-			fcgi_request.deviceid = wrapper_conf->deviceid;
-			fcgi_request.inode = wrapper_conf->inode;
-			fcgi_request.share_grp_id = wrapper_conf->share_group_id;
-		} else {
-			fcgi_request.deviceid = r->finfo.device;
-			fcgi_request.inode = r->finfo.inode;
-			fcgi_request.share_grp_id = 0;
+			bucket_ctx->procnode =
+				apply_free_procnode(r->server, inode, deviceid, shareid);
+			if (bucket_ctx->procnode)
+				break;
+
+			/* Send a spawn request and wait a second if I can't apply one */
+			strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
+			fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
+			if (wrapper_conf) {
+				fcgi_request.deviceid = wrapper_conf->deviceid;
+				fcgi_request.inode = wrapper_conf->inode;
+				fcgi_request.share_grp_id = wrapper_conf->share_group_id;
+			} else {
+				fcgi_request.deviceid = r->finfo.device;
+				fcgi_request.inode = r->finfo.inode;
+				fcgi_request.share_grp_id = 0;
+			}
+
+			procmgr_post_spawn_cmd(&fcgi_request, main_server);
+
+			/* Is it stopping? */
+			if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
+				&& mpm_state == AP_MPMQ_STOPPING) {
+				stopping = 1;
+				break;
+			}
 		}
 
-		procmgr_post_spawn_cmd(&fcgi_request, main_server);
-
-		/* Is it stopping? */
-		if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
-			&& mpm_state == AP_MPMQ_STOPPING)
-			break;
+		/* Connect to the fastcgi server */
+		if (bucket_ctx->procnode) {
+			if (proc_connect_ipc
+				(r->server, bucket_ctx->procnode,
+				 &bucket_ctx->ipc) != APR_SUCCESS) {
+				proc_close_ipc(&bucket_ctx->ipc);
+				bucket_ctx->procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
+				return_procnode(r->server, bucket_ctx->procnode,
+								1 /* has error */ );
+				bucket_ctx->procnode = NULL;
+			} else
+				break;
+		}
 	}
 
-	if (!procnode) {
+	/* Now I get a connected ipc handle */
+	if (!bucket_ctx->procnode) {
 		ap_log_error(APLOG_MARK, APLOG_INFO, 0, r->server,
 					 "mod_fcgid: can't apply process slot for %s", argv0);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
+	bucket_ctx->procnode->last_active_time = apr_time_now();
 
-	/* Now I got a process slot
-	   I will return this slot to idle(or error) list except:
-	   1) I take too much time on this request( greater than get_busy_timeout() ),
-	   so the process manager may have put this slot from busy list to error
-	   list, and the contain of this slot may have been modified
-	   In this case I will do nothing and return, let the process manager 
-	   do the job
-	 */
-	begin_request_time = procnode->last_active_time = apr_time_now();
+	/* Write output_brigade to fastcgi server */
+	if ((rv =
+		 proc_write_ipc(main_server, &bucket_ctx->ipc,
+						output_brigade)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_INFO, rv, r->server,
+					 "mod_fcgid: write data to fastcgi server error");
+		bucket_ctx->has_error = 1;
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
 
-	/* XXX HACK: I have to read all the respond into memory before sending it 
-	   to http client, this prevents slow http clients from keeping the server 
-	   in processing too long. 
-	   Buf sometimes it's not acceptable(think about downloading a larage attachment)
-	   file_bucket is a better choice in this case...
-	   To do, or not to do, that is the question ^_^
-	 */
+	/* Create brigade */
 	brigade_stdout =
 		apr_brigade_create(request_pool, r->connection->bucket_alloc);
-	if (!brigade_stdout) {
-		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-					 r->server,
-					 "mod_fcgid: can't alloc memory for stdout brigade");
-		return apr_get_os_error();
-	}
+	if (!brigade_stdout)
+		return HTTP_INTERNAL_SERVER_ERROR;
+	APR_BRIGADE_INSERT_TAIL(brigade_stdout,
+							ap_bucket_fcgid_header_create(r->connection->
+														  bucket_alloc,
+														  bucket_ctx));
+	/*APR_BRIGADE_INSERT_TAIL(brigade_stdout, apr_bucket_flush_create(r->connection->bucket_alloc)); */
 
-	/* Connect to the fastcgi server and bridge the reqeust */
-	communicate_error = 0;
-	ipc_handle.request_pool = request_pool;
-	ipc_handle.connect_timeout = g_connect_timeout;
-	ipc_handle.communation_timeout = g_comm_timeout;
-	if (proc_connect_ipc(r->server, procnode, &ipc_handle) != APR_SUCCESS) {
-		procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
-		communicate_error = 1;
-	} else
-		if ((rv =
-			 proc_bridge_request(r->server, &ipc_handle, output_brigade,
-								 brigade_stdout,
-								 r->connection->bucket_alloc)) !=
-			APR_SUCCESS) {
-		procnode->diewhy = FCGID_DIE_COMM_ERROR;
-		communicate_error = 1;
-	}
-
-	/* Communication is over */
-	proc_close_ipc(&ipc_handle);
-
-	/* Is it handle timeout? */
-	if (apr_time_sec(apr_time_now()) - apr_time_sec(begin_request_time) >
-		g_busy_timeout) {
-		/* I have to return and do nothing to the process slot */
-		ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-					 r->server,
-					 "mod_fcgid: process busy timeout, take %d seconds for this request",
-					 apr_time_sec(apr_time_now()) -
-					 apr_time_sec(procnode->last_active_time));
-
-		apr_brigade_destroy(brigade_stdout);
+	/* Check the script header first */
+	if (ap_scan_script_header_err_core
+		(r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout) != OK) {
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 
-	/* Now I will release the process slot as soon as I can */
-	return_procnode(r->server, procnode, communicate_error);
+	/* Check redirect */
+	location = apr_table_get(r->headers_out, "Location");
 
-	/* Append eos bucket */
-	bucket_eos = apr_bucket_eos_create(r->connection->bucket_alloc);
-	if (!bucket_eos) {
-		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
-					 "mod_fcgid: can alloc memory for eos bucket");
-		apr_brigade_destroy(brigade_stdout);
+	if (location && location[0] == '/' && r->status == 200) {
+		/* This redirect needs to be a GET no matter what the original 
+		 * method was. 
+		 */
+		r->method = apr_pstrdup(r->pool, "GET");
+		r->method_number = M_GET;
+
+		/* We already read the message body (if any), so don't allow 
+		 * the redirected request to think it has one. We can ignore 
+		 * Transfer-Encoding, since we used REQUEST_CHUNKED_ERROR. 
+		 */
+		apr_table_unset(r->headers_in, "Content-Length");
+
+		ap_internal_redirect_handler(location, r);
+		return HTTP_OK;
+	} else if (location && r->status == 200) {
+		/* XX Note that if a script wants to produce its own Redirect 
+		 * body, it now has to explicitly *say* "Status: 302" 
+		 */
+		return HTTP_MOVED_TEMPORARILY;
+	}
+
+	/* Now pass to output filter */
+	if ((rv =
+		 ap_pass_brigade(r->output_filters,
+						 brigade_stdout)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
+					 r->server,
+					 "mod_fcgid: can't pass the respond to output filter");
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
-	APR_BRIGADE_INSERT_TAIL(brigade_stdout, bucket_eos);
 
-	/* Now pass the output brigade to output filter */
-	if (!communicate_error) {
-		char sbuf[MAX_STRING_LEN];
-		const char *location;
-
-		/* Check the script header first */
-		if (ap_scan_script_header_err_brigade(r, brigade_stdout, sbuf) !=
-			OK) {
-			ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
-						 "mod_fcgid: invalid script header");
-			apr_brigade_destroy(brigade_stdout);
-			return HTTP_INTERNAL_SERVER_ERROR;
-		}
-
-		/* Check redirect */
-		location = apr_table_get(r->headers_out, "Location");
-
-		if (location && location[0] == '/' && r->status == 200) {
-			/* This redirect needs to be a GET no matter what the original 
-			 * method was. 
-			 */
-			r->method = apr_pstrdup(r->pool, "GET");
-			r->method_number = M_GET;
-
-			/* We already read the message body (if any), so don't allow 
-			 * the redirected request to think it has one. We can ignore 
-			 * Transfer-Encoding, since we used REQUEST_CHUNKED_ERROR. 
-			 */
-			apr_table_unset(r->headers_in, "Content-Length");
-
-			apr_brigade_destroy(brigade_stdout);
-			ap_internal_redirect_handler(location, r);
-			return HTTP_OK;
-		} else if (location && r->status == 200) {
-			/* XX Note that if a script wants to produce its own Redirect 
-			 * body, it now has to explicitly *say* "Status: 302" 
-			 */
-			apr_brigade_destroy(brigade_stdout);
-			return HTTP_MOVED_TEMPORARILY;
-		}
-
-		/* Now pass to output filter */
-		if ((rv =
-			 ap_pass_brigade(r->output_filters,
-							 brigade_stdout)) != APR_SUCCESS) {
-			ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-						 r->server,
-						 "mod_fcgid: can't pass the respond to output filter");
-		}
-	}
-
-	apr_brigade_destroy(brigade_stdout);
-	return communicate_error ? HTTP_INTERNAL_SERVER_ERROR : HTTP_OK;
+	/* OK now */
+	return HTTP_OK;
 }
 
 int bridge_request(request_rec * r, const char *argv0,
@@ -302,7 +372,7 @@ int bridge_request(request_rec * r, const char *argv0,
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
 	server_rec *main_server = r->server;
 	apr_status_t rv;
-	int i, retcode, seen_eos;
+	int seen_eos;
 	FCGI_Header *stdin_request_header;
 	apr_bucket_brigade *output_brigade;
 	apr_bucket *bucket_input, *bucket_header, *bucket_eos;
@@ -327,7 +397,6 @@ int bridge_request(request_rec * r, const char *argv0,
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
 					 main_server,
 					 "mod_fcgid: can't build begin or env request");
-		apr_brigade_destroy(output_brigade);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 
@@ -371,8 +440,7 @@ int bridge_request(request_rec * r, const char *argv0,
 				break;
 			}
 
-			if (APR_BUCKET_IS_FLUSH(bucket_input)
-				|| APR_BUCKET_IS_METADATA(bucket_input))
+			if (APR_BUCKET_IS_METADATA(bucket_input))
 				continue;
 
 			if ((rv = apr_bucket_read(bucket_input, &data, &len,
@@ -426,7 +494,6 @@ int bridge_request(request_rec * r, const char *argv0,
 		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
 					 main_server,
 					 "mod_fcgid: can't alloc memory for stdin request");
-		apr_brigade_destroy(output_brigade);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 	APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_header);
@@ -437,27 +504,10 @@ int bridge_request(request_rec * r, const char *argv0,
 		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
 					 main_server,
 					 "mod_fcgid: can't alloc memory for eos bucket");
-		apr_brigade_destroy(output_brigade);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 	APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_eos);
 
 	/* Bridge the request */
-	retcode = HTTP_INTERNAL_SERVER_ERROR;
-	for (i = 0; i < FCGID_REQUEST_COUNT; i++) {
-		int mpm_state;
-
-		if ((retcode =
-			 bridge_request_once(r, argv0, wrapper_conf,
-								 output_brigade)) == HTTP_OK)
-			break;
-
-		/* Is it stopping? */
-		if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
-			&& mpm_state == AP_MPMQ_STOPPING)
-			break;
-	}
-
-	apr_brigade_destroy(output_brigade);
-	return retcode;
+	return handle_request(r, argv0, wrapper_conf, output_brigade);
 }

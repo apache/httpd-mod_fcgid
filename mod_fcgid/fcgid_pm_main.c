@@ -198,7 +198,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
 
 	/* 
 	   Now check every node in check list
-	   1) If it's zombie process, wati() and return to free list
+	   1) If it's zombie process, wait() and return to free list
 	   2) If it's not zombie process, link it to the tail of idle list
 	 */
 	previous_node = check_list_header;

@@ -8,7 +8,6 @@
 #include "fcgid_pm_main.h"
 #include "fcgid_conf.h"
 #include "fcgid_proctbl.h"
-#define fcgid_min(a,b)    (((a) < (b)) ? (a) : (b))
 static apr_status_t create_process_manager(server_rec * main_server,
 										   apr_pool_t * configpool);
 

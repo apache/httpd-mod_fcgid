@@ -9,4 +9,6 @@
 #define _POSIX_PATH_MAX 255
 #endif
 
+#define fcgid_min(a,b)    (((a) < (b)) ? (a) : (b))
+
 #endif

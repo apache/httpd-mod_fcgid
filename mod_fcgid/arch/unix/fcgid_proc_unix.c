@@ -1,4 +1,5 @@
 #include <sys/un.h>
+#include <netinet/tcp.h>		/* For TCP_NODELAY */
 #include "httpd.h"
 #include "apr_thread_proc.h"
 #include "apr_strings.h"
@@ -260,10 +261,39 @@ static apr_status_t ipc_handle_cleanup(void *thesocket)
 {
 	fcgid_namedpipe_handle *handle_info =
 		(fcgid_namedpipe_handle *) thesocket;
-	if (handle_info->handle_socket != -1) {
-		close(handle_info->handle_socket);
-		handle_info->handle_socket = -1;
+
+	if (handle_info) {
+		if (handle_info->handle_socket != -1) {
+			close(handle_info->handle_socket);
+		}
 	}
+
+	return APR_SUCCESS;
+}
+
+static apr_status_t set_socket_nonblock(int sd)
+{
+#ifndef BEOS
+	int fd_flags;
+
+	fd_flags = fcntl(sd, F_GETFL, 0);
+#if defined(O_NONBLOCK)
+	fd_flags |= O_NONBLOCK;
+#elif defined(O_NDELAY)
+	fd_flags |= O_NDELAY;
+#elif defined(FNDELAY)
+	fd_flags |= FNDELAY;
+#else
+#error Please teach APR how to make sockets non-blocking on your platform.
+#endif
+	if (fcntl(sd, F_SETFL, fd_flags) == -1) {
+		return errno;
+	}
+#else
+	int on = 1;
+	if (setsockopt(sd, SOL_SOCKET, SO_NONBLOCK, &on, sizeof(int)) < 0)
+		return errno;
+#endif							/* BEOS */
 	return APR_SUCCESS;
 }
 
@@ -273,17 +303,19 @@ proc_connect_ipc(server_rec * main_server,
 {
 	fcgid_namedpipe_handle *handle_info;
 	struct sockaddr_un unix_addr;
+	apr_status_t rv;
+	apr_int32_t on = 1;
 
 	/* Alloc memory for unix domain socket */
 	ipc_handle->ipc_handle_info
-		= (fcgid_namedpipe_handle *) apr_pcalloc(ipc_handle->request_pool,
+		= (fcgid_namedpipe_handle *) apr_pcalloc(ipc_handle->request->pool,
 												 sizeof
 												 (fcgid_namedpipe_handle));
 	if (!ipc_handle->ipc_handle_info)
 		return APR_ENOMEM;
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 	handle_info->handle_socket = socket(AF_UNIX, SOCK_STREAM, 0);
-	apr_pool_cleanup_register(ipc_handle->request_pool,
+	apr_pool_cleanup_register(ipc_handle->request->pool,
 							  handle_info, ipc_handle_cleanup,
 							  apr_pool_cleanup_null);
 
@@ -302,285 +334,232 @@ proc_connect_ipc(server_rec * main_server,
 					 main_server,
 					 "mod_fcgid: can't connect unix domain socket: %s",
 					 procnode->socket_path);
-		apr_pool_cleanup_run(ipc_handle->request_pool,
+		apr_pool_cleanup_run(ipc_handle->request->pool,
 							 ipc_handle->ipc_handle_info,
 							 ipc_handle_cleanup);
 		return APR_ECONNREFUSED;
 	}
 
-	return APR_SUCCESS;
-}
+	/* Set no delay option */
+	setsockopt(handle_info->handle_socket, IPPROTO_TCP, TCP_NODELAY,
+			   (char *) &on, sizeof(on));
 
-static apr_status_t
-read_fcgi_header(server_rec * main_server,
-				 fcgid_ipc * ipc_handle, FCGI_Header * header)
-{
-	fcgid_namedpipe_handle *handle_info =
-		(fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
-	fd_set rset;
-	struct timeval tv;
-	apr_size_t has_read = 0;
-	int unix_socket = handle_info->handle_socket;
-	char *buf = (char *) header;
-
-	FD_ZERO(&rset);
-
-	do {
-		/* The first read() will not block, 
-		   a select() outside has check it */
-		int readcount = read(unix_socket, buf + has_read,
-							 sizeof(*header) - has_read);
-
-		if (readcount <= 0)
-			return apr_get_os_error();
-
-		has_read += readcount;
-
-		if (has_read < sizeof(*header)) {
-			FD_SET(unix_socket, &rset);
-			tv.tv_usec = 0;
-			tv.tv_sec = ipc_handle->communation_timeout;
-			if (select(unix_socket + 1, &rset, NULL, NULL, &tv) <= 0)
-				return apr_get_os_error();
-		}
+	/* Set nonblock option */
+	if ((rv =
+		 set_socket_nonblock(handle_info->handle_socket)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_DEBUG, rv, main_server,
+					 "mod_fcgid: can't set nonblock unix domain socket");
+		return rv;
 	}
-	while (has_read < sizeof(*header));
 
 	return APR_SUCCESS;
 }
 
-static apr_status_t
-handle_fcgi_body(server_rec * main_server,
-				 fcgid_ipc * ipc_handle,
-				 FCGI_Header * header,
-				 apr_bucket_brigade * brigade_recv,
-				 apr_bucket_alloc_t * alloc)
+apr_status_t proc_read_ipc(server_rec * main_server,
+						   fcgid_ipc * ipc_handle, const char *buffer,
+						   apr_size_t * size)
 {
-	apr_status_t rv;
-	char *readbuf;
-	fcgid_namedpipe_handle *handle_info =
-		(fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 	fd_set rset;
 	struct timeval tv;
-	apr_size_t has_read = 0;
-	int unix_socket = handle_info->handle_socket;
-
-	FD_ZERO(&rset);
-
-	/* Recognize these types only */
-	if (header->type == FCGI_STDERR
-		|| header->type == FCGI_STDOUT || header->type == FCGI_END_REQUEST)
-	{
-		int readsize = header->contentLengthB1;
-
-		readsize <<= 8;
-		readsize += header->contentLengthB0;
-		readsize += header->paddingLength;
-		readbuf = apr_bucket_alloc(readsize + 1 /* ending '\0' */ , alloc);
-		if (!readbuf)
-			return APR_ENOMEM;
-
-		/* Read the respond from fastcgi server */
-		has_read = 0;
-		while (has_read < readsize) {
-			int readcount;
-
-			FD_SET(unix_socket, &rset);
-			tv.tv_usec = 0;
-			tv.tv_sec = ipc_handle->communation_timeout;
-			if (select(unix_socket + 1, &rset, NULL, NULL, &tv) <= 0) {
-				apr_bucket_free(readbuf);
-				return apr_get_os_error();
-			}
-
-			readcount = read(unix_socket, readbuf + has_read,
-							 readsize - has_read);
-
-			if (readcount <= 0) {
-				apr_bucket_free(readbuf);
-				return apr_get_os_error();
-			}
-
-			has_read += readcount;
-		}
-		readbuf[readsize] = '\0';
-
-		/* Now dispatch the respond */
-		if (header->type == FCGI_STDERR) {
-			/* Write to log, skip the empty contain, and empty line */
-			int content_len = header->contentLengthB1;
-
-			content_len <<= 8;
-			content_len += header->contentLengthB0;
-			if (!((content_len == 1 && readbuf[0] == '\r')
-				  || (content_len == 1 && readbuf[0] == '\n')
-				  || (content_len == 2 && readbuf[0] == '\r'
-					  && readbuf[1] == '\n') || content_len == 0)) {
-				ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-							 main_server, "mod_fcgid: cgi stderr log: %s",
-							 readbuf);
-			}
-			apr_bucket_free(readbuf);
-			return APR_SUCCESS;
-		} else if (header->type == FCGI_END_REQUEST) {
-			/* End of the respond */
-			apr_bucket_free(readbuf);
-			return APR_SUCCESS;
-		} else if (header->type == FCGI_STDOUT) {
-			apr_bucket *bucket_stdout;
-
-			if ((readsize - header->paddingLength) == 0) {
-				apr_bucket_free(readbuf);
-				return APR_SUCCESS;
-			}
-
-			/* Append the respond to brigade_stdout */
-			bucket_stdout = apr_bucket_heap_create(readbuf,
-												   readsize -
-												   header->
-												   paddingLength,
-												   apr_bucket_free, alloc);
-
-			if (!bucket_stdout) {
-				apr_bucket_free(readbuf);
-				return APR_ENOMEM;
-			}
-
-			/* Append it now */
-			APR_BRIGADE_INSERT_TAIL(brigade_recv, bucket_stdout);
-			return APR_SUCCESS;
-		}
-	}
-
-	/* I have no idea about the type of the header */
-	ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-				 main_server, "mod_fcgid: invalid respond type: %d",
-				 header->type);
-	return APR_ENOTIMPL;
-}
-
-apr_status_t
-proc_bridge_request(server_rec * main_server,
-					fcgid_ipc * ipc_handle,
-					apr_bucket_brigade * birgade_send,
-					apr_bucket_brigade * brigade_recv,
-					apr_bucket_alloc_t * alloc)
-{
+	int retcode, unix_socket;
 	fcgid_namedpipe_handle *handle_info;
-	apr_bucket *bucket_request;
-	apr_status_t rv;
-	FCGI_Header fcgi_header;
-	apr_size_t has_write;
-	fd_set rset, wset;
-	struct timeval tv;
-	int retcode, unix_socket, all_bucket_sent;
 
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
-	FD_ZERO(&rset);
-	FD_ZERO(&wset);
 	unix_socket = handle_info->handle_socket;
 
-	/* 
-	   Try read data to brigade_recv and write data from birgade_send
-	   Loop until get read/write error or get "end request" struct 
-	   from fastcgi application server
-	 */
-	APR_BRIGADE_FOREACH(bucket_request, birgade_send) {
-		const char *write_buf;
-		apr_size_t write_buf_len;
-		apr_size_t has_write;
-
-		if (APR_BUCKET_IS_EOS(bucket_request))
-			break;
-
-		if (APR_BUCKET_IS_FLUSH(bucket_request))
-			continue;
-
-		if ((rv =
-			 apr_bucket_read(bucket_request, &write_buf, &write_buf_len,
-							 APR_BLOCK_READ)) != APR_SUCCESS) {
-			ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
-						 "mod_fcgid: can't read request from bucket");
-			return rv;
+	do {
+		if ((retcode = read(unix_socket, buffer, *size)) > 0) {
+			*size = retcode;
+			return APR_SUCCESS;
 		}
-
-		has_write = 0;
-		while (has_write < write_buf_len) {
-			/* Is it readable or writeable? */
-			/* APR has poor support on UNIX domain socket, I have to
-			   use select() directly :-( */
-			FD_SET(unix_socket, &rset);
-			FD_SET(unix_socket, &wset);
-			tv.tv_usec = 0;
-			tv.tv_sec = ipc_handle->communation_timeout;
-			retcode = select(unix_socket + 1, &rset, &wset, NULL, &tv);
-			if (retcode <= 0 && (errno == EINTR || errno == EAGAIN))
-				continue;
-			else if (retcode <= 0) {
-				return APR_ETIMEDOUT;
-			}
-
-			if (FD_ISSET(unix_socket, &rset)) {
-				if (read_fcgi_header(main_server,
-									 ipc_handle,
-									 &fcgi_header) != APR_SUCCESS
-					|| handle_fcgi_body(main_server, ipc_handle,
-										&fcgi_header, brigade_recv,
-										alloc) != APR_SUCCESS) {
-					ap_log_error(APLOG_MARK, APLOG_INFO,
-								 apr_get_os_error(), main_server,
-								 "mod_fcgid: read from fastcgi server error");
-					return APR_ESPIPE;
-				}
-
-				/* Is it "end request" respond? */
-				if (fcgi_header.type == FCGI_END_REQUEST)
-					return APR_SUCCESS;
-			}
-
-			if (FD_ISSET(unix_socket, &wset)) {
-				if ((retcode = write(unix_socket, write_buf + has_write,
-									 write_buf_len - has_write)) < 0) {
-					ap_log_error(APLOG_MARK, APLOG_WARNING,
-								 apr_get_os_error(), main_server,
-								 "mod_fcgid: write error on unix socket");
-					return APR_ESPIPE;
-				}
-				has_write += retcode;
-			}
-		}
+	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+	if (retcode == -1 && !APR_STATUS_IS_EAGAIN(errno)) {
+		ap_log_error(APLOG_MARK, APLOG_INFO, errno,
+					 main_server,
+					 "mod_fcgid: read data from fastcgi server error");
+		return errno;
 	}
 
-	/* Now I have send all to fastcgi server, and not get the "end request"
-	   respond yet, so I keep reading until I get one */
-	while (1) {
-		FD_SET(unix_socket, &rset);
+	/* I have to wait a while */
+	FD_ZERO(&rset);
+	FD_SET(unix_socket, &rset);
+	do {
 		tv.tv_usec = 0;
 		tv.tv_sec = ipc_handle->communation_timeout;
 		retcode = select(unix_socket + 1, &rset, NULL, NULL, &tv);
-		if (retcode <= 0 && (errno == EINTR || errno == EAGAIN))
-			continue;
-		else if (retcode <= 0) {
-			return APR_ETIMEDOUT;
-		} else if (retcode == 1) {
-			if (read_fcgi_header(main_server, ipc_handle, &fcgi_header) !=
-				APR_SUCCESS
-				|| handle_fcgi_body(main_server, ipc_handle, &fcgi_header,
-									brigade_recv, alloc) != APR_SUCCESS) {
-				return APR_ESPIPE;
+	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+	if (retcode == -1) {
+		ap_log_error(APLOG_MARK, APLOG_INFO, errno,
+					 main_server,
+					 "mod_fcgid: select unix domain socket error");
+		return errno;
+	} else if (retcode == 0) {
+		ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+					 main_server,
+					 "mod_fcgid: read data timeout in %d seconds",
+					 ipc_handle->communation_timeout);
+		return APR_ETIMEDOUT;
+	}
+
+	/* Read again after select() */
+	do {
+		if ((retcode = read(unix_socket, buffer, *size)) > 0) {
+			*size = retcode;
+			return APR_SUCCESS;
+		}
+	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+
+	if (retcode == 0) {
+		ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+					 main_server,
+					 "mod_fcgid: Read data error, fastcgi server has close connection");
+		return APR_EPIPE;
+	}
+
+	ap_log_error(APLOG_MARK, APLOG_INFO, errno,
+				 main_server,
+				 "mod_fcgid: read data from fastcgi server error.");
+	return errno;
+}
+
+static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
+								  struct iovec *vec, int nvec,
+								  int *writecnt)
+{
+	fd_set wset;
+	struct timeval tv;
+	int retcode, unix_socket;
+	fcgid_namedpipe_handle *handle_info;
+
+	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
+	unix_socket = handle_info->handle_socket;
+
+	/* Try nonblock write */
+	do {
+		if ((retcode = writev(unix_socket, vec, nvec)) > 0) {
+			*writecnt = retcode;
+			return APR_SUCCESS;
+		}
+	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+	if (!APR_STATUS_IS_EAGAIN(errno))
+		return errno;
+
+	/* Select() */
+	FD_ZERO(&wset);
+	FD_SET(unix_socket, &wset);
+	do {
+		tv.tv_usec = 0;
+		tv.tv_sec = ipc_handle->communation_timeout;
+		retcode = select(unix_socket + 1, NULL, &wset, NULL, &tv);
+	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+	if (retcode == -1)
+		return errno;
+
+	/* Write again */
+	do {
+		if ((retcode = writev(unix_socket, vec, nvec)) > 0) {
+			*writecnt = retcode;
+			return APR_SUCCESS;
+		}
+	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+
+	if (retcode == 0) {
+		ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+					 ipc_handle->request->server,
+					 "mod_fcgid: Write data error, fastcgi server has close connection");
+		return APR_EPIPE;
+	}
+
+	return errno;
+}
+
+static apr_status_t writev_it_all(fcgid_ipc * ipc_handle,
+								  struct iovec *vec, int nvec)
+{
+	apr_size_t bytes_written = 0;
+	apr_status_t rv;
+	apr_size_t len = 0;
+	int i = 0;
+	int writecnt = 0;
+
+	/* Calculate the total size */
+	for (i = 0; i < nvec; i++) {
+		len += vec[i].iov_len;
+	}
+
+	i = 0;
+	while (bytes_written != len) {
+		rv = socket_writev(ipc_handle, vec + i, nvec - i, &writecnt);
+		if (rv != APR_SUCCESS)
+			return rv;
+		bytes_written += writecnt;
+
+		if (bytes_written < len) {
+			/* Skip over the vectors that have already been written */
+			apr_size_t cnt = vec[i].iov_len;
+
+			while (writecnt >= cnt && i + 1 < nvec) {
+				i++;
+				cnt += vec[i].iov_len;
 			}
 
-			if (fcgi_header.type == FCGI_END_REQUEST)
-				return APR_SUCCESS;
+			if (writecnt < cnt) {
+				/* Handle partial write of vec i */
+				vec[i].iov_base = (char *) vec[i].iov_base +
+					(vec[i].iov_len - (cnt - writecnt));
+				vec[i].iov_len = cnt - writecnt;
+			}
 		}
 	}
+
+	return APR_SUCCESS;
+}
+
+#define FCGID_VEC_COUNT 8
+apr_status_t proc_write_ipc(server_rec * main_server,
+							fcgid_ipc * ipc_handle,
+							apr_bucket_brigade * output_brigade)
+{
+	apr_status_t rv;
+	struct iovec vec[FCGID_VEC_COUNT];
+	int nvec = 0;
+	apr_bucket *e;
+
+	APR_BRIGADE_FOREACH(e, output_brigade) {
+		/* Read bucket */
+		if ((rv = apr_bucket_read(e, (const char **) &vec[nvec].iov_base,
+								  &vec[nvec].iov_len,
+								  APR_BLOCK_READ)) != APR_SUCCESS)
+			return rv;
+
+		if (nvec == (FCGID_VEC_COUNT - 1)) {
+			/* It's time to write now */
+			if ((rv =
+				 writev_it_all(ipc_handle, vec,
+							   FCGID_VEC_COUNT)) != APR_SUCCESS)
+				return rv;
+			nvec = 0;
+		} else
+			nvec++;
+	}
+
+	/* There are something left */
+	if (nvec != 0) {
+		if ((rv = writev_it_all(ipc_handle, vec, nvec)) != APR_SUCCESS)
+			return rv;
+	}
+
+	return APR_SUCCESS;
 }
 
 apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle)
 {
-	return apr_pool_cleanup_run(ipc_handle->request_pool,
-								ipc_handle->ipc_handle_info,
-								ipc_handle_cleanup);
+	apr_status_t rv = apr_pool_cleanup_run(ipc_handle->request->pool,
+										   ipc_handle->ipc_handle_info,
+										   ipc_handle_cleanup);
+
+	ipc_handle->ipc_handle_info = NULL;
+	return rv;
 }
 
 void

@@ -13,10 +13,10 @@ typedef struct {
 } fcgid_proc_info;
 
 typedef struct {
-	apr_pool_t *request_pool;
 	int connect_timeout;		/* in second */
 	int communation_timeout;	/* in second */
 	void *ipc_handle_info;
+	request_rec *request;
 } fcgid_ipc;
 
 apr_status_t proc_spawn_process(fcgid_proc_info * procinfo,
@@ -32,11 +32,13 @@ apr_status_t proc_connect_ipc(server_rec * main_server,
 							  fcgid_procnode * procnode,
 							  fcgid_ipc * ipc_handle);
 
-apr_status_t proc_bridge_request(server_rec * main_server,
-								 fcgid_ipc * ipc_handle,
-								 apr_bucket_brigade * birgade_send,
-								 apr_bucket_brigade * brigade_recv,
-								 apr_bucket_alloc_t * alloc);
+apr_status_t proc_read_ipc(server_rec * main_server,
+						   fcgid_ipc * ipc_handle, const char *buffer,
+						   apr_size_t * size);
+
+apr_status_t proc_write_ipc(server_rec * main_server,
+							fcgid_ipc * ipc_handle,
+							apr_bucket_brigade * output_brigade);
 
 apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle);
 

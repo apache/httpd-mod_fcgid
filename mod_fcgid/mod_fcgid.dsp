@@ -98,6 +98,14 @@ SOURCE=.\fcgid_bridge.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\fcgid_bucket.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\fcgid_bucket.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\fcgid_conf.c
 # End Source File
 # Begin Source File
