@@ -252,6 +252,12 @@ proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
 	return rv;
 }
 
+int proc_has_exit(fcgid_procnode * procnode)
+{
+	return WaitForSingleObject(procnode->proc_id->hproc,
+							   0) == WAIT_OBJECT_0;
+}
+
 static apr_status_t ipc_handle_cleanup(void *thehandle)
 {
 	fcgid_namedpipe_handle *handle = thehandle;
@@ -669,6 +675,9 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 		break;
 	case FCGID_DIE_SHUTDOWN:
 		diewhy = "shutting down";
+		break;
+	case FCGID_DIR_PROC_EXIT:
+		diewhy = "process exited";
 		break;
 	default:
 		diewhy = "unknow";

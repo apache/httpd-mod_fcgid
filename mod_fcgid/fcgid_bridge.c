@@ -198,7 +198,10 @@ bridge_request_once(request_rec * r, const char *argv0,
 	ipc_handle.connect_timeout = g_connect_timeout;
 	ipc_handle.communation_timeout = g_comm_timeout;
 	if (proc_connect_ipc(r->server, procnode, &ipc_handle) != APR_SUCCESS) {
-		procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
+		if (proc_has_exit(procnode))
+			procnode->diewhy = FCGID_DIR_PROC_EXIT;
+		else
+			procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
 		communicate_error = 1;
 	} else
 		if ((rv =
