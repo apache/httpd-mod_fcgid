@@ -249,11 +249,6 @@ proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
 	return rv;
 }
 
-int proc_has_exit(fcgid_procnode * procnode)
-{
-	return (kill(procnode->proc_id->pid, 0) != 0 && errno == ESRCH);
-}
-
 static apr_status_t ipc_handle_cleanup(void *thesocket)
 {
 	fcgid_namedpipe_handle *handle_info =
@@ -609,9 +604,6 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 		break;
 	case FCGID_DIE_SHUTDOWN:
 		diewhy = "shutting down";
-		break;
-	case FCGID_DIR_PROC_EXIT:
-		diewhy = "process exited";
 		break;
 	default:
 		diewhy = "unknow";

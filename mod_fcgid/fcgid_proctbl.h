@@ -39,7 +39,6 @@ typedef struct {
 #define FCGID_DIE_CONNECT_ERROR 4
 #define FCGID_DIE_COMM_ERROR 5
 #define FCGID_DIE_SHUTDOWN 6
-#define FCGID_DIR_PROC_EXIT 7
 
 typedef struct {
 	int must_exit;				/* All processes using this share memory must exit */

@@ -28,8 +28,6 @@ apr_status_t proc_kill_gracefully(fcgid_procnode * procnode,
 apr_status_t proc_wait_process(server_rec * main_server,
 							   fcgid_procnode * procnode);
 
-int proc_has_exit(fcgid_procnode * procnode);
-
 apr_status_t proc_connect_ipc(server_rec * main_server,
 							  fcgid_procnode * procnode,
 							  fcgid_ipc * ipc_handle);
