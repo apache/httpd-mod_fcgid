@@ -436,6 +436,7 @@ handle_fcgi_body(server_rec * main_server,
 				ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
 							 main_server,
 							 "mod_fcgid: can't read from pipe");
+				apr_bucket_free(readbuf);
 				return FALSE;
 			} else {
 				/* it's ERROR_IO_PENDING */
@@ -453,6 +454,7 @@ handle_fcgi_body(server_rec * main_server,
 						ap_log_error(APLOG_MARK, APLOG_WARNING,
 									 apr_get_os_error(), main_server,
 									 "mod_fcgid: get overlap result error");
+						apr_bucket_free(readbuf);
 						return FALSE;
 					}
 
@@ -462,6 +464,7 @@ handle_fcgi_body(server_rec * main_server,
 					ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
 								 main_server,
 								 "mod_fcgid: read timeout from pipe");
+					apr_bucket_free(readbuf);
 					return FALSE;
 				}
 			}

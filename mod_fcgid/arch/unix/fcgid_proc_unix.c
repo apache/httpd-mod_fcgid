@@ -382,14 +382,18 @@ handle_fcgi_body(server_rec * main_server,
 			FD_SET(unix_socket, &rset);
 			tv.tv_usec = 0;
 			tv.tv_sec = ipc_handle->communation_timeout;
-			if (select(unix_socket + 1, &rset, NULL, NULL, &tv) <= 0)
+			if (select(unix_socket + 1, &rset, NULL, NULL, &tv) <= 0) {
+				apr_bucket_free(readbuf);
 				return apr_get_os_error();
+			}
 
 			readcount = read(unix_socket, readbuf + has_read,
 							 readsize - has_read);
 
-			if (readcount <= 0)
+			if (readcount <= 0) {
+				apr_bucket_free(readbuf);
 				return apr_get_os_error();
+			}
 
 			has_read += readcount;
 		}
