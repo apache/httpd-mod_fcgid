@@ -1,0 +1,10 @@
+version 0.7 ( May 22nd 2004 )
+1. PHP FastCGI Wrapper is supported on UNIX and Windows.
+
+version 0.62 ( May 18th 2004 )
+1. Unix version now compilable with gcc2.95.2
+2. Unix version is tested on Solaris7 & Solaris8
+
+version 0.6 ( May 8th 2004 )
+1. Unix version is tested on Redhat8(gcc3)
+2. Windows version is tested on Win2k(VC6)
