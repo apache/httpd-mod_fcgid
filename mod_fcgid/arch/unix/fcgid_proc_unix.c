@@ -525,7 +525,9 @@ apr_status_t proc_write_ipc(server_rec * main_server,
 	int nvec = 0;
 	apr_bucket *e;
 
-	APR_BRIGADE_FOREACH(e, output_brigade) {
+	for (e = APR_BRIGADE_FIRST(output_brigade);
+		 e != APR_BRIGADE_SENTINEL(output_brigade);
+		 e = APR_BUCKET_NEXT(e)) {
 		/* Read bucket */
 		if ((rv = apr_bucket_read(e, (const char **) &vec[nvec].iov_base,
 								  &vec[nvec].iov_len,

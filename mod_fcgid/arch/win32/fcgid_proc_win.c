@@ -397,7 +397,9 @@ apr_status_t proc_write_ipc(server_rec * main_server,
 
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 
-	APR_BRIGADE_FOREACH(bucket_request, birgade_send) {
+	for (bucket_request = APR_BRIGADE_FIRST(birgade_send);
+		 bucket_request != APR_BRIGADE_SENTINEL(birgade_send);
+		 bucket_request = APR_BUCKET_NEXT(bucket_request)) {
 		char *write_buf;
 		apr_size_t write_buf_len;
 		apr_size_t has_write;

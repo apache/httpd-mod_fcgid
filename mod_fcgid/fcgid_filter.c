@@ -53,7 +53,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 
 			/* Is the client aborted? */
 			if (c && c->aborted)
-				return AP_NOBODY_WROTE;
+				return APR_SUCCESS;
 
 			save_size = 0;
 		} else {
