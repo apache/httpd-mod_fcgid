@@ -6,11 +6,6 @@
 #include "fcgid_spawn_ctl.h"
 #define HAS_GRACEFUL_KILL "Gracefulkill"
 
-/* For Win32 */
-#ifndef SIGKILL
-#define SIGKILL 9
-#endif
-
 static int g_idle_timeout;
 static int g_idle_scan_interval;
 static int g_busy_timeout;
@@ -311,7 +306,7 @@ static void scan_errorlist(server_rec * main_server)
 						 "mod_fcgid: process %" APR_PID_T_FMT
 						 " graceful kill fail, sending SIGKILL",
 						 current_node->proc_id->pid);
-			apr_proc_kill(current_node->proc_id, SIGKILL);
+			proc_kill_force(current_node, main_server);
 		}
 	}
 
@@ -353,7 +348,7 @@ static void kill_all_subprocess(server_rec * main_server)
 				apr_pool_destroy(proc_table[i].proc_pool);
 				proc_table[i].proc_pool = NULL;
 			} else
-				apr_proc_kill(proc_table[i].proc_id, SIGKILL);
+				proc_kill_force(&proc_table[i], main_server);
 		}
 	}
 
@@ -408,6 +403,9 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	procinfo.cgipath = command->cgipath;
 	procinfo.configpool = configpool;
 	procinfo.main_server = main_server;
+	procinfo.uid = command->uid;
+	procinfo.gid = command->gid;
+	procinfo.userdir = command->userdir;
 	if (apr_pool_create(&procnode->proc_pool, configpool) != APR_SUCCESS
 		|| (procinfo.proc_environ = apr_table_copy(procnode->proc_pool,
 												   g_default_init_env)) ==

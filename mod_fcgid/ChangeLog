@@ -1,3 +1,6 @@
+version 0.87 ( Aug 26th 2004 )
+1. suEXEC supported.
+
 version 0.86 ( Aug 22th 2004 )
 Some major changes for performance. (Hits/Second is 30% greater than the old implement)
 1. Socket bucket instead of heap bucket. (less memory)

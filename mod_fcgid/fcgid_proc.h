@@ -10,6 +10,9 @@ typedef struct {
 	server_rec *main_server;
 	apr_pool_t *configpool;
 	char *cgipath;
+	uid_t uid;					/* For suEXEC */
+	gid_t gid;					/* For suEXEC */
+	int userdir;				/* For suEXEC */
 } fcgid_proc_info;
 
 typedef struct {
@@ -24,7 +27,8 @@ apr_status_t proc_spawn_process(fcgid_proc_info * procinfo,
 
 apr_status_t proc_kill_gracefully(fcgid_procnode * procnode,
 								  server_rec * main_server);
-
+apr_status_t proc_kill_force(fcgid_procnode * procnode,
+							 server_rec * main_server);
 apr_status_t proc_wait_process(server_rec * main_server,
 							   fcgid_procnode * procnode);
 

@@ -125,6 +125,75 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
 		break;
 	}
 }
+static int set_group_privs(void)
+{
+	if (!geteuid()) {
+		const char *name;
+
+
+		/* Get username if passed as a uid */
+		if (unixd_config.user_name[0] == '#') {
+			struct passwd *ent;
+
+			uid_t uid = atoi(&unixd_config.user_name[1]);
+
+			if ((ent = getpwuid(uid)) == NULL) {
+				ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
+							 "getpwuid: couldn't determine user name from uid %u, "
+							 "you probably need to modify the User directive",
+							 (unsigned) uid);
+				return -1;
+			}
+			name = ent->pw_name;
+		}
+
+		else
+			name = unixd_config.user_name;
+
+#if !defined(OS2) && !defined(TPF)
+		/* OS/2 and TPF don't support groups. */
+
+		/*
+		 * Set the GID before initgroups(), since on some platforms
+		 * setgid() is known to zap the group list.
+		 */
+		if (setgid(unixd_config.group_id) == -1) {
+			ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
+						 "setgid: unable to set group id to Group %u",
+						 (unsigned) unixd_config.group_id);
+			return -1;
+		}
+
+		/* Reset `groups' attributes. */
+		if (initgroups(name, unixd_config.group_id) == -1) {
+			ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
+						 "initgroups: unable to set groups for User %s "
+						 "and Group %u", name,
+						 (unsigned) unixd_config.group_id);
+			return -1;
+		}
+#endif							/* !defined(OS2) && !defined(TPF) */
+	}
+	return 0;
+}
+
+
+/* Base on unixd_setup_child() */
+static int suexec_setup_child(void)
+{
+	if (set_group_privs()) {
+		exit(-1);
+	}
+
+	/* Only try to switch if we're running as root */
+	if (!geteuid() && (seteuid(unixd_config.user_id) == -1)) {
+		ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
+					 "setuid: unable to change to uid: %ld",
+					 (long) unixd_config.user_id);
+		exit(-1);
+	}
+	return 0;
+}
 
 static apr_status_t
 create_process_manager(server_rec * main_server, apr_pool_t * configpool)
@@ -146,9 +215,12 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
 			exit(1);
 		}
 
-		/* if running as root, switch to configured user/group */
-		unixd_setup_child();
+		/* if running as root, switch to configured user */
+		if (unixd_config.suexec_enabled)
+			suexec_setup_child();
 
+		else
+			unixd_setup_child();
 		apr_file_pipe_timeout_set(g_pm_read_pipe,
 								  apr_time_from_sec(g_wakeup_timeout));
 		apr_file_close(g_ap_write_pipe);
@@ -251,16 +323,27 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 	return create_process_manager(main_server, configpool);
 }
 
-apr_status_t procmgr_post_spawn_cmd(const fcgid_command * command,
-									server_rec * main_server)
+apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
+									request_rec * r)
 {
 	apr_status_t rv;
 	char notifybyte;
+
+	ap_unix_identity_t *ugid;
 	apr_size_t nbytes = sizeof(*command);
+
+	server_rec *main_server = r->server;
 
 	/* Sanity check first */
 	if (g_caughtSigTerm || !g_ap_write_pipe)
 		return APR_SUCCESS;
+
+	/* suEXEC check */
+	if ((ugid = ap_run_get_suexec_identity(r))) {
+		command->uid = ugid->uid;
+		command->gid = ugid->gid;
+		command->userdir = ugid->userdir;
+	}
 
 	/* Get the global mutex before posting the request */
 	if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {

@@ -1,6 +1,8 @@
 #include <sys/un.h>
 #include <netinet/tcp.h>		/* For TCP_NODELAY */
+#define CORE_PRIVATE
 #include "httpd.h"
+#include "arch/unix/apr_arch_threadproc.h"
 #include "apr_thread_proc.h"
 #include "apr_strings.h"
 #include "apr_portable.h"
@@ -31,6 +33,342 @@ static apr_status_t socket_file_cleanup(void *theprocnode)
 
 	unlink(procnode->socket_path);
 	return APR_SUCCESS;
+}
+static apr_status_t limit_proc(apr_procattr_t * attr)
+{
+
+#if APR_HAVE_STRUCT_RLIMIT && APR_HAVE_SETRLIMIT
+#ifdef RLIMIT_CPU
+	if (attr->limit_cpu != NULL) {
+		if ((setrlimit(RLIMIT_CPU, attr->limit_cpu)) != 0) {
+			return errno;
+		}
+	}
+#endif							/*  */
+#ifdef RLIMIT_NPROC
+	if (attr->limit_nproc != NULL) {
+		if ((setrlimit(RLIMIT_NPROC, attr->limit_nproc)) != 0) {
+			return errno;
+		}
+	}
+#endif							/*  */
+#ifdef RLIMIT_NOFILE
+	if (attr->limit_nofile != NULL) {
+		if ((setrlimit(RLIMIT_NOFILE, attr->limit_nofile)) != 0) {
+			return errno;
+		}
+	}
+#endif							/*  */
+#if defined(RLIMIT_AS)
+	if (attr->limit_mem != NULL) {
+		if ((setrlimit(RLIMIT_AS, attr->limit_mem)) != 0) {
+			return errno;
+		}
+	}
+#elif defined(RLIMIT_DATA)
+	if (attr->limit_mem != NULL) {
+		if ((setrlimit(RLIMIT_DATA, attr->limit_mem)) != 0) {
+			return errno;
+		}
+	}
+#elif defined(RLIMIT_VMEM)
+	if (attr->limit_mem != NULL) {
+		if ((setrlimit(RLIMIT_VMEM, attr->limit_mem)) != 0) {
+			return errno;
+		}
+	}
+#endif							/*  */
+#else							/*  */
+	/*
+	 * Maybe make a note in error_log that setrlimit isn't supported??
+	 */
+
+#endif							/*  */
+	return APR_SUCCESS;
+}
+
+
+/* Base on apr_proc_create() */
+static apr_status_t fcgid_suexec_proc_create(apr_proc_t * new,
+											 const char *progname,
+											 const char *const *args,
+											 const char *const *env,
+											 apr_procattr_t * attr,
+											 apr_pool_t * pool)
+{
+	int i;
+
+	new->in = attr->parent_in;
+	new->err = attr->parent_err;
+	new->out = attr->parent_out;
+	if (attr->errchk) {
+		if (attr->currdir) {
+			if (access(attr->currdir, R_OK | X_OK) == -1) {
+
+				/* chdir() in child wouldn't have worked */
+				return errno;
+			}
+		}
+		if (attr->cmdtype == APR_PROGRAM
+			|| attr->cmdtype == APR_PROGRAM_ENV || *progname == '/') {
+
+			/* for both of these values of cmdtype, caller must pass
+			 * full path, so it is easy to check;
+			 * caller can choose to pass full path for other
+			 * values of cmdtype
+			 */
+			if (access(progname, R_OK | X_OK) == -1) {
+
+				/* exec*() in child wouldn't have worked */
+				return errno;
+			}
+		}
+
+		else {
+
+			/* todo: search PATH for progname then try to access it */
+		}
+	}
+	if ((new->pid = fork()) < 0) {
+		return errno;
+	}
+
+	else if (new->pid == 0) {
+		int status;
+
+
+		/* child process */
+
+		/* Set uid first */
+		seteuid(0);
+		setuid(unixd_config.user_id);
+
+		/*
+		 * If we do exec cleanup before the dup2() calls to set up pipes
+		 * on 0-2, we accidentally close the pipes used by programs like
+		 * mod_cgid.
+		 *
+		 * If we do exec cleanup after the dup2() calls, cleanup can accidentally
+		 * close our pipes which replaced any files which previously had
+		 * descriptors 0-2.
+		 *
+		 * The solution is to kill the cleanup for the pipes, then do
+		 * exec cleanup, then do the dup2() calls.
+		 */
+		if (attr->child_in) {
+			apr_pool_cleanup_kill(apr_file_pool_get(attr->child_in),
+								  attr->child_in, apr_unix_file_cleanup);
+		}
+		if (attr->child_out) {
+			apr_pool_cleanup_kill(apr_file_pool_get(attr->child_out),
+								  attr->child_out, apr_unix_file_cleanup);
+		}
+		if (attr->child_err) {
+			apr_pool_cleanup_kill(apr_file_pool_get(attr->child_err),
+								  attr->child_err, apr_unix_file_cleanup);
+		}
+		apr_pool_cleanup_for_exec();
+		if (attr->child_in) {
+			apr_file_close(attr->parent_in);
+			dup2(attr->child_in->filedes, STDIN_FILENO);
+			apr_file_close(attr->child_in);
+		}
+		if (attr->child_out) {
+			apr_file_close(attr->parent_out);
+			dup2(attr->child_out->filedes, STDOUT_FILENO);
+			apr_file_close(attr->child_out);
+		}
+		if (attr->child_err) {
+			apr_file_close(attr->parent_err);
+			dup2(attr->child_err->filedes, STDERR_FILENO);
+			apr_file_close(attr->child_err);
+		}
+		apr_signal(SIGCHLD, SIG_DFL);	/* not sure if this is needed or not */
+		if (attr->currdir != NULL) {
+			if (chdir(attr->currdir) == -1) {
+				if (attr->errfn) {
+					attr->errfn(pool, errno,
+								"change of working directory failed");
+				}
+				exit(-1);		/* We have big problems, the child should exit. */
+			}
+		}
+		if ((status = limit_proc(attr)) != APR_SUCCESS) {
+			if (attr->errfn) {
+				attr->errfn(pool, errno,
+							"setting of resource limits failed");
+			}
+			exit(-1);			/* We have big problems, the child should exit. */
+		}
+		if (attr->cmdtype == APR_SHELLCMD) {
+			int onearg_len = 0;
+			const char *newargs[4];
+
+			newargs[0] = SHELL_PATH;
+			newargs[1] = "-c";
+			i = 0;
+			while (args[i]) {
+				onearg_len += strlen(args[i]);
+				onearg_len++;	/* for space delimiter */
+				i++;
+			}
+			switch (i) {
+			case 0:
+
+				/* bad parameters; we're doomed */
+				break;
+			case 1:
+
+				/* no args, or caller already built a single string from
+				 * progname and args
+				 */
+				newargs[2] = args[0];
+				break;
+			default:
+				{
+					char *ch, *onearg;
+
+					ch = onearg = apr_palloc(pool, onearg_len);
+					i = 0;
+					while (args[i]) {
+						size_t len = strlen(args[i]);
+
+						memcpy(ch, args[i], len);
+						ch += len;
+						*ch = ' ';
+						++ch;
+						++i;
+					}
+					--ch;		/* back up to trailing blank */
+					*ch = '\0';
+					newargs[2] = onearg;
+				}
+			}
+			newargs[3] = NULL;
+			if (attr->detached) {
+				apr_proc_detach(APR_PROC_DETACH_DAEMONIZE);
+			}
+			execve(SHELL_PATH, (char *const *) newargs,
+				   (char *const *) env);
+		}
+
+		else if (attr->cmdtype == APR_PROGRAM) {
+			if (attr->detached) {
+				apr_proc_detach(APR_PROC_DETACH_DAEMONIZE);
+			}
+			execve(progname, (char *const *) args, (char *const *) env);
+		}
+
+		else if (attr->cmdtype == APR_PROGRAM_ENV) {
+			if (attr->detached) {
+				apr_proc_detach(APR_PROC_DETACH_DAEMONIZE);
+			}
+			execv(progname, (char *const *) args);
+		}
+
+		else {
+
+			/* APR_PROGRAM_PATH */
+			if (attr->detached) {
+				apr_proc_detach(APR_PROC_DETACH_DAEMONIZE);
+			}
+			execvp(progname, (char *const *) args);
+		} if (attr->errfn) {
+			char *desc;
+
+			desc = apr_psprintf(pool, "exec of '%s' failed", progname);
+			attr->errfn(pool, errno, desc);
+		}
+		exit(-1);				/* if we get here, there is a problem, so exit with an
+								 * error code. */
+	}
+
+	/* Parent process */
+	if (attr->child_in) {
+		apr_file_close(attr->child_in);
+	}
+	if (attr->child_out) {
+		apr_file_close(attr->child_out);
+	}
+	if (attr->child_err) {
+		apr_file_close(attr->child_err);
+	}
+	return APR_SUCCESS;
+}
+
+
+/* Base on ap_unix_create_privileged_process() */
+static apr_status_t fcgid_create_privileged_process(apr_proc_t * newproc,
+													const char *progname,
+													const char *const
+													*args, const char *const
+													*env,
+													apr_procattr_t * attr,
+													fcgid_proc_info *
+													procinfo,
+													apr_pool_t * p)
+{
+	int i = 0;
+	const char **newargs;
+	char *newprogname;
+	char *execuser, *execgroup;
+	const char *argv0;
+
+	if (!unixd_config.suexec_enabled
+		|| (procinfo->uid == (uid_t) - 1
+			&& procinfo->gid == (gid_t) - 1)) {
+		return apr_proc_create(newproc, progname, args, env, attr, p);
+	}
+	argv0 = ap_strrchr_c(progname, '/');
+
+	/* Allow suexec's "/" check to succeed */
+	if (argv0 != NULL) {
+		argv0++;
+	}
+
+	else {
+		argv0 = progname;
+	}
+	if (procinfo->userdir) {
+		execuser = apr_psprintf(p, "~%ld", (long) procinfo->uid);
+	}
+
+	else {
+		execuser = apr_psprintf(p, "%ld", (long) procinfo->uid);
+	} execgroup = apr_psprintf(p, "%ld", (long) procinfo->gid);
+	if (!execuser || !execgroup) {
+		return APR_ENOMEM;
+	}
+	i = 0;
+	if (args) {
+		while (args[i]) {
+			i++;
+		}
+	}
+
+	/* allocate space for 4 new args, the input args, and a null terminator */
+	newargs = apr_palloc(p, sizeof(char *) * (i + 4));
+	newprogname = SUEXEC_BIN;
+	newargs[0] = SUEXEC_BIN;
+	newargs[1] = execuser;
+	newargs[2] = execgroup;
+	newargs[3] = apr_pstrdup(p, argv0);
+
+	/*
+	 ** using a shell to execute suexec makes no sense thus
+	 ** we force everything to be APR_PROGRAM, and never
+	 ** APR_SHELLCMD
+	 */
+	if (apr_procattr_cmdtype_set(attr, APR_PROGRAM) != APR_SUCCESS) {
+		return APR_EGENERAL;
+	}
+	i = 1;
+
+	do {
+		newargs[i + 3] = args[i];
+	} while (args[i++]);
+	return fcgid_suexec_proc_create(newproc, newprogname, newargs, env,
+									attr, p);
 }
 
 apr_status_t
@@ -178,10 +516,14 @@ APR_SUCCESS
 		argv[0] = wrapper_conf->wrapper_path;
 		argv[1] = NULL;
 		if ((rv =
-			 apr_proc_create(procnode->proc_id, wrapper_conf->wrapper_path,
-							 (const char *const *) argv,
-							 (const char *const *) proc_environ, procattr,
-							 procnode->proc_pool)) != APR_SUCCESS) {
+			 fcgid_create_privileged_process(procnode->proc_id,
+											 wrapper_conf->wrapper_path,
+											 (const char *const *) argv,
+											 (const char *const *)
+											 proc_environ, procattr,
+											 procinfo,
+											 procnode->proc_pool)) !=
+			APR_SUCCESS) {
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
 						 "mod_fcgid: can't create wrapper process for %s",
 						 procinfo->cgipath);
@@ -192,10 +534,14 @@ APR_SUCCESS
 		argv[0] = procinfo->cgipath;
 		argv[1] = NULL;
 		if ((rv =
-			 apr_proc_create(procnode->proc_id, procinfo->cgipath,
-							 (const char *const *) argv,
-							 (const char *const *) proc_environ, procattr,
-							 procnode->proc_pool)) != APR_SUCCESS) {
+			 fcgid_create_privileged_process(procnode->proc_id,
+											 procinfo->cgipath,
+											 (const char *const *) argv,
+											 (const char *const *)
+											 proc_environ, procattr,
+											 procinfo,
+											 procnode->proc_pool)) !=
+			APR_SUCCESS) {
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
 						 "mod_fcgid: can't create process");
 			close(unix_socket);
@@ -229,7 +575,41 @@ APR_SUCCESS
 apr_status_t
 proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
 {
-	return apr_proc_kill(procnode->proc_id, SIGTERM);
+
+	/* su as root before sending kill signal, for suEXEC */
+	apr_status_t rv;
+
+	if (unixd_config.suexec_enabled && seteuid(0) != 0) {
+
+		/* It's fatal error */
+		kill(getpid(), SIGTERM);
+		return APR_EACCES;
+	}
+	rv = apr_proc_kill(procnode->proc_id, SIGTERM);
+	if (unixd_config.suexec_enabled && seteuid(unixd_config.user_id) != 0) {
+		kill(getpid(), SIGTERM);
+		return APR_EACCES;
+	}
+	return rv;
+}
+
+apr_status_t proc_kill_force(fcgid_procnode * procnode,
+							 server_rec * main_server)
+{
+	apr_status_t rv;
+
+	if (unixd_config.suexec_enabled && seteuid(0) != 0) {
+
+		/* It's fatal error */
+		kill(getpid(), SIGTERM);
+		return APR_EACCES;
+	}
+	rv = apr_proc_kill(procnode->proc_id, SIGKILL);
+	if (unixd_config.suexec_enabled && seteuid(unixd_config.user_id) != 0) {
+		kill(getpid(), SIGTERM);
+		return APR_EACCES;
+	}
+	return rv;
 }
 
 apr_status_t
@@ -368,7 +748,7 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 	unix_socket = handle_info->handle_socket;
 
 	do {
-		if ((retcode = read(unix_socket, buffer, *size)) > 0) {
+		if ((retcode = read(unix_socket, (void *) buffer, *size)) > 0) {
 			*size = retcode;
 			return APR_SUCCESS;
 		}
@@ -403,7 +783,7 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 
 	/* Read again after select() */
 	do {
-		if ((retcode = read(unix_socket, buffer, *size)) > 0) {
+		if ((retcode = read(unix_socket, (void *) buffer, *size)) > 0) {
 			*size = retcode;
 			return APR_SUCCESS;
 		}

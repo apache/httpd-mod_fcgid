@@ -229,6 +229,12 @@ proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
 	return APR_SUCCESS;
 }
 
+apr_status_t proc_kill_force(fcgid_procnode * procnode,
+							 server_rec * main_server)
+{
+	return apr_proc_kill(procnode->proc_id, SIGKILL);
+}
+
 apr_status_t
 proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
 {

@@ -104,9 +104,11 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 	return APR_SUCCESS;
 }
 
-apr_status_t procmgr_post_spawn_cmd(const fcgid_command * command,
-									server_rec * main_server)
+apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
+									request_rec * r)
 {
+	server_rec *main_server = r->server;
+
 	if (g_thread && g_msgqueue && !g_must_exit
 		&& g_reqlock && g_notifyqueue) {
 		apr_status_t rv;

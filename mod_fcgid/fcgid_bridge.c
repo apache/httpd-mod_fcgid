@@ -257,6 +257,9 @@ handle_request(request_rec * r, const char *argv0,
 			/* Send a spawn request and wait a second if I can't apply one */
 			strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
 			fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
+			fcgi_request.uid = (uid_t) - 1;
+			fcgi_request.gid = (gid_t) - 1;
+			fcgi_request.userdir = 0;
 			if (wrapper_conf) {
 				fcgi_request.deviceid = wrapper_conf->deviceid;
 				fcgi_request.inode = wrapper_conf->inode;
@@ -267,7 +270,7 @@ handle_request(request_rec * r, const char *argv0,
 				fcgi_request.share_grp_id = 0;
 			}
 
-			procmgr_post_spawn_cmd(&fcgi_request, main_server);
+			procmgr_post_spawn_cmd(&fcgi_request, r);
 
 			/* Is it stopping? */
 			if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
