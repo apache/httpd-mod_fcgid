@@ -645,7 +645,8 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 		apr_snprintf(signal_info, HUGE_STRING_LEN - 1,
 					 "terminated by calling exit(), return code: %d",
 					 exitcode);
-		diewhy = "server exited";
+		if (procnode->diewhy == FCGID_DIE_CONNECT_ERROR)
+			diewhy = "server exited";
 	}
 
 	/* Print log now */

@@ -161,7 +161,7 @@ bridge_request_once(request_rec * r, const char *argv0,
 	}
 
 	if (!procnode) {
-		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
+		ap_log_error(APLOG_MARK, APLOG_INFO, 0, r->server,
 					 "mod_fcgid: can't apply process slot for %s", argv0);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
@@ -217,7 +217,7 @@ bridge_request_once(request_rec * r, const char *argv0,
 	if (apr_time_sec(apr_time_now()) - apr_time_sec(begin_request_time) >
 		g_busy_timeout) {
 		/* I have to return and do nothing to the process slot */
-		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
 					 r->server,
 					 "mod_fcgid: process busy timeout, take %d seconds for this request",
 					 apr_time_sec(apr_time_now()) -
