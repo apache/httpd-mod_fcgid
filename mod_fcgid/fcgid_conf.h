@@ -99,7 +99,7 @@ const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
 apr_table_t *get_default_env_vars(server_rec * s);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
-							   const char *arg);
+							   const char *wrapper, const char *extension);
 const char *set_wrappergrp_config(cmd_parms * cmd, void *dummy,
 								  const char *thearg);
 fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s);

@@ -346,7 +346,8 @@ apr_table_t *get_default_env_vars(server_rec * s)
 }
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
-							   const char *wrapperpath)
+							   const char *wrapperpath,
+							   const char *extension)
 {
 	apr_status_t rv;
 	apr_finfo_t finfo;
@@ -396,9 +397,18 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 	wrapper->share_group_id = (apr_size_t) - 1;
 
 	/* Add the node now */
-	hashkey = apr_psprintf(cmd->pool, "%s", dirpath);
-	apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
-				 wrapper);
+	if (extension == NULL) {
+		hashkey = apr_psprintf(cmd->pool, "%s", dirpath);
+		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
+					 wrapper);
+	} else if (*extension != '.' || *(extension + 1) == '\0'
+			   || strchr(extension, '/') || strchr(extension, '\\'))
+		return "Invalid wrapper file extension";
+	else {
+		hashkey = apr_psprintf(cmd->pool, "%s", extension);
+		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
+					 wrapper);
+	}
 
 	return NULL;
 }
@@ -479,6 +489,7 @@ const char *set_wrappergrp_config(cmd_parms * cmd, void *dummy,
 
 fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 {
+	char *extension;
 	fcgid_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	char directory[APR_PATH_MAX + 1];
@@ -490,7 +501,13 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 									strlen(cgipath))))
 		return wrapperinfo;
 
-	/* Not match the full path, try the directory now */
+	/* Is it match file name extension? */
+	extension = ap_strrchr_c(cgipath, '.');
+	if (extension != NULL)
+		return apr_hash_get(config->wrapper_info_hash, extension,
+							strlen(extension));
+
+	/* Not match the full path and extension, try the directory now */
 	strncpy(directory, cgipath, APR_PATH_MAX);
 	directory[APR_PATH_MAX] = '\0';
 	last_slash = ap_strrchr_c(directory, '/');
@@ -499,7 +516,6 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 	last_slash++;
 	*last_slash = '\0';
 
-	/* Get wrapper info now */
 	return apr_hash_get(config->wrapper_info_hash, directory,
 						strlen(directory));
 }

@@ -332,7 +332,7 @@ handle_request(request_rec * r, const char *argv0,
 
 	/* Check the script header first. If got error, return immediately */
 	if ((cond_status = ap_scan_script_header_err_core
-		(r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout)) >= 400)
+		 (r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout)) >= 400)
 		return cond_status;
 
 	/* Check redirect */

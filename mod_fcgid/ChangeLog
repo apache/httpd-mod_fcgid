@@ -1,3 +1,15 @@
+version 1.04 ( Dec 2nd 2004 )
+1. Bug fix. ap_scan_script_header_err_core can return non OK without errors.
+	e.g. CGI outputs Last-Modified header and browser request with
+	If-Mofieided-Since header, ap_scan_script_header_err_core() may
+	returns 302(Not Modified)
+	(Thank Tatsuki Sugiura, sugi at nemui.org for the bug fix patch)
+2. Choose FCGI wrappers based on file extentions.
+	e.g.
+	FCGIWrapper /usr/local/bin/php .php
+	Tells mod_fcgid calling all *.php scripts with wrapper /usr/local/bin/php.
+	(Thank Mathijs Brands, mathijs at crooked.net for the suggestion)
+
 verison 1.03 ( Nov 3rd 2004 )
 1. Add configuration "OutputBufferSize". The old implementation keep CGI output in a 64k bytes buffer,
 	before send them to web browser(for better network IO performance). 
