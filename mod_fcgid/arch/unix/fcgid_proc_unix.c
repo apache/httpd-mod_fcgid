@@ -29,8 +29,7 @@ static const char *g_socket_dir = NULL;
 static apr_status_t ap_unix_create_privileged_process(apr_proc_t * newproc,
 													  const char *progname,
 													  const char *const
-													  *args,
-													  const char *const
+													  *args, const char *const
 													  *env,
 													  apr_procattr_t *
 													  attr,

@@ -137,6 +137,17 @@ static int fcgid_handler(request_rec * r)
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 
+	/* Check request like "http://localhost/cgi-bin/a.exe/defghi" */
+	if (!wrapper_conf && r->finfo.inode == 0 && r->finfo.device == 0) {
+		if ((rv =
+			 apr_stat(&r->finfo, command, APR_FINFO_IDENT,
+					  r->pool)) != APR_SUCCESS) {
+			ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
+						 "mod_fcgid: can't get %s file info", command);
+			return HTTP_NOT_FOUND;
+		}
+	}
+
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
 
