@@ -1,3 +1,11 @@
+verison 1.03 ( Nov 3rd 2004 )
+1. Add configuration "OutputBufferSize". The old implementation keep CGI output in a 64k bytes buffer,
+	before send them to web browser(for better network IO performance). 
+	If FCGI_Fflush() is called in your application, please add "OutputBufferSize 0" in you 
+	httpd.conf, which will not keep any CGI output in cache buffer.
+	The default value of OutputBufferSize is 64k byte.
+	(Thank Grzegorz Sampolski, gs at blink.pl)
+
 version 1.02 ( Oct 1st 2004 )
 1. Bug fix. (Win32 only) Forward request to incorrect process when a script is a directory in the URL.
 	For example, if in the "cgi-bin" directory there are two programs, "a.exe" and "b.exe".  

@@ -23,7 +23,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_MAX_CLASS_PROCESS_COUNT 100
 #define DEFAULT_IPC_CONNECT_TIMEOUT 2
 #define DEFAULT_IPC_COMM_TIMEOUT 5
-#define DEFAULT_OUTPUT_BUFFERSIZE 0
+#define DEFAULT_OUTPUT_BUFFERSIZE 65536
 
 void *create_fcgid_config(apr_pool_t * p, server_rec * s)
 {
