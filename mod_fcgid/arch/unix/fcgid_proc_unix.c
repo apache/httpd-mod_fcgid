@@ -1,4 +1,5 @@
 #include <sys/un.h>
+#include <sys/types.h>
 #include <netinet/tcp.h>		/* For TCP_NODELAY */
 #define CORE_PRIVATE
 #include "httpd.h"

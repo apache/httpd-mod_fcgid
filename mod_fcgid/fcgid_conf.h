@@ -25,6 +25,7 @@ typedef struct {
 	int default_max_class_process_count;
 	int ipc_connect_timeout;
 	int ipc_comm_timeout;
+	int output_buffersize;
 	apr_table_t *default_init_env;
 	apr_hash_t *wrapper_info_hash;
 } fcgid_conf;
@@ -87,6 +88,10 @@ int get_ipc_connect_timeout(server_rec * s);
 const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
 								 const char *arg);
 int get_ipc_comm_timeout(server_rec * s);
+
+const char* set_output_buffersize(cmd_parms * cmd, void *dummy, const char *arg);
+
+int get_output_buffersize(server_rec* s);
 
 const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
 								 const char *name, const char *value);

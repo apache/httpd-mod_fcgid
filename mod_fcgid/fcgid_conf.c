@@ -23,6 +23,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_MAX_CLASS_PROCESS_COUNT 100
 #define DEFAULT_IPC_CONNECT_TIMEOUT 2
 #define DEFAULT_IPC_COMM_TIMEOUT 5
+#define DEFAULT_OUTPUT_BUFFERSIZE 0
 
 void *create_fcgid_config(apr_pool_t * p, server_rec * s)
 {
@@ -46,6 +47,7 @@ void *create_fcgid_config(apr_pool_t * p, server_rec * s)
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
 	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
 	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
+	config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
 	config->wrapper_info_hash = apr_hash_make(p);
 	return config;
 }
@@ -254,6 +256,22 @@ int get_max_process(server_rec * s)
 	fcgid_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	return config ? config->max_process_count : DEFAULT_MAX_PROCESS_COUNT;
+}
+
+const char* set_output_buffersize(cmd_parms * cmd, void *dummy, const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->output_buffersize = atol(arg);
+	return NULL;
+}
+
+int get_output_buffersize(server_rec* s)
+{
+	fcgid_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config ? config->output_buffersize : DEFAULT_OUTPUT_BUFFERSIZE;
 }
 
 const char *set_default_max_class_process(cmd_parms * cmd, void *dummy,
