@@ -86,6 +86,7 @@ static int fcgid_handler(request_rec * r)
 	apr_pool_t *p;
 	apr_status_t rv;
 	int http_retcode;
+	fcgid_wrapper_conf *wrapper_conf;
 
 	if (strcmp(r->handler, "fcgid-script"))
 		return DECLINED;
@@ -116,7 +117,7 @@ static int fcgid_handler(request_rec * r)
 	p = r->main ? r->main->pool : r->pool;
 
 	/* Build the command line */
-	if (get_wrapper_info(r->filename, r->server)) {
+	if ((wrapper_conf = get_wrapper_info(r->filename, r->server))) {
 		if ((rv =
 			 default_build_command(&command, &argv, r, p,
 								   &e_info)) != APR_SUCCESS) {
@@ -137,7 +138,7 @@ static int fcgid_handler(request_rec * r)
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
 
-	http_retcode = bridge_request(r, command);
+	http_retcode = bridge_request(r, command, wrapper_conf);
 	return (http_retcode == HTTP_OK ? OK : http_retcode);
 }
 
@@ -249,8 +250,8 @@ static const command_rec fcgid_cmds[] = {
 				  "Connect timeout to fastcgi server"),
 	AP_INIT_TAKE1("IPCCommTimeout", set_ipc_comm_timeout, NULL, RSRC_CONF,
 				  "Communication timeout to fastcgi server"),
-	AP_INIT_TAKE1("FCGIWrapper", set_wrapper_config, NULL, ACCESS_CONF,
-				  "The CGI wrapper"),
+	AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL, ACCESS_CONF,
+				   "The CGI wrapper"),
 	AP_INIT_TAKE12("DefaultInitEnv", add_default_env_vars, NULL, RSRC_CONF,
 				   "an environment variable name and optional value to pass to FastCGI."),
 	AP_INIT_RAW_ARGS("ServerConfig", set_server_config, NULL, ACCESS_CONF,

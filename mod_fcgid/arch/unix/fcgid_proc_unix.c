@@ -45,7 +45,7 @@ proc_spawn_process(fcgid_proc_info * procinfo, fcgid_procnode * procnode)
 	apr_procattr_t *procattr = NULL;
 	char key_name[_POSIX_PATH_MAX];
 	char *dummy;
-	char *argv[3];
+	char *argv[2];
 
 	/* Initialize the global variable if necessary */
 	if (!g_inode_cginame_map)
@@ -172,8 +172,7 @@ APR_SUCCESS
 					 procinfo->cgipath, wrapper_conf->wrapper_path);
 
 		argv[0] = wrapper_conf->wrapper_path;
-		argv[1] = procinfo->cgipath;
-		argv[2] = NULL;
+		argv[1] = NULL;
 		if ((rv =
 			 apr_proc_create(procnode->proc_id, wrapper_conf->wrapper_path,
 							 (const char *const *) argv,

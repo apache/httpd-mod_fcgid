@@ -16,8 +16,9 @@ struct fcgi_server_info {
 #define FCGID_MAX_ID_LEN 128
 typedef struct {
 	char wrapper_path[APR_PATH_MAX];
-	apr_uid_t uid;
-	apr_gid_t gid;
+	apr_ino_t inode;
+	apr_dev_t deviceid;
+	int shareable;
 } fcgid_wrapper_conf;
 
 typedef struct {
@@ -38,7 +39,7 @@ typedef struct {
 	int ipc_comm_timeout;
 	apr_table_t *default_init_env;
 	apr_hash_t *wrapper_info_hash;
-	struct fcgi_server_info *server_info;
+	apr_array_header_t *overlay_server_info;
 } fcgid_conf;
 
 void *create_fcgid_config(apr_pool_t * p, server_rec * s);
@@ -111,7 +112,7 @@ void get_server_info(server_rec * main_server,
 					 struct fcgi_server_info *info);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
-							   const char *arg);
+							   const char *arg1, const char *arg2);
 fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s);
 
 #endif

@@ -102,6 +102,7 @@ return_procnode(server_rec * main_server,
 
 static int
 bridge_request_once(request_rec * r, const char *argv0,
+					fcgid_wrapper_conf * wrapper_conf,
 					apr_bucket_brigade * output_brigade)
 {
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
@@ -125,15 +126,27 @@ bridge_request_once(request_rec * r, const char *argv0,
 		int mpm_state = 0;
 
 		procnode = apply_free_procnode(r->server,
-									   r->finfo.inode, r->finfo.device);
+									   wrapper_conf
+									   && wrapper_conf->
+									   shareable ? wrapper_conf->
+									   inode : r->finfo.inode, wrapper_conf
+									   && wrapper_conf->
+									   shareable ? wrapper_conf->
+									   deviceid : r->finfo.device);
 		if (procnode)
 			break;
 
 		/* Send a spawn request and wait a second */
 		strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
 		fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-		fcgi_request.deviceid = r->finfo.device;
-		fcgi_request.inode = r->finfo.inode;
+		if (wrapper_conf && wrapper_conf->shareable) {
+			fcgi_request.deviceid = wrapper_conf->deviceid;
+			fcgi_request.inode = wrapper_conf->inode;
+		} else {
+			fcgi_request.deviceid = r->finfo.device;
+			fcgi_request.inode = r->finfo.inode;
+		}
+
 		procmgr_post_spawn_cmd(&fcgi_request);
 		apr_sleep(apr_time_from_sec(1));
 
@@ -268,8 +281,14 @@ bridge_request_once(request_rec * r, const char *argv0,
 	if (communicate_error) {
 		strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
 		fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-		fcgi_request.deviceid = r->finfo.device;
-		fcgi_request.inode = r->finfo.inode;
+		if (wrapper_conf && wrapper_conf->shareable) {
+			fcgi_request.deviceid = wrapper_conf->deviceid;
+			fcgi_request.inode = wrapper_conf->inode;
+		} else {
+			fcgi_request.deviceid = r->finfo.device;
+			fcgi_request.inode = r->finfo.inode;
+		}
+
 		procmgr_post_spawn_cmd(&fcgi_request);
 	}
 
@@ -277,7 +296,8 @@ bridge_request_once(request_rec * r, const char *argv0,
 	return communicate_error ? HTTP_INTERNAL_SERVER_ERROR : HTTP_OK;
 }
 
-int bridge_request(request_rec * r, const char *argv0)
+int bridge_request(request_rec * r, const char *argv0,
+				   fcgid_wrapper_conf * wrapper_conf)
 {
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
 	server_rec *main_server = r->server;
@@ -339,7 +359,9 @@ int bridge_request(request_rec * r, const char *argv0)
 			return HTTP_INTERNAL_SERVER_ERROR;
 		}
 
-		APR_BRIGADE_FOREACH(bucket_input, input_brigade) {
+		for (bucket_input = APR_BRIGADE_FIRST(input_brigade);
+			 bucket_input != APR_BRIGADE_SENTINEL(input_brigade);
+			 bucket_input = APR_BUCKET_NEXT(bucket_input)) {
 			const char *data;
 			apr_size_t len;
 			apr_bucket *bucket_stdin;
@@ -426,7 +448,8 @@ int bridge_request(request_rec * r, const char *argv0)
 		int mpm_state;
 
 		if ((retcode =
-			 bridge_request_once(r, argv0, output_brigade)) == HTTP_OK)
+			 bridge_request_once(r, argv0, wrapper_conf,
+								 output_brigade)) == HTTP_OK)
 			break;
 
 		/* Is it stopping? */

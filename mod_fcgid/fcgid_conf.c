@@ -47,7 +47,8 @@ void *create_fcgid_config(apr_pool_t * p, server_rec * s)
 	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
 	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
 	config->wrapper_info_hash = apr_hash_make(p);
-	config->server_info = NULL;
+	config->overlay_server_info =
+		apr_array_make(p, 20, sizeof(struct fcgi_server_info *));
 	return config;
 }
 
@@ -343,6 +344,7 @@ const char *set_server_config(cmd_parms * cmd, void *dummy,
 	apr_finfo_t finfo;
 	const char *arg;
 	struct fcgi_server_info *serverinfo;
+	struct fcgi_server_info **array_header;
 
 	/* Get the file path */
 	if ((arg = ap_check_cmd_context(cmd, NOT_IN_FILES | NOT_IN_LOCATION)))
@@ -404,13 +406,10 @@ const char *set_server_config(cmd_parms * cmd, void *dummy,
 								arg);
 	}
 
-	if (!config->server_info)
-		config->server_info = serverinfo;
-	else {
-		serverinfo->next = config->server_info->next;
-		config->server_info->next = serverinfo;
-	}
-
+	array_header =
+		(struct fcgi_server_info **) apr_array_push(config->
+													overlay_server_info);
+	*array_header = serverinfo;
 	return NULL;
 }
 
@@ -419,17 +418,22 @@ get_server_info(server_rec * main_server,
 				apr_ino_t inode, apr_dev_t deviceid,
 				struct fcgi_server_info *info)
 {
-	struct fcgi_server_info *matchnode;
 	fcgid_conf *config = ap_get_module_config(main_server->module_config,
 											  &fcgid_module);
+
+	struct fcgi_server_info **ents =
+		(struct fcgi_server_info **) config->overlay_server_info->elts;
+	struct fcgi_server_info *matchnode = NULL;
+	int i;
 
 	memset(info, 0, sizeof(*info));
 
 	/* Search g_server_info list for a match node */
-	for (matchnode = config->server_info; matchnode != NULL;
-		 matchnode = matchnode->next) {
-		if (matchnode->inode == inode && matchnode->deviceid == deviceid)
+	for (i = 0; i < config->overlay_server_info->nelts; i++) {
+		if (ents[i]->inode == inode && ents[i]->deviceid == deviceid) {
+			matchnode = ents[i];
 			break;
+		}
 	}
 
 	if (!matchnode) {
@@ -474,11 +478,13 @@ get_server_info(server_rec * main_server,
 
 static server_rec *g_server;
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
-							   const char *arg)
+							   const char *wrapperpath,
+							   const char *wrappedpath)
 {
 	apr_status_t rv;
 	apr_finfo_t finfo;
 	const char *checkarg;
+	char *hashkey, *tmpfilename;
 	char dirpath[APR_PATH_MAX];
 	fcgid_wrapper_conf *wrapper = NULL;
 	fcgid_conf *config;
@@ -495,15 +501,18 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 	dirpath[APR_PATH_MAX - 1] = '\0';
 
 	/* Append the missing '/' */
-	if (dirpath[strlen(dirpath) - 1] != '/'
-		&& strlen(dirpath) < APR_PATH_MAX - 1)
-		strcat(dirpath, "/");
+	if ((rv = apr_filepath_merge(&tmpfilename, dirpath, "",
+								 APR_FILEPATH_NOTRELATIVE,
+								 cmd->temp_pool)) != APR_SUCCESS)
+		return "Can't merge file path";
+	apr_snprintf(dirpath, APR_PATH_MAX - 1, "%s", tmpfilename);
+	dirpath[APR_PATH_MAX - 1] = '\0';
 
 	/* Create the wrapper node */
 	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
 	if (!wrapper)
 		return "Can't alloc memory for wrapper";
-	strncpy(wrapper->wrapper_path, arg, APR_PATH_MAX - 1);
+	strncpy(wrapper->wrapper_path, wrapperpath, APR_PATH_MAX - 1);
 	wrapper->wrapper_path[APR_PATH_MAX - 1] = '\0';
 
 	/* Is the wrapper exist? */
@@ -514,9 +523,21 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 							wrapper->wrapper_path, apr_get_os_error());
 	}
 
+	/* Set inode & device id */
+	wrapper->inode = finfo.inode;
+	wrapper->deviceid = finfo.device;
+
+	/* Is wrapped file path specified? */
+	if (wrappedpath) {
+		wrapper->shareable = 0;
+		hashkey = apr_psprintf(cmd->pool, "%s%s", dirpath, wrappedpath);
+	} else {
+		wrapper->shareable = 1;
+		hashkey = apr_psprintf(cmd->pool, "%s", dirpath);
+	}
+
 	/* Add the node now */
-	apr_hash_set(config->wrapper_info_hash,
-				 apr_psprintf(cmd->pool, "%s", dirpath), strlen(dirpath),
+	apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
 				 wrapper);
 
 	return NULL;
@@ -528,8 +549,14 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 		ap_get_module_config(s->module_config, &fcgid_module);
 	char directory[APR_PATH_MAX + 1];
 	char *last_slash;
+	fcgid_wrapper_conf *wrapperinfo;
 
-	/* Get directory from cgi path */
+	/* Is it match the file path exactly? */
+	if ((wrapperinfo = apr_hash_get(config->wrapper_info_hash, cgipath,
+									strlen(cgipath))))
+		return wrapperinfo;
+
+	/* Not match the full path, try the directory now */
 	strncpy(directory, cgipath, APR_PATH_MAX);
 	directory[APR_PATH_MAX] = '\0';
 	last_slash = ap_strrchr_c(directory, '/');
