@@ -281,23 +281,6 @@ bridge_request_once(request_rec * r, const char *argv0,
 		}
 	}
 
-	/* Try spawn a new process to replace the error one */
-	if (communicate_error) {
-		strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
-		fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-		if (wrapper_conf) {
-			fcgi_request.deviceid = wrapper_conf->deviceid;
-			fcgi_request.inode = wrapper_conf->inode;
-			fcgi_request.share_grp_id = wrapper_conf->share_group_id;
-		} else {
-			fcgi_request.deviceid = r->finfo.device;
-			fcgi_request.inode = r->finfo.inode;
-			fcgi_request.share_grp_id = 0;
-		}
-
-		procmgr_post_spawn_cmd(&fcgi_request, main_server);
-	}
-
 	apr_brigade_destroy(brigade_stdout);
 	return communicate_error ? HTTP_INTERNAL_SERVER_ERROR : HTTP_OK;
 }
@@ -356,7 +339,7 @@ int bridge_request(request_rec * r, const char *argv0,
 									AP_MODE_READBYTES,
 									APR_BLOCK_READ,
 									HUGE_STRING_LEN)) != APR_SUCCESS) {
-			ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+			ap_log_error(APLOG_MARK, APLOG_INFO, rv,
 						 main_server,
 						 "mod_fcgid: can't get data from http client");
 			apr_brigade_destroy(output_brigade);

@@ -38,20 +38,22 @@ proc_spawn_process(fcgid_proc_info * procinfo, fcgid_procnode * procnode)
 	server_rec *main_server = procinfo->main_server;
 	apr_status_t rv;
 	apr_file_t *file;
-	int omask, retcode, unix_socket;
+	int omask, retcode, unix_socket, i;
 	char **proc_environ;
 	struct sockaddr_un unix_addr;
 	fcgid_wrapper_conf *wrapper_conf;
 	apr_procattr_t *procattr = NULL;
 	char key_name[_POSIX_PATH_MAX];
+	fcgid_ipc ipc_handle;
 	char *dummy;
 	char *argv[2];
-	sigset_t sigs;
 
-	/* Initialize the global variable if necessary */
-	if (!g_inode_cginame_map)
+	/* Initialize the variables */
+	if (!g_inode_cginame_map) {
 		apr_pool_create(&g_inode_cginame_map,
 						procinfo->main_server->process->pconf);
+	}
+
 	if (!g_socket_dir)
 		g_socket_dir = get_socketpath(procinfo->main_server);
 	if (!g_inode_cginame_map || !g_socket_dir) {
@@ -164,12 +166,9 @@ APR_SUCCESS
 		return rv;
 	}
 
-	/* fork and exec now, I have to block SIGTERM during the spawning */
-	sigemptyset(&sigs);
-	sigaddset(&sigs, SIGTERM);
+	/* fork and exec now */
 	wrapper_conf =
 		get_wrapper_info(procinfo->cgipath, procinfo->main_server);
-	sigprocmask(SIG_BLOCK, &sigs, NULL);
 	if (wrapper_conf) {
 		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
 					 "mod_fcgid: call %s with wrapper %s",
@@ -182,7 +181,6 @@ APR_SUCCESS
 							 (const char *const *) argv,
 							 (const char *const *) proc_environ, procattr,
 							 procnode->proc_pool)) != APR_SUCCESS) {
-			sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
 						 "mod_fcgid: can't create wrapper process for %s",
 						 procinfo->cgipath);
@@ -197,16 +195,12 @@ APR_SUCCESS
 							 (const char *const *) argv,
 							 (const char *const *) proc_environ, procattr,
 							 procnode->proc_pool)) != APR_SUCCESS) {
-			sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
 						 "mod_fcgid: can't create process");
 			close(unix_socket);
 			return rv;
 		}
 	}
-
-	/* Unblock the SIGTERM signal now */
-	sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 
 	/* Set the (deviceid, inode) -> fastcgi path map for log */
 	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
@@ -225,7 +219,9 @@ APR_SUCCESS
 								  g_inode_cginame_map);
 	}
 
+	/* Close socket before try to connect to it */
 	close(unix_socket);
+
 	return APR_SUCCESS;
 }
 
@@ -510,10 +506,11 @@ proc_bridge_request(server_rec * main_server,
 			tv.tv_usec = 0;
 			tv.tv_sec = ipc_handle->communation_timeout;
 			retcode = select(unix_socket + 1, &rset, &wset, NULL, &tv);
-			if (retcode < 0 && errno == EINTR)
+			if (retcode <= 0 && (errno == EINTR || errno == EAGAIN))
 				continue;
-			else if (retcode <= 0)
+			else if (retcode <= 0) {
 				return APR_ETIMEDOUT;
+			}
 
 			if (FD_ISSET(unix_socket, &rset)) {
 				if (read_fcgi_header(main_server,
@@ -521,8 +518,12 @@ proc_bridge_request(server_rec * main_server,
 									 &fcgi_header) != APR_SUCCESS
 					|| handle_fcgi_body(main_server, ipc_handle,
 										&fcgi_header, brigade_recv,
-										alloc) != APR_SUCCESS)
+										alloc) != APR_SUCCESS) {
+					ap_log_error(APLOG_MARK, APLOG_INFO,
+								 apr_get_os_error(), main_server,
+								 "mod_fcgid: read from fastcgi server error");
 					return APR_ESPIPE;
+				}
 
 				/* Is it "end request" respond? */
 				if (fcgi_header.type == FCGI_END_REQUEST)
@@ -549,16 +550,17 @@ proc_bridge_request(server_rec * main_server,
 		tv.tv_usec = 0;
 		tv.tv_sec = ipc_handle->communation_timeout;
 		retcode = select(unix_socket + 1, &rset, NULL, NULL, &tv);
-		if (retcode < 0 && errno == EINTR)
+		if (retcode <= 0 && (errno == EINTR || errno == EAGAIN))
 			continue;
-		else if (retcode <= 0)
+		else if (retcode <= 0) {
 			return APR_ETIMEDOUT;
-		else if (retcode == 1) {
+		} else if (retcode == 1) {
 			if (read_fcgi_header(main_server, ipc_handle, &fcgi_header) !=
 				APR_SUCCESS
 				|| handle_fcgi_body(main_server, ipc_handle, &fcgi_header,
-									brigade_recv, alloc) != APR_SUCCESS)
+									brigade_recv, alloc) != APR_SUCCESS) {
 				return APR_ESPIPE;
+			}
 
 			if (fcgi_header.type == FCGI_END_REQUEST)
 				return APR_SUCCESS;
@@ -606,7 +608,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 		diewhy = "busy timeout";
 		break;
 	case FCGID_DIE_CONNECT_ERROR:
-		diewhy = "connect error, server may has exited";
+		diewhy = "connect error";
 		break;
 	case FCGID_DIE_COMM_ERROR:
 		diewhy = "communication error";
@@ -643,15 +645,16 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 		apr_snprintf(signal_info, HUGE_STRING_LEN - 1,
 					 "terminated by calling exit(), return code: %d",
 					 exitcode);
+		diewhy = "server exited";
 	}
 
 	/* Print log now */
 	if (cgipath)
-		ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
+		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
 					 "mod_fcgid: process %s(%d) exit(%s), %s",
 					 cgipath, procnode->proc_id->pid, diewhy, signal_info);
 	else
-		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
+		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
 					 "mod_fcgid: can't get cgi name while exiting, exitcode: %d",
 					 exitcode);
 }

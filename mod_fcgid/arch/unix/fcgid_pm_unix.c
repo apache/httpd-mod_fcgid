@@ -23,8 +23,16 @@ char g_pipelock_name[L_tmpnam];
 
 static int g_nProcIdleTimeOut = 0;
 static int volatile g_caughtSigTerm = 0;
+static pid_t g_pm_pid;
 static void signal_handler(int signo)
 {
+	/* Sanity check, Make sure I am not the subprocess. A subprocess may
+	   get signale after fork() and before execve() */
+	if (getpid() != g_pm_pid) {
+		exit(0);
+		return;
+	}
+
 	if ((signo == SIGTERM) || (signo == SIGUSR1) || (signo == SIGHUP)) {
 		g_caughtSigTerm = 1;
 		/* Tell the world it's time to die */
@@ -129,6 +137,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
 	rv = apr_proc_fork(g_process_manager, configpool);
 	if (rv == APR_INCHILD) {
 		/* I am the child */
+		g_pm_pid = getpid();
 		ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
 					 "mod_fcgid: Process manager %d started", getpid());
 

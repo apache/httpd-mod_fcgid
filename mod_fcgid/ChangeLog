@@ -1,5 +1,8 @@
-version 0.78 ( Jul 25th 2004 )
+version 0.80 ( Jul 27th 2004 )
 1. Duplex channel added, Apache now will get notification once FastCGI process is spawned.
+2. Bug fix. The FastCGI process share the signal handler with PM(Process Manager) process, if 
+	the FastCGI process get signal after fork() and before execve(), it will corrupt the
+	share memory. ( It's a very short interval between fork() and execve(), so this rarely happens )
 
 version 0.77 ( Jul 9th 2004 )
 1. Organize the configuration again
