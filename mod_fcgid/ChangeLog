@@ -3,7 +3,7 @@ version 1.02 ( Oct 1st 2004 )
 	For example, if in the "cgi-bin" directory there are two programs, "a.exe" and "b.exe".  
 	If you go to the URL "http://localhost/cgi-bin/a.exe/defghi" then a.exe will start.
 	Then if you go to the URL "http://localhost/cgi-bin/b.exe/uvwxyz"  the request will be
-	processed by the already running a.exe.
+	processed by the already running a.exe. (Thank rripley at amadvertising.com)
 
 version 1.01 ( Sep 21st 2004 )
 1. More graceful implementation of suEXEC on UNIX. (Thank radek at karnet.pl for the advice)
