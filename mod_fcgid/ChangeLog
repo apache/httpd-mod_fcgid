@@ -1,3 +1,6 @@
+version 0.72 ( Jun 13rd 2004 )
+1. Bug fix. Trim the padding nuls at the end of data. (Thank rick.stewart at theinternetco.net)
+
 version 0.7 ( May 22nd 2004 )
 1. PHP FastCGI Wrapper is supported on UNIX and Windows.
 

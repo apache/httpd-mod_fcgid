@@ -15,7 +15,6 @@
 #include "fcgid_pm.h"
 #include "fcgid_spawn_ctl.h"
 #define SHUTDOWN_EVENT_NAME "_FCGI_SHUTDOWN_EVENT_"
-#define CONTENT_LENGTH_NAME "CONTENT_LENGTH"
 #define FINISH_EVENT_DATA_NAME "finish_event"
 
 /* It's tested on WinNT ONLY, if it work on the other MS platform, let me know */
@@ -99,8 +98,6 @@ proc_spawn_process (fcgid_proc_info * procinfo, fcgid_procnode * procnode)
   /* Pass the finish event id to subprocess */
   apr_table_setn (procinfo->proc_environ, SHUTDOWN_EVENT_NAME,
 		  apr_ltoa (procnode->proc_pool, (long) *finish_event));
-  /* Set CONTENT_LENGTH_NAME make fastcgi server not block on stdin */
-  apr_table_setn (procinfo->proc_environ, CONTENT_LENGTH_NAME, "1");
 
   /* Prepare the listen namedpipe file name */
   apr_snprintf (sock_path, _POSIX_PATH_MAX - 1,
@@ -355,6 +352,7 @@ read_fcgi_header (server_rec * main_server,
   apr_status_t rv;
   fcgid_namedpipe_handle *handle_info;
   handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
+  memset (header, 0, sizeof (*header));
 
   while (has_read < sizeof (*header))
     {
@@ -506,7 +504,7 @@ handle_fcgi_body (server_rec * main_server,
 		|| (content_len == 2 && readbuf[0] == '\r'
 		    && readbuf[1] == '\n') || content_len == 0))
 	    {
-	      ap_log_error (APLOG_MARK, APLOG_WARNING, apr_get_os_error (),
+	      ap_log_error (APLOG_MARK, APLOG_WARNING, 0,
 			    main_server, "mod_fcgid: cgi stderr log: %s",
 			    readbuf);
 	    }
@@ -523,7 +521,9 @@ handle_fcgi_body (server_rec * main_server,
 	{
 	  /* Append the respond to brigade_stdout */
 	  apr_bucket *bucket_stdout = apr_bucket_heap_create (readbuf,
-							      readsize,
+							      readsize -
+							      header->
+							      paddingLength,
 							      apr_bucket_free,
 							      alloc);
 	  if (!bucket_stdout)
@@ -595,6 +595,7 @@ proc_bridge_request (server_rec * main_server,
     while (has_write < write_buf_len)
       {
 	DWORD byteswrite;
+
 	if (WriteFile (handle_info->handle_pipe,
 		       write_buf + has_write,
 		       write_buf_len - has_write,
@@ -614,30 +615,7 @@ proc_bridge_request (server_rec * main_server,
 	    /* 
 	       it's ERROR_IO_PENDING on write
 	     */
-
-	    /* It's IO pending on write,
-	       but if any data I can read from pipe? */
-	    DWORD BytesRead, dwWaitResult;
-	    while (PeekNamedPipe (handle_info->handle_pipe, &fcgi_header,
-				  sizeof (fcgi_header), &BytesRead, NULL,
-				  NULL) && BytesRead == sizeof (fcgi_header))
-	      {
-		/* I get something to read */
-		if (!read_fcgi_header (main_server,
-				       ipc_handle, &fcgi_header)
-		    || !handle_fcgi_body (main_server,
-					  ipc_handle, &fcgi_header,
-					  brigade_recv, alloc))
-		  return APR_ESPIPE;
-
-		/* Is it "end request" respond? */
-		if (fcgi_header.type == FCGI_END_REQUEST)
-		  return APR_SUCCESS;
-	      }
-
-	    /* Now there is nothing to read, so 
-	       let's see the sending data finish or not */
-	    dwWaitResult
+	    DWORD dwWaitResult
 	      = WaitForSingleObject (handle_info->overlap_write.hEvent,
 				     ipc_handle->communation_timeout * 1000);
 	    if (dwWaitResult == WAIT_OBJECT_0)

@@ -23,7 +23,6 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_MAX_CLASS_PROCESS_COUNT 100
 #define DEFAULT_IPC_CONNECT_TIMEOUT 2
 #define DEFAULT_IPC_COMM_TIMEOUT 5
-static struct fcgi_server_info *g_server_info = NULL;
 
 void *
 create_fcgid_config (apr_pool_t * p, server_rec * s)
@@ -47,6 +46,7 @@ create_fcgid_config (apr_pool_t * p, server_rec * s)
   config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
   config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
   config->wrapper_info_hash = apr_hash_make (p);
+  config->server_info = NULL;
   return config;
 }
 
@@ -393,12 +393,12 @@ set_server_config (cmd_parms * cmd, void *dummy, const char *thearg)
 	return apr_psprintf (cmd->pool, "Invalid ServerConfig arg: %s", arg);
     }
 
-  if (!g_server_info)
-    g_server_info = serverinfo;
+  if (!config->server_info)
+    config->server_info = serverinfo;
   else
     {
-      serverinfo->next = g_server_info->next;
-      g_server_info->next = serverinfo;
+      serverinfo->next = config->server_info->next;
+      config->server_info->next = serverinfo;
     }
 
   return NULL;
@@ -415,7 +415,7 @@ get_server_info (server_rec * main_server,
   memset (info, 0, sizeof (*info));
 
   /* Search g_server_info list for a match node */
-  for (matchnode = g_server_info; matchnode != NULL;
+  for (matchnode = config->server_info; matchnode != NULL;
        matchnode = matchnode->next)
     {
       if (matchnode->inode == inode && matchnode->deviceid == deviceid)

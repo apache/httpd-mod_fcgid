@@ -437,7 +437,9 @@ handle_fcgi_body (server_rec * main_server,
 	{
 	  /* Append the respond to brigade_stdout */
 	  apr_bucket *bucket_stdout = apr_bucket_heap_create (readbuf,
-							      readsize,
+							      readsize -
+							      header->
+							      paddingLength,
 							      apr_bucket_free,
 							      alloc);
 	  if (!bucket_stdout)
