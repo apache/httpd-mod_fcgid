@@ -1,0 +1,25 @@
+NOTE: This module is for Apache2 ONLY
+
+UNIX
+It's tested on my RedHat8 box ONLY, but It SHOULD work on other platforms(Solaris for example)
+NOTE: This module MUST run on share memory supported system
+
+1. If your Apache2 installation isn't in /usr/local/apache2, please edit Makefile and correct it
+2. cd $mod_fcgid_dir
+3. make
+4. make install
+5. add the following line in httpd.conf
+
+LoadModule fcgid_module modules/mod_fcgid.so
+ 
+
+Windows
+It's tested on Win2k ONLY, but it SHOULD work on NT4 and above
+
+1. copy mod_fcgid to httpd-2.X.X/modules/
+2. cd httpd-2.X.X/modules/mod_fcgid/
+3. nmake -f Makefile.nt
+4. copy mod_fcgid.so to $Apache_install_path/modules
+5. add the following line in httpd.con
+
+LoadModule fcgid_module modules/mod_fcgid.so
