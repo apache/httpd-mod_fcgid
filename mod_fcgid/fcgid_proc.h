@@ -44,8 +44,6 @@ apr_status_t proc_write_ipc(server_rec * main_server,
 							fcgid_ipc * ipc_handle,
 							apr_bucket_brigade * output_brigade);
 
-apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle);
-
 void proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 						  apr_exit_why_e exitwhy,
 						  server_rec * main_server);

@@ -1,8 +1,12 @@
+version 0.88 ( Sep 3rd 2004 )
+1. Bug fix. File descriptor is closed twice if connect to UNIX domain socket error.
+2. Bug fix. Get server last active time incorrectly.
+
 version 0.87 ( Aug 26th 2004 )
 1. suEXEC supported.
 
 version 0.86 ( Aug 22th 2004 )
-Some major changes for performance. (Hits/Second is 30% greater than the old implement)
+Some major changes for performance. (Hits/Second is 30% greater than the old implementation)
 1. Socket bucket instead of heap bucket. (less memory)
 2. Pass buffer to browser, once the size of buffer exceed 64k bytes. (less memory)
 3. Non-block unix domain socket on UNIX. (better I/O performance)

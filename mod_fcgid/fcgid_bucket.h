@@ -7,6 +7,7 @@ typedef struct fcgid_bucket_ctx_t {
 	fcgid_ipc ipc;
 	apr_bucket *buffer;
 	fcgid_procnode *procnode;
+	apr_time_t active_time;
 	int has_error;
 } fcgid_bucket_ctx;
 

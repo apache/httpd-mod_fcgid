@@ -103,7 +103,7 @@ return_procnode(server_rec * main_server,
 	safe_unlock(main_server);
 }
 
-apr_status_t bucket_ctx_cleanup(void *thectx)
+static apr_status_t bucket_ctx_cleanup(void *thectx)
 {
 	/* Cleanup jobs:
 	   1. Free bucket buffer
@@ -127,14 +127,13 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 		   do the job   
 		 */
 		if (apr_time_sec(apr_time_now()) -
-			apr_time_sec(ctx->procnode->last_active_time) >
-			g_busy_timeout) {
+			apr_time_sec(ctx->active_time) > g_busy_timeout) {
 			/* Do nothing but print log */
 			ap_log_error(APLOG_MARK, APLOG_INFO, 0,
 						 main_server,
 						 "mod_fcgid: process busy timeout, take %d seconds for this request",
 						 apr_time_sec(apr_time_now()) -
-						 apr_time_sec(ctx->procnode->last_active_time));
+						 apr_time_sec(ctx->active_time));
 		} else if (ctx->has_error) {
 			ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
 			return_procnode(main_server, ctx->procnode,
@@ -285,7 +284,6 @@ handle_request(request_rec * r, const char *argv0,
 			if (proc_connect_ipc
 				(r->server, bucket_ctx->procnode,
 				 &bucket_ctx->ipc) != APR_SUCCESS) {
-				proc_close_ipc(&bucket_ctx->ipc);
 				bucket_ctx->procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
 				return_procnode(r->server, bucket_ctx->procnode,
 								1 /* has error */ );
@@ -301,7 +299,8 @@ handle_request(request_rec * r, const char *argv0,
 					 "mod_fcgid: can't apply process slot for %s", argv0);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
-	bucket_ctx->procnode->last_active_time = apr_time_now();
+	bucket_ctx->active_time = bucket_ctx->procnode->last_active_time =
+		apr_time_now();
 
 	/* Write output_brigade to fastcgi server */
 	if ((rv =

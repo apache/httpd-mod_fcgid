@@ -714,9 +714,6 @@ proc_connect_ipc(server_rec * main_server,
 					 main_server,
 					 "mod_fcgid: can't connect unix domain socket: %s",
 					 procnode->socket_path);
-		apr_pool_cleanup_run(ipc_handle->request->pool,
-							 ipc_handle->ipc_handle_info,
-							 ipc_handle_cleanup);
 		return APR_ECONNREFUSED;
 	}
 
@@ -932,16 +929,6 @@ apr_status_t proc_write_ipc(server_rec * main_server,
 	}
 
 	return APR_SUCCESS;
-}
-
-apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle)
-{
-	apr_status_t rv = apr_pool_cleanup_run(ipc_handle->request->pool,
-										   ipc_handle->ipc_handle_info,
-										   ipc_handle_cleanup);
-
-	ipc_handle->ipc_handle_info = NULL;
-	return rv;
 }
 
 void
