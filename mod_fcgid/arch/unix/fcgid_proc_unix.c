@@ -40,10 +40,11 @@ apr_status_t proc_spawn_process(fcgid_proc_info* procinfo,
 	int omask, retcode, unix_socket;
 	char** proc_environ;
     struct sockaddr_un unix_addr;
+	fcgid_wrapper_conf* wrapper_conf;
 	apr_procattr_t *procattr = NULL;
 	char key_name[_POSIX_PATH_MAX];
 	char* dummy;
-	char* argv[2];
+	char* argv[5];
 
 	/* Initialize the global variable if necessary */
 	if( !g_inode_cginame_map )
@@ -144,7 +145,7 @@ apr_status_t proc_spawn_process(fcgid_proc_info* procinfo,
 		|| (rv=apr_procattr_child_out_set(procattr, procinfo->main_server->error_log,
 							NULL))!=APR_SUCCESS
 		|| (rv=apr_procattr_dir_set(procattr,
-				ap_make_dirstr_parent(procnode->proc_pool, unix_addr.sun_path)))!=APR_SUCCESS
+				ap_make_dirstr_parent(procnode->proc_pool, procinfo->cgipath)))!=APR_SUCCESS
 		|| (rv=apr_procattr_cmdtype_set(procattr, APR_PROGRAM))!=APR_SUCCESS
 		|| (rv=apr_os_file_put(&file, &unix_socket, 0, 
 					procnode->proc_pool))!=APR_SUCCESS
@@ -157,15 +158,36 @@ apr_status_t proc_spawn_process(fcgid_proc_info* procinfo,
 	}
 
 	/* fork and exec now */
-	argv[0] = procinfo->cgipath;
-	argv[1] = NULL;
-	if( (rv=apr_proc_create(procnode->proc_id, procinfo->cgipath, (const char * const *)argv, 
-					(const char * const *)proc_environ, procattr, procnode->proc_pool))!=APR_SUCCESS )
+	wrapper_conf = get_wrapper_info(procinfo->cgipath, procinfo->main_server);
+	if( wrapper_conf )
 	{
-		ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
-			"mod_fcgid: can't create process");
-		close(unix_socket);
-		return rv;
+		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
+			"mod_fcgid: call %s with wrapper %s", procinfo->cgipath, wrapper_conf->wrapper_path);
+
+		argv[0] = wrapper_conf->wrapper_path;
+		argv[1] = procinfo->cgipath;
+		argv[2] = NULL;
+		if( (rv=apr_proc_create(procnode->proc_id, wrapper_conf->wrapper_path, (const char * const *)argv, 
+						(const char * const *)proc_environ, procattr, procnode->proc_pool))!=APR_SUCCESS )
+		{
+			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
+				"mod_fcgid: can't create wrapper process for %s", procinfo->cgipath);
+			close(unix_socket);
+			return rv;
+		}
+	}
+	else
+	{
+		argv[0] = procinfo->cgipath;
+		argv[1] = NULL;
+		if( (rv=apr_proc_create(procnode->proc_id, procinfo->cgipath, (const char * const *)argv, 
+						(const char * const *)proc_environ, procattr, procnode->proc_pool))!=APR_SUCCESS )
+		{
+			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
+				"mod_fcgid: can't create process");
+			close(unix_socket);
+			return rv;
+		}
 	}
 
 	/* Set the (deviceid, inode) -> fastcgi path map for log */

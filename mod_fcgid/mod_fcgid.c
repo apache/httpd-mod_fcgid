@@ -228,6 +228,8 @@ static const command_rec fcgid_cmds[] =
 					"Connect timeout to fastcgi server"),
 	AP_INIT_TAKE1("IPCCommTimeout", set_ipc_comm_timeout, NULL, RSRC_CONF,
 					"Communication timeout to fastcgi server"),
+	AP_INIT_TAKE1("FCGIWrapper", set_wrapper_config, NULL, ACCESS_CONF,
+			"The CGI wrapper"),
 	AP_INIT_TAKE12("DefaultInitEnv", add_default_env_vars, NULL, RSRC_CONF, 
 			"an environment variable name and optional value to pass to FastCGI."),
     AP_INIT_RAW_ARGS("ServerConfig", set_server_config, NULL, ACCESS_CONF,

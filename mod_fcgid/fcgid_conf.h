@@ -1,5 +1,6 @@
 #ifndef FCGID_CONF_H
 #define FCGID_CONF_H
+#include "apr_user.h"
 
 struct fcgi_server_info
 {
@@ -11,6 +12,13 @@ struct fcgi_server_info
 	struct fcgi_server_info* next;
 };
 #define LOCAL_MAX_CLASS_NOT_SET -1	/* for max_class_process_count */
+
+#define FCGID_MAX_ID_LEN 128
+typedef struct {
+	char wrapper_path[APR_PATH_MAX];
+	apr_uid_t uid;
+	apr_gid_t gid;
+}fcgid_wrapper_conf;
 
 typedef struct { 
 	int idle_timeout;
@@ -29,6 +37,7 @@ typedef struct {
 	int ipc_connect_timeout;
 	int ipc_comm_timeout;
 	apr_table_t* default_init_env;
+	apr_hash_t* wrapper_info_hash;
 }fcgid_conf;
 
 void* create_fcgid_config(apr_pool_t* p, server_rec* s);
@@ -86,5 +95,8 @@ const char* set_server_config(cmd_parms* cmd, void* dummy, const char* thearg);
 void get_server_info(server_rec* main_server, 
 					 apr_ino_t inode, apr_dev_t deviceid, 
 					 struct fcgi_server_info* info);
+
+const char* set_wrapper_config(cmd_parms* cmd, void* dummy, const char* arg);
+fcgid_wrapper_conf* get_wrapper_info(const char* cgipath, server_rec* s);
 
 #endif

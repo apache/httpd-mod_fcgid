@@ -1,7 +1,7 @@
 NOTE: This module is for Apache2 ONLY
 
 UNIX
-It's tested on my RedHat8 box ONLY, but It SHOULD work on other platforms(Solaris for example)
+It's tested on my RedHat8 and Solaris. But it should work on other *NIX platform.
 NOTE: This module MUST run on share memory supported system
 
 1. If your Apache2 installation isn't in /usr/local/apache2, please edit Makefile and correct it

@@ -1,6 +1,7 @@
 #include "ap_config.h"
 #include "ap_mmn.h"
 #include "apr_strings.h"
+#include "http_main.h"
 #include "httpd.h"
 #include "http_config.h"
 #include "fcgid_global.h"
@@ -43,6 +44,7 @@ void* create_fcgid_config(apr_pool_t* p, server_rec* s)
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
 	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
 	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
+	config->wrapper_info_hash = apr_hash_make(p);
     return config;
 }
 
@@ -268,6 +270,17 @@ const char* add_default_env_vars(cmd_parms* cmd, void* dummy,
 	return NULL;
 }
 
+static int match_parent(const ap_directive_t* dirp, const char* what)
+{
+	while (dirp->parent != NULL) 
+	{
+		dirp = dirp->parent;
+		if (strcasecmp(dirp->directive, what) == 0)
+			return 1;
+	}
+	return 0;
+}
+
 const char* set_server_config(cmd_parms* cmd, void* dummy, const char* thearg)
 {
 	fcgid_conf* config = ap_get_module_config(cmd->server->module_config, 
@@ -275,17 +288,21 @@ const char* set_server_config(cmd_parms* cmd, void* dummy, const char* thearg)
     const char* args = thearg;
     char* filename = ap_getword_conf(cmd->pool, &args);
 	char filepath[APR_PATH_MAX];
+	char* tmpfilename = NULL;
 	apr_status_t rv;
     apr_finfo_t finfo;
 	const char* arg;
 	struct fcgi_server_info* serverinfo;
 
-	/* Is it in <Location> section? */
-	if( (arg=ap_check_cmd_context(cmd, NOT_IN_LOCATION)) )
+	/* Get the file path */
+	if( (arg=ap_check_cmd_context(cmd, NOT_IN_FILES|NOT_IN_LOCATION)) )
 		return arg;
 
-	/* Get the file path */
-	apr_snprintf(filepath, APR_PATH_MAX-1, "%s/%s", cmd->path, filename);
+	if( (rv=apr_filepath_merge(&tmpfilename, cmd->path, filename,
+					APR_FILEPATH_NOTRELATIVE, cmd->temp_pool))!=APR_SUCCESS )
+		return "Can't merge file path";
+	apr_snprintf(filepath, APR_PATH_MAX-1, "%s", tmpfilename);
+	filepath[APR_PATH_MAX-1] = '\0';
 
 	/* Get file device id and inode */
 	if( (rv=apr_lstat(&finfo, filepath, APR_FINFO_INODE|APR_FINFO_DEV,
@@ -412,4 +429,69 @@ void get_server_info(server_rec* main_server,
 		info->max_class_process_count = matchnode->max_class_process_count;
 		info->init_env = matchnode->init_env;
 	}
+}
+
+static server_rec* g_server;
+const char* set_wrapper_config(cmd_parms* cmd, void* dummy, const char* arg)
+{
+	apr_status_t rv;
+	apr_finfo_t finfo;
+	const char* checkarg;
+	char dirpath[APR_PATH_MAX];
+	struct fcgi_server_info* serverinfo;
+	fcgid_wrapper_conf* wrapper = NULL;
+    fcgid_conf* config;
+	
+	if( (checkarg=ap_check_cmd_context(cmd, NOT_IN_FILES|NOT_IN_LOCATION)) )
+		return checkarg;
+
+    config = ap_get_module_config(cmd->server->module_config, &fcgid_module);
+
+	/* Get the file path */
+	apr_snprintf(dirpath, APR_PATH_MAX-1, "%s", cmd->path);
+	dirpath[APR_PATH_MAX-1] = '\0';
+
+	/* Append the missing '/' */
+	if( dirpath[strlen(dirpath)-1]!='/' && strlen(dirpath)<APR_PATH_MAX-1 )
+		strcat(dirpath, "/");
+                
+	/* Create the wrapper node */
+	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
+	if( !wrapper )
+		return "Can't alloc memory for wrapper";
+	strncpy(wrapper->wrapper_path, arg, APR_PATH_MAX-1);
+	wrapper->wrapper_path[APR_PATH_MAX-1] = '\0';
+
+	/* Is the wrapper exist? */
+	if( (rv=apr_lstat(&finfo, wrapper->wrapper_path, APR_FINFO_NORM,
+					cmd->temp_pool))!=APR_SUCCESS )
+	{
+		return apr_psprintf(cmd->pool, 
+				"can't get fastcgi file info: %s, errno: %d",
+				wrapper->wrapper_path, apr_get_os_error());
+	}
+
+	/* Add the node now */
+	apr_hash_set(config->wrapper_info_hash, apr_psprintf(cmd->pool, "%s", dirpath), strlen(dirpath), wrapper);
+
+    return NULL;
+}
+
+fcgid_wrapper_conf* get_wrapper_info(const char* cgipath, server_rec* s)
+{
+    fcgid_conf* config = ap_get_module_config(s->module_config, &fcgid_module);
+	char directory[APR_PATH_MAX+1];
+	char* last_slash;
+
+	/* Get directory from cgi path */
+	strncpy(directory, cgipath, APR_PATH_MAX);
+	directory[APR_PATH_MAX] = '\0';
+	last_slash = ap_strrchr_c(directory, '/');
+	if( last_slash==NULL )
+		return NULL;
+	last_slash++;
+	*last_slash = '\0';
+
+	/* Get wrapper info now */
+	return apr_hash_get(config->wrapper_info_hash, directory, strlen(directory));
 }
