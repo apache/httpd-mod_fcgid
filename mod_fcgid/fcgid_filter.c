@@ -3,6 +3,7 @@
 #include "http_log.h"
 #include "fcgid_filter.h"
 #include "fcgid_bucket.h"
+#include "fcgid_conf.h"
 static int g_hasinit = 0;
 static int g_buffsize = 0;
 
@@ -10,7 +11,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 {
 	apr_status_t rv;
 	apr_bucket_brigade *tmp_brigade;
-	apr_size_t save_size = 0;
+	int save_size = 0;
 	conn_rec *c = f->c;
 	server_rec *main_server = f->r->server;
 
