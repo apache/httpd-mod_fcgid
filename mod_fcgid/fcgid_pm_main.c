@@ -397,6 +397,8 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	procnode->deviceid = command->deviceid;
 	procnode->inode = command->inode;
 	procnode->share_grp_id = command->share_grp_id;
+	procnode->uid = command->uid;
+	procnode->gid = command->gid;
 	procnode->start_time = procnode->last_active_time = apr_time_now();
 	procnode->diewhy = FCGID_DIE_KILLSELF;
 	procnode->proc_pool = NULL;

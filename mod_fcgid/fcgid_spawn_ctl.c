@@ -6,6 +6,8 @@
 struct fcgid_stat_node {
 	apr_ino_t inode;
 	dev_t deviceid;
+	uid_t uid;
+	gid_t gid;
 	apr_size_t share_grp_id;
 	int score;
 	int process_counter;
@@ -37,7 +39,9 @@ register_life_death(server_rec * main_server,
 		 current_node != NULL; current_node = current_node->next) {
 		if (current_node->inode == procnode->inode
 			&& current_node->deviceid == procnode->deviceid
-			&& current_node->share_grp_id == procnode->share_grp_id)
+			&& current_node->share_grp_id == procnode->share_grp_id
+			&& current_node->uid == procnode->uid
+			&& current_node->gid == procnode->gid )
 			break;
 		previous_node = current_node;
 	}
@@ -74,6 +78,8 @@ register_life_death(server_rec * main_server,
 		current_node->deviceid = procnode->deviceid;
 		current_node->inode = procnode->inode;
 		current_node->share_grp_id = procnode->share_grp_id;
+		current_node->uid = procnode->uid;
+		current_node->gid = procnode->gid;
 		current_node->last_stat_time = apr_time_now();
 		current_node->score = 0;
 		current_node->process_counter = 1;
@@ -140,7 +146,9 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 		 current_node != NULL; current_node = current_node->next) {
 		if (current_node->inode == command->inode
 			&& current_node->deviceid == command->deviceid
-			&& current_node->share_grp_id == command->share_grp_id)
+			&& current_node->share_grp_id == command->share_grp_id
+			&& current_node->uid == command->uid
+			&& current_node->gid == command->gid )
 			break;
 	}
 

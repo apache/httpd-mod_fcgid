@@ -12,6 +12,7 @@ typedef struct {
 	int userdir;				/* For suEXEC */
 } fcgid_command;
 
+void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r, const char* argv0, dev_t deviceid, apr_ino_t inode, apr_size_t share_grp_id);
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 									request_rec * r);
 apr_status_t procmgr_peek_cmd(fcgid_command * command,

@@ -21,15 +21,17 @@ static int g_busy_timeout;
 static int g_connect_timeout;
 static int g_comm_timeout;
 
-static fcgid_procnode *apply_free_procnode(server_rec * main_server,
-										   apr_ino_t inode,
-										   apr_dev_t deviceid,
-										   apr_size_t share_grp_id)
+static fcgid_procnode *apply_free_procnode(server_rec * main_server, fcgid_command * command)
 {
 	/* Scan idle list, find a node match inode, deviceid and groupid
 	   If there is no one there, return NULL */
 	fcgid_procnode *previous_node, *current_node, *next_node;
 	fcgid_procnode *busy_list_header, *proc_table;
+	apr_ino_t inode = command->inode;
+	apr_dev_t deviceid = command->deviceid;
+	uid_t uid = command->uid;
+	gid_t gid = command->gid;
+	apr_size_t share_grp_id = command->share_grp_id;
 
 	proc_table = proctable_get_table_array();
 	previous_node = proctable_get_idle_list();
@@ -42,7 +44,9 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
 
 		if (current_node->inode == inode
 			&& current_node->deviceid == deviceid
-			&& current_node->share_grp_id == share_grp_id) {
+			&& current_node->share_grp_id == share_grp_id
+			&& current_node->uid == uid
+			&& current_node->gid == gid) {
 			/* Unlink from idle list */
 			previous_node->next_index = current_node->next_index;
 
@@ -254,27 +258,16 @@ handle_request(request_rec * r, const char *argv0,
 			apr_size_t shareid =
 				wrapper_conf ? wrapper_conf->share_group_id : 0;
 
+			/* Init spawn request */
+			procmgr_init_spawn_cmd(&fcgi_request, r, argv0, deviceid, inode, shareid);
+
+			/* Apply a process slot */
 			bucket_ctx->procnode =
-				apply_free_procnode(r->server, inode, deviceid, shareid);
+				apply_free_procnode(r->server, &fcgi_request);
 			if (bucket_ctx->procnode)
 				break;
 
-			/* Send a spawn request and wait a second if I can't apply one */
-			strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
-			fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-			fcgi_request.uid = (uid_t) - 1;
-			fcgi_request.gid = (gid_t) - 1;
-			fcgi_request.userdir = 0;
-			if (wrapper_conf) {
-				fcgi_request.deviceid = wrapper_conf->deviceid;
-				fcgi_request.inode = wrapper_conf->inode;
-				fcgi_request.share_grp_id = wrapper_conf->share_group_id;
-			} else {
-				fcgi_request.deviceid = r->finfo.device;
-				fcgi_request.inode = r->finfo.inode;
-				fcgi_request.share_grp_id = 0;
-			}
-
+			/* Send a spawn request if I can't get a process slot */
 			procmgr_post_spawn_cmd(&fcgi_request, r);
 
 			/* Is it stopping? */

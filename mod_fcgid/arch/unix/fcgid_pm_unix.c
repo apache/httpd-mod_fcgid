@@ -323,6 +323,29 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 	return create_process_manager(main_server, configpool);
 }
 
+void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r, const char* argv0, dev_t deviceid, apr_ino_t inode, apr_size_t share_grp_id)
+{
+	/* suEXEC check */
+	ap_unix_identity_t *ugid;
+	if ((ugid = ap_run_get_suexec_identity(r))) {
+		command->uid = ugid->uid;
+		command->gid = ugid->gid;
+		command->userdir = ugid->userdir;
+	}
+	else
+	{
+		command->uid = (uid_t) - 1;
+		command->gid = (gid_t) - 1;
+		command->userdir = 0;
+	}
+
+	strncpy(command->cgipath, argv0, _POSIX_PATH_MAX);
+	command->cgipath[_POSIX_PATH_MAX - 1] = '\0';
+	command->deviceid = deviceid;
+	command->inode = inode;
+	command->share_grp_id = share_grp_id;
+}
+
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 									request_rec * r)
 {
@@ -337,13 +360,6 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 	/* Sanity check first */
 	if (g_caughtSigTerm || !g_ap_write_pipe)
 		return APR_SUCCESS;
-
-	/* suEXEC check */
-	if ((ugid = ap_run_get_suexec_identity(r))) {
-		command->uid = ugid->uid;
-		command->gid = ugid->gid;
-		command->userdir = ugid->userdir;
-	}
 
 	/* Get the global mutex before posting the request */
 	if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {
