@@ -41,7 +41,7 @@ register_life_death(server_rec * main_server,
 			&& current_node->deviceid == procnode->deviceid
 			&& current_node->share_grp_id == procnode->share_grp_id
 			&& current_node->uid == procnode->uid
-			&& current_node->gid == procnode->gid )
+			&& current_node->gid == procnode->gid)
 			break;
 		previous_node = current_node;
 	}
@@ -148,7 +148,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 			&& current_node->deviceid == command->deviceid
 			&& current_node->share_grp_id == command->share_grp_id
 			&& current_node->uid == command->uid
-			&& current_node->gid == command->gid )
+			&& current_node->gid == command->gid)
 			break;
 	}
 

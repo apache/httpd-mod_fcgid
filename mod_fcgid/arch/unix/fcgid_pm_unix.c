@@ -323,17 +323,18 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 	return create_process_manager(main_server, configpool);
 }
 
-void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r, const char* argv0, dev_t deviceid, apr_ino_t inode, apr_size_t share_grp_id)
+void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
+							const char *argv0, dev_t deviceid,
+							apr_ino_t inode, apr_size_t share_grp_id)
 {
 	/* suEXEC check */
 	ap_unix_identity_t *ugid;
+
 	if ((ugid = ap_run_get_suexec_identity(r))) {
 		command->uid = ugid->uid;
 		command->gid = ugid->gid;
 		command->userdir = ugid->userdir;
-	}
-	else
-	{
+	} else {
 		command->uid = (uid_t) - 1;
 		command->gid = (gid_t) - 1;
 		command->userdir = 0;

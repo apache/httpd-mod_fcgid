@@ -21,7 +21,8 @@ static int g_busy_timeout;
 static int g_connect_timeout;
 static int g_comm_timeout;
 
-static fcgid_procnode *apply_free_procnode(server_rec * main_server, fcgid_command * command)
+static fcgid_procnode *apply_free_procnode(server_rec * main_server,
+										   fcgid_command * command)
 {
 	/* Scan idle list, find a node match inode, deviceid and groupid
 	   If there is no one there, return NULL */
@@ -45,8 +46,7 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server, fcgid_comma
 		if (current_node->inode == inode
 			&& current_node->deviceid == deviceid
 			&& current_node->share_grp_id == share_grp_id
-			&& current_node->uid == uid
-			&& current_node->gid == gid) {
+			&& current_node->uid == uid && current_node->gid == gid) {
 			/* Unlink from idle list */
 			previous_node->next_index = current_node->next_index;
 
@@ -259,7 +259,8 @@ handle_request(request_rec * r, const char *argv0,
 				wrapper_conf ? wrapper_conf->share_group_id : 0;
 
 			/* Init spawn request */
-			procmgr_init_spawn_cmd(&fcgi_request, r, argv0, deviceid, inode, shareid);
+			procmgr_init_spawn_cmd(&fcgi_request, r, argv0, deviceid,
+								   inode, shareid);
 
 			/* Apply a process slot */
 			bucket_ctx->procnode =
