@@ -54,6 +54,8 @@ CLEAN :
 	-@erase "$(INTDIR)\fcgid_pm_win.obj"
 	-@erase "$(INTDIR)\fcgid_proc_win.obj"
 	-@erase "$(INTDIR)\fcgid_proctbl_win.obj"
+	-@erase "$(INTDIR)\fcgid_bucket.obj"
+	-@erase "$(INTDIR)\fcgid_filter.obj"
 	-@erase "$(INTDIR)\fcgid_protocol.obj"
 	-@erase "$(INTDIR)\fcgid_spawn_ctl.obj"
 	-@erase "$(INTDIR)\mod_fcgid.obj"
@@ -113,7 +115,9 @@ LINK32=link.exe
 LINK32_FLAGS=kernel32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_fcgid.pdb" /debug /machine:I386 /out:"$(OUTDIR)\mod_fcgid.so" /implib:"$(OUTDIR)\mod_fcgid.lib" /base:@..\..\os\win32\BaseAddr.ref,mod_fcgid.so /opt:ref 
 LINK32_OBJS= \
 	"$(INTDIR)\fcgid_bridge.obj" \
+	"$(INTDIR)\fcgid_bucket.obj" \
 	"$(INTDIR)\fcgid_conf.obj" \
+	"$(INTDIR)\fcgid_filter.obj" \
 	"$(INTDIR)\fcgid_pm_main.obj" \
 	"$(INTDIR)\fcgid_pm_win.obj" \
 	"$(INTDIR)\fcgid_proc_win.obj" \
@@ -152,6 +156,8 @@ CLEAN :"libapr - Win32 DebugCLEAN" "libaprutil - Win32 DebugCLEAN" "libhttpd - W
 CLEAN :
 !ENDIF 
 	-@erase "$(INTDIR)\fcgid_bridge.obj"
+	-@erase "$(INTDIR)\fcgid_bucket.obj"
+	-@erase "$(INTDIR)\fcgid_filter.obj"
 	-@erase "$(INTDIR)\fcgid_conf.obj"
 	-@erase "$(INTDIR)\fcgid_pm_main.obj"
 	-@erase "$(INTDIR)\fcgid_pm_win.obj"
@@ -216,7 +222,9 @@ LINK32=link.exe
 LINK32_FLAGS=kernel32.lib User32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\mod_fcgid.pdb" /debug /machine:I386 /out:"g:/apache2/modules/mod_fcgid.so" /implib:"$(OUTDIR)\mod_fcgid.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\fcgid_bridge.obj" \
+	"$(INTDIR)\fcgid_bucket.obj" \
 	"$(INTDIR)\fcgid_conf.obj" \
+	"$(INTDIR)\fcgid_filter.obj" \
 	"$(INTDIR)\fcgid_pm_main.obj" \
 	"$(INTDIR)\fcgid_pm_win.obj" \
 	"$(INTDIR)\fcgid_proc_win.obj" \
@@ -368,6 +376,13 @@ SOURCE=.\fcgid_spawn_ctl.c
 
 "$(INTDIR)\fcgid_spawn_ctl.obj" : $(SOURCE) "$(INTDIR)"
 
+SOURCE=.\fcgid_bucket.c
+
+"$(INTDIR)\fcgid_bucket.obj" : $(SOURCE) "$(INTDIR)"
+
+SOURCE=.\fcgid_filter.c
+
+"$(INTDIR)\fcgid_filter.obj" : $(SOURCE) "$(INTDIR)"
 
 SOURCE=.\mod_fcgid.c
 
