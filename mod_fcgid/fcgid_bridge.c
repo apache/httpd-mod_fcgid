@@ -22,9 +22,10 @@ static int g_comm_timeout;
 
 static fcgid_procnode *apply_free_procnode(server_rec * main_server,
 										   apr_ino_t inode,
-										   apr_dev_t deviceid)
+										   apr_dev_t deviceid,
+										   apr_size_t share_grp_id)
 {
-	/* Scan idle list, find a node match inode and deviceid 
+	/* Scan idle list, find a node match inode, deviceid and groupid
 	   If there is no one there, return NULL */
 	fcgid_procnode *previous_node, *current_node, *next_node;
 	fcgid_procnode *busy_list_header, *proc_table;
@@ -39,7 +40,8 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
 		next_node = &proc_table[current_node->next_index];
 
 		if (current_node->inode == inode
-			&& current_node->deviceid == deviceid) {
+			&& current_node->deviceid == deviceid
+			&& current_node->share_grp_id == share_grp_id) {
 			/* Unlink from idle list */
 			previous_node->next_index = current_node->next_index;
 
@@ -124,27 +126,29 @@ bridge_request_once(request_rec * r, const char *argv0,
 	/* Apply a free process slot, send a spawn request if I can't get one */
 	for (i = 0; i < FCGID_APPLY_TRY_COUNT; i++) {
 		int mpm_state = 0;
+		apr_ino_t inode =
+			wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
+		apr_dev_t deviceid =
+			wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
+		apr_size_t shareid =
+			wrapper_conf ? wrapper_conf->share_group_id : 0;
 
-		procnode = apply_free_procnode(r->server,
-									   wrapper_conf
-									   && wrapper_conf->
-									   shareable ? wrapper_conf->
-									   inode : r->finfo.inode, wrapper_conf
-									   && wrapper_conf->
-									   shareable ? wrapper_conf->
-									   deviceid : r->finfo.device);
+		procnode =
+			apply_free_procnode(r->server, inode, deviceid, shareid);
 		if (procnode)
 			break;
 
-		/* Send a spawn request and wait a second */
+		/* Send a spawn request and wait a second if I can't apply one */
 		strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
 		fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-		if (wrapper_conf && wrapper_conf->shareable) {
+		if (wrapper_conf) {
 			fcgi_request.deviceid = wrapper_conf->deviceid;
 			fcgi_request.inode = wrapper_conf->inode;
+			fcgi_request.share_grp_id = wrapper_conf->share_group_id;
 		} else {
 			fcgi_request.deviceid = r->finfo.device;
 			fcgi_request.inode = r->finfo.inode;
+			fcgi_request.share_grp_id = 0;
 		}
 
 		procmgr_post_spawn_cmd(&fcgi_request);
@@ -281,12 +285,14 @@ bridge_request_once(request_rec * r, const char *argv0,
 	if (communicate_error) {
 		strncpy(fcgi_request.cgipath, argv0, _POSIX_PATH_MAX);
 		fcgi_request.cgipath[_POSIX_PATH_MAX - 1] = '\0';
-		if (wrapper_conf && wrapper_conf->shareable) {
+		if (wrapper_conf) {
 			fcgi_request.deviceid = wrapper_conf->deviceid;
 			fcgi_request.inode = wrapper_conf->inode;
+			fcgi_request.share_grp_id = wrapper_conf->share_group_id;
 		} else {
 			fcgi_request.deviceid = r->finfo.device;
 			fcgi_request.inode = r->finfo.inode;
+			fcgi_request.share_grp_id = 0;
 		}
 
 		procmgr_post_spawn_cmd(&fcgi_request);

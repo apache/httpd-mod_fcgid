@@ -47,8 +47,6 @@ void *create_fcgid_config(apr_pool_t * p, server_rec * s)
 	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
 	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
 	config->wrapper_info_hash = apr_hash_make(p);
-	config->overlay_server_info =
-		apr_array_make(p, 20, sizeof(struct fcgi_server_info *));
 	return config;
 }
 
@@ -321,165 +319,15 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
 	return NULL;
 }
 
-static int match_parent(const ap_directive_t * dirp, const char *what)
+apr_table_t *get_default_env_vars(server_rec * s)
 {
-	while (dirp->parent != NULL) {
-		dirp = dirp->parent;
-		if (strcasecmp(dirp->directive, what) == 0)
-			return 1;
-	}
-	return 0;
+	fcgid_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config->default_init_env;
 }
 
-const char *set_server_config(cmd_parms * cmd, void *dummy,
-							  const char *thearg)
-{
-	fcgid_conf *config = ap_get_module_config(cmd->server->module_config,
-											  &fcgid_module);
-	const char *args = thearg;
-	char *filename = ap_getword_conf(cmd->pool, &args);
-	char filepath[APR_PATH_MAX];
-	char *tmpfilename = NULL;
-	apr_status_t rv;
-	apr_finfo_t finfo;
-	const char *arg;
-	struct fcgi_server_info *serverinfo;
-	struct fcgi_server_info **array_header;
-
-	/* Get the file path */
-	if ((arg = ap_check_cmd_context(cmd, NOT_IN_FILES | NOT_IN_LOCATION)))
-		return arg;
-
-	if ((rv = apr_filepath_merge(&tmpfilename, cmd->path, filename,
-								 APR_FILEPATH_NOTRELATIVE,
-								 cmd->temp_pool)) != APR_SUCCESS)
-		return "Can't merge file path";
-	apr_snprintf(filepath, APR_PATH_MAX - 1, "%s", tmpfilename);
-	filepath[APR_PATH_MAX - 1] = '\0';
-
-	/* Get file device id and inode */
-	if ((rv = apr_stat(&finfo, filepath, APR_FINFO_INODE | APR_FINFO_DEV,
-					   cmd->temp_pool)) != APR_SUCCESS) {
-		return apr_psprintf(cmd->pool,
-							"can't get fastcgi file info: %s, errno: %d",
-							filepath, apr_get_os_error());
-	}
-
-	/* Sanity check */
-	if (*args == '\0')
-		return "ServerConfig requires an argument";
-
-	serverinfo = apr_pcalloc(cmd->server->process->pconf,
-							 sizeof(*serverinfo));
-	if (!serverinfo)
-		return "can't alloc memory for serverinfo";
-	serverinfo->has_merge = 0;
-	serverinfo->deviceid = finfo.device;
-	serverinfo->inode = finfo.inode;
-	serverinfo->init_env = apr_table_make(cmd->server->process->pconf, 10);
-	serverinfo->max_class_process_count = LOCAL_MAX_CLASS_NOT_SET;
-
-	while (1) {
-		arg = ap_getword_conf(cmd->pool, &args);
-		if (!arg)
-			break;
-		if (*arg == '\0')
-			break;
-
-		if (apr_strnatcasecmp(arg, "-initenv") == 0) {
-			char *value = NULL;
-			char *key = ap_getword_conf(cmd->pool, &args);
-
-			if (*key) {
-				value = ap_getword_conf(cmd->pool, &args);
-				apr_table_set(serverinfo->init_env, key,
-							  value ? value : "");
-			}
-		} else if (apr_strnatcasecmp(arg, "-MaxClassProcessCount") == 0) {
-			char *value = ap_getword_conf(cmd->pool, &args);
-
-			serverinfo->max_class_process_count = atoi(value);
-			if (serverinfo->max_class_process_count <= 0)
-				return "-MaxClassProcessCount must be positive number";
-		} else
-			return apr_psprintf(cmd->pool, "Invalid ServerConfig arg: %s",
-								arg);
-	}
-
-	array_header =
-		(struct fcgi_server_info **) apr_array_push(config->
-													overlay_server_info);
-	*array_header = serverinfo;
-	return NULL;
-}
-
-void
-get_server_info(server_rec * main_server,
-				apr_ino_t inode, apr_dev_t deviceid,
-				struct fcgi_server_info *info)
-{
-	fcgid_conf *config = ap_get_module_config(main_server->module_config,
-											  &fcgid_module);
-
-	struct fcgi_server_info **ents =
-		(struct fcgi_server_info **) config->overlay_server_info->elts;
-	struct fcgi_server_info *matchnode = NULL;
-	int i;
-
-	memset(info, 0, sizeof(*info));
-
-	/* Search g_server_info list for a match node */
-	for (i = 0; i < config->overlay_server_info->nelts; i++) {
-		if (ents[i]->inode == inode && ents[i]->deviceid == deviceid) {
-			matchnode = ents[i];
-			break;
-		}
-	}
-
-	if (!matchnode) {
-		/* It's not set in ServerConfig, use default values */
-		info->init_env = config->default_init_env;
-		info->max_class_process_count =
-			config->default_max_class_process_count;
-		return;
-	} else {
-		/* 
-		   Find a match node
-		   merge it with default valuse if necessary
-		 */
-		if (!matchnode->has_merge) {
-			/* Merge environment variables */
-			const apr_array_header_t *barr =
-				apr_table_elts(config->default_init_env);
-			apr_table_entry_t *belt = (apr_table_entry_t *) barr->elts;
-			int i;
-
-			for (i = 0; i < barr->nelts; ++i) {
-				/* Add any variables not exist in matchnode->init_env */
-				if (!apr_table_get(matchnode->init_env, belt[i].key))
-					apr_table_set(matchnode->init_env, belt[i].key,
-								  belt[i].val);
-			}
-
-			/* Merge max class process count */
-			if (matchnode->max_class_process_count ==
-				LOCAL_MAX_CLASS_NOT_SET)
-				matchnode->max_class_process_count =
-					config->default_max_class_process_count;
-
-			/* Merge finished */
-			matchnode->has_merge = 1;
-		}
-
-		info->max_class_process_count = matchnode->max_class_process_count;
-		info->init_env = matchnode->init_env;
-	}
-}
-
-static server_rec *g_server;
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
-							   const char *wrapperpath,
-							   const char *wrappedpath)
+							   const char *wrapperpath)
 {
 	apr_status_t rv;
 	apr_finfo_t finfo;
@@ -523,22 +371,89 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 							wrapper->wrapper_path, apr_get_os_error());
 	}
 
-	/* Set inode & device id */
+	/* Set inode, device id & shareid */
 	wrapper->inode = finfo.inode;
 	wrapper->deviceid = finfo.device;
-
-	/* Is wrapped file path specified? */
-	if (wrappedpath) {
-		wrapper->shareable = 0;
-		hashkey = apr_psprintf(cmd->pool, "%s%s", dirpath, wrappedpath);
-	} else {
-		wrapper->shareable = 1;
-		hashkey = apr_psprintf(cmd->pool, "%s", dirpath);
-	}
+	wrapper->share_group_id = (apr_size_t) - 1;
 
 	/* Add the node now */
+	hashkey = apr_psprintf(cmd->pool, "%s", dirpath);
 	apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
 				 wrapper);
+
+	return NULL;
+}
+
+const char *set_wrappergrp_config(cmd_parms * cmd, void *dummy,
+								  const char *thearg)
+{
+	fcgid_conf *config = ap_get_module_config(cmd->server->module_config,
+											  &fcgid_module);
+	const char *args = thearg;
+	char *wrapperpath, *thisdir;
+	apr_status_t rv;
+	apr_finfo_t finfo;
+	const char *arg;
+	apr_size_t share_group_id;
+
+	/* Get the file path */
+	if ((arg = ap_check_cmd_context(cmd, NOT_IN_FILES | NOT_IN_LOCATION)))
+		return arg;
+
+	/* Sanity check */
+	if (*args == '\0')
+		return "ServerConfig requires an argument";
+
+	/* Append the missing '/' */
+	if ((rv = apr_filepath_merge(&thisdir, cmd->path, "",
+								 APR_FILEPATH_NOTRELATIVE,
+								 cmd->temp_pool)) != APR_SUCCESS)
+		return "Can't merge file path";
+
+	/* Get the wrapper file path */
+	arg = ap_getword_conf(cmd->pool, &args);
+	if ((rv = apr_filepath_merge(&wrapperpath, cmd->path, arg,
+								 APR_FILEPATH_NOTRELATIVE,
+								 cmd->temp_pool)) != APR_SUCCESS)
+		return "Can't merge wrapper file path";
+
+	/* Get the wrapper device id and inode */
+	if ((rv =
+		 apr_stat(&finfo, wrapperpath, APR_FINFO_INODE | APR_FINFO_DEV,
+				  cmd->temp_pool)) != APR_SUCCESS) {
+		return apr_psprintf(cmd->pool,
+							"can't get fastcgi wrapper file info: %s, errno: %d",
+							wrapperpath, apr_get_os_error());
+	}
+
+	/* Now insert the node which share this wrapper */
+	share_group_id = apr_hash_count(config->wrapper_info_hash);
+	while (1) {
+		fcgid_wrapper_conf *wrapper;
+		char *hashkey;
+
+		arg = ap_getword_conf(cmd->pool, &args);
+		if (!arg)
+			break;
+		if (*arg == '\0')
+			break;
+
+		/* Create wrapper node */
+		wrapper =
+			apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
+		if (!wrapper)
+			return "Can't alloc memory for wrapper";
+		strncpy(wrapper->wrapper_path, wrapperpath, APR_PATH_MAX - 1);
+		wrapper->wrapper_path[APR_PATH_MAX - 1] = '\0';
+		wrapper->inode = finfo.inode;
+		wrapper->deviceid = finfo.device;
+		wrapper->share_group_id = share_group_id;
+
+		/* Add the node now */
+		hashkey = apr_psprintf(cmd->pool, "%s%s", thisdir, arg);
+		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
+					 wrapper);
+	}
 
 	return NULL;
 }

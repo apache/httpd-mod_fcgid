@@ -1,29 +1,14 @@
+version 0.77 ( Jul 9th 2004 )
+1. Organize the configuration again
+	1) add "FCGIWrapperGroup" setting
+	2) "FCGIWrapper" now takes only one argument
+	3) remove "ServerConfig" setting, because it't not work with wrapper yet
+Please visit http://fastcgi.coremail.cn/doc.htm for more information about configuration
+
 version 0.76 ( Jul 6th 2004 )
 1. Code fix. Replace the depreciated BRIGADE_FOREACH macro, which compile against httpd 2.1-Dev.
 	(Patch by Paul Querna(chip at force-elite.com))
 2. PHP FastCGI Wrapper now can be run both with "share" and "non-share" mode.
-	For example: there are three PHP script: foo.php, bar.php, database.php. foo.php and bar.php
-are simple scripts that do not connect to database, but database.php do.
-	In "share" mode, there is only one type of PHP fastcgi process, all .php script will be run with any free fastcgi process, 
-so, once database.php is called, the php fastcgi process will be "polluted", and a database connection will
-be keep by this fastcgi php process.
-	If all .php is running with "non-share" mode, all .php script will be run separately, that mean there
-will have three types of fastcgi php process, one for foo.php, one for bar.php, and one for database.php. i
-This will spawn unnecessary php process because foo.php and bar.php should share the php process.
-
-	Now you can override this dilemma with the following configuration:
-<Directory "G:/Apache2/htdocs/php">
-    SetHandler fcgid-script
-    Options execCGI
-    AllowOverride None
-    Order allow,deny
-    Allow from all
-    FCGIWrapper "c:/php/php.exe"
-    FCGIWrapper "c:/php/php.exe" database.php
-</Directory>
-	
-	"share" mode is default, but you can overwrite it with the second FCGIWrapper configuration line.
-
 
 version 0.74 ( Jun 23rd 2004 )
 1. Bug fix. Ignore script checking while running in Win32 PHP wrapper mode.

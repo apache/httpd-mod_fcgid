@@ -6,6 +6,7 @@
 struct fcgid_stat_node {
 	apr_ino_t inode;
 	dev_t deviceid;
+	apr_size_t share_grp_id;
 	int score;
 	int process_counter;
 	apr_time_t last_stat_time;
@@ -19,6 +20,7 @@ static int g_spawn_score;
 static int g_score_uplimit;
 static int g_max_process;
 static int g_total_process = 0;
+static int g_max_class_process;
 
 static void
 register_life_death(server_rec * main_server,
@@ -29,12 +31,13 @@ register_life_death(server_rec * main_server,
 	if (!g_stat_pool || !procnode)
 		return;
 
-	/* Can I find the node base on inode and device id? */
+	/* Can I find the node base on inode, device id and share group id? */
 	previous_node = g_stat_list_header;
 	for (current_node = previous_node;
 		 current_node != NULL; current_node = current_node->next) {
 		if (current_node->inode == procnode->inode
-			&& current_node->deviceid == procnode->deviceid)
+			&& current_node->deviceid == procnode->deviceid
+			&& current_node->share_grp_id == procnode->share_grp_id)
 			break;
 		previous_node = current_node;
 	}
@@ -70,6 +73,7 @@ register_life_death(server_rec * main_server,
 			return;
 		current_node->deviceid = procnode->deviceid;
 		current_node->inode = procnode->inode;
+		current_node->share_grp_id = procnode->share_grp_id;
 		current_node->last_stat_time = apr_time_now();
 		current_node->score = 0;
 		current_node->process_counter = 1;
@@ -99,6 +103,7 @@ void spawn_control_init(server_rec * main_server, apr_pool_t * configpool)
 	g_spawn_score = get_spawn_score(main_server);
 	g_score_uplimit = get_spawnscore_uplimit(main_server);
 	g_max_process = get_max_process(main_server);
+	g_max_class_process = get_default_max_class_process(main_server);
 }
 
 void
@@ -125,17 +130,17 @@ void register_spawn(server_rec * main_server, fcgid_procnode * procnode)
 */
 int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 {
-	struct fcgi_server_info serverinfo;
 	struct fcgid_stat_node *current_node;
 
 	if (!command || !g_stat_pool)
 		return 1;
 
-	/* Can I find the node base on inode and device id? */
+	/* Can I find the node base on inode, device id and share group id? */
 	for (current_node = g_stat_list_header;
 		 current_node != NULL; current_node = current_node->next) {
 		if (current_node->inode == command->inode
-			&& current_node->deviceid == command->deviceid)
+			&& current_node->deviceid == command->deviceid
+			&& current_node->share_grp_id == command->share_grp_id)
 			break;
 	}
 
@@ -172,14 +177,11 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 		   Process count of this class higher than up limit?
 		 */
 		/* I need max class proccess count */
-		get_server_info(main_server, command->inode,
-						command->deviceid, &serverinfo);
-		if (current_node->process_counter >=
-			serverinfo.max_class_process_count) {
+		if (current_node->process_counter >= g_max_class_process) {
 			ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
 						 "mod_fcgid: too much %s process(current:%d, max:%d), skip the spawn request",
 						 command->cgipath, current_node->process_counter,
-						 serverinfo.max_class_process_count);
+						 g_max_class_process);
 			return 0;
 		}
 

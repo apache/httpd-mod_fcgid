@@ -194,15 +194,17 @@ APR_SUCCESS
 	/* OK, I created the process, now put it back to idle list */
 	CloseHandle(listen_handle);
 
-	/* Set the (deviceid, inode) -> fastcgi path map for log */
-	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-				 procnode->inode, procnode->deviceid);
+	/* Set the (deviceid, inode, shareid) -> fastcgi path map for log */
+	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX%lX",
+				 procnode->inode, procnode->deviceid,
+				 procnode->share_grp_id);
 	dummy = NULL;
 	apr_pool_userdata_get(&dummy, key_name, g_inode_cginame_map);
 	if (!dummy) {
 		/* Insert a new item if key not found */
-		char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
-									 procnode->inode, procnode->deviceid);
+		char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX%lX",
+									 procnode->inode, procnode->deviceid,
+									 procnode->share_grp_id);
 		char *fcgipath = apr_psprintf(g_inode_cginame_map, "%s",
 									  procinfo->cgipath);
 
@@ -637,8 +639,9 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 	char key_name[_POSIX_PATH_MAX];
 
 	/* Get the file name infomation base on inode and deviceid */
-	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-				 procnode->inode, procnode->deviceid);
+	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX%lX",
+				 procnode->inode, procnode->deviceid,
+				 procnode->share_grp_id);
 	apr_pool_userdata_get(&cgipath, key_name, g_inode_cginame_map);
 
 	/* Reasons to exit */

@@ -18,6 +18,7 @@ static int g_busy_scan_interval;
 static int g_proc_lifetime;
 static int g_error_scan_interval;
 static int g_zombie_scan_interval;
+static apr_table_t *g_default_init_env;
 
 static
 link_node_to_list(server_rec * main_server,
@@ -376,7 +377,6 @@ static void
 fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 			  apr_pool_t * configpool)
 {
-	struct fcgi_server_info serverinfo;
 	fcgid_procnode *free_list_header, *proctable_array,
 		*procnode, *idle_list_header;
 	fcgid_proc_info procinfo;
@@ -400,10 +400,9 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	safe_unlock(main_server);
 
 	/* Prepare to spawn */
-	get_server_info(main_server, command->inode,
-					command->deviceid, &serverinfo);
 	procnode->deviceid = command->deviceid;
 	procnode->inode = command->inode;
+	procnode->share_grp_id = command->share_grp_id;
 	procnode->start_time = procnode->last_active_time = apr_time_now();
 	procnode->diewhy = FCGID_DIE_KILLSELF;
 	procnode->proc_pool = NULL;
@@ -412,7 +411,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	procinfo.main_server = main_server;
 	if (apr_pool_create(&procnode->proc_pool, configpool) != APR_SUCCESS
 		|| (procinfo.proc_environ = apr_table_copy(procnode->proc_pool,
-												   serverinfo.init_env)) ==
+												   g_default_init_env)) ==
 		NULL) {
 		/* Link the node back to free list in this case */
 		if (procnode->proc_pool)
@@ -457,6 +456,7 @@ apr_status_t pm_main(server_rec * main_server, apr_pool_t * configpool)
 	g_proc_lifetime = get_proc_lifetime(main_server);
 	g_error_scan_interval = get_error_scan_interval(main_server);
 	g_zombie_scan_interval = get_zombie_scan_interval(main_server);
+	g_default_init_env = get_default_env_vars(main_server);
 	g_busy_timeout = get_busy_timeout(main_server);
 	g_busy_timeout += 10;
 
