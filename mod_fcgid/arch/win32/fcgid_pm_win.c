@@ -104,6 +104,20 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 	return APR_SUCCESS;
 }
 
+void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
+							const char *argv0, dev_t deviceid,
+							apr_ino_t inode, apr_size_t share_grp_id)
+{
+	strncpy(command->cgipath, argv0, _POSIX_PATH_MAX);
+	command->cgipath[_POSIX_PATH_MAX - 1] = '\0';
+	command->deviceid = deviceid;
+	command->inode = inode;
+	command->share_grp_id = share_grp_id;
+	command->uid = (uid_t) - 1;
+	command->gid = (gid_t) - 1;
+	command->userdir = 0;
+}
+
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 									request_rec * r)
 {
