@@ -103,7 +103,7 @@ return_procnode(server_rec * main_server,
 	safe_unlock(main_server);
 }
 
-static apr_status_t bucket_ctx_cleanup(void *thectx)
+apr_status_t bucket_ctx_cleanup(void *thectx)
 {
 	/* Cleanup jobs:
 	   1. Free bucket buffer
@@ -114,8 +114,12 @@ static apr_status_t bucket_ctx_cleanup(void *thectx)
 	server_rec *main_server = ctx->ipc.request->server;
 
 	/* Free bucket buffer */
-	if (ctx->buffer)
+	if (ctx->buffer) {
 		apr_bucket_destroy(ctx->buffer);
+		ctx->buffer = NULL;
+	}
+
+	proc_close_ipc(main_server, &ctx->ipc);
 
 	if (ctx->procnode) {
 		/* Return procnode
@@ -141,6 +145,8 @@ static apr_status_t bucket_ctx_cleanup(void *thectx)
 		} else
 			return_procnode(main_server, ctx->procnode,
 							0 /* communication ok */ );
+
+		ctx->procnode = NULL;
 	}
 
 	return APR_SUCCESS;
@@ -284,6 +290,7 @@ handle_request(request_rec * r, const char *argv0,
 			if (proc_connect_ipc
 				(r->server, bucket_ctx->procnode,
 				 &bucket_ctx->ipc) != APR_SUCCESS) {
+				proc_close_ipc(r->server, &bucket_ctx->ipc);
 				bucket_ctx->procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
 				return_procnode(r->server, bucket_ctx->procnode,
 								1 /* has error */ );

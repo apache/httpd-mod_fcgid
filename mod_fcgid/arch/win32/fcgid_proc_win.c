@@ -270,6 +270,9 @@ static apr_status_t ipc_handle_cleanup(void *thehandle)
 			CloseHandle(handle->overlap_read.hEvent);
 		if (handle->overlap_write.hEvent != NULL)
 			CloseHandle(handle->overlap_write.hEvent);
+		handle->handle_pipe = INVALID_HANDLE_VALUE;
+		handle->overlap_read.hEvent = NULL;
+		handle->overlap_write.hEvent = NULL;
 	}
 
 	return APR_SUCCESS;
@@ -343,6 +346,18 @@ proc_connect_ipc(server_rec * main_server,
 
 	/* Now named pipe connected */
 	return APR_SUCCESS;
+}
+
+apr_status_t proc_close_ipc(server_rec * main_server,
+							fcgid_ipc * ipc_handle)
+{
+	apr_status_t rv;
+
+	rv = apr_pool_cleanup_run(ipc_handle->request->pool,
+							  ipc_handle->ipc_handle_info,
+							  ipc_handle_cleanup);
+	ipc_handle->ipc_handle_info = NULL;
+	return rv;
 }
 
 apr_status_t proc_read_ipc(server_rec * main_server,

@@ -1,5 +1,6 @@
 #include "fcgid_bucket.h"
 #include "fcgid_protocol.h"
+#include "fcgid_bridge.h"
 
 #define FCGID_FEED_LEN 8192
 static apr_status_t fcgid_feed_data(fcgid_bucket_ctx * ctx,
@@ -214,6 +215,12 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 		if (!headerbucket)
 			return APR_ENOMEM;
 		APR_BUCKET_INSERT_AFTER(curbucket, headerbucket);
+	} else {
+		/* Release the process ASAP */
+		if ((rv = apr_pool_cleanup_run(ctx->ipc.request->pool,
+									   ctx,
+									   bucket_ctx_cleanup)) != APR_SUCCESS)
+			return rv;
 	}
 
 	b = apr_bucket_immortal_make(b, "", 0);
