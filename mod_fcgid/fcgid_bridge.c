@@ -356,9 +356,6 @@ handle_request(request_rec * r, const char *argv0,
 	if ((rv =
 		 ap_pass_brigade(r->output_filters,
 						 brigade_stdout)) != APR_SUCCESS) {
-		ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-					 r->server,
-					 "mod_fcgid: can't pass the respond to output filter");
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 

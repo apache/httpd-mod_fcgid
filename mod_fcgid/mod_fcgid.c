@@ -12,9 +12,11 @@
 #include "fcgid_conf.h"
 #include "fcgid_spawn_ctl.h"
 #include "fcgid_bridge.h"
+#include "fcgid_filter.h"
 
 module AP_MODULE_DECLARE_DATA fcgid_module;
 static APR_OPTIONAL_FN_TYPE(ap_cgi_build_command) * cgi_build_command;
+static ap_filter_rec_t *fcgid_filter_handle;
 
 /* Stolen from mod_cgi.c */
 /* KLUDGE --- for back-combatibility, we don't have to check ExecCGI
@@ -137,6 +139,10 @@ static int fcgid_handler(request_rec * r)
 
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
+
+	/* Insert output filter */
+	ap_add_output_filter_handle(fcgid_filter_handle, NULL, r,
+								r->connection);
 
 	http_retcode = bridge_request(r, command, wrapper_conf);
 	return (http_retcode == HTTP_OK ? OK : http_retcode);
@@ -265,6 +271,12 @@ static void register_hooks(apr_pool_t * p)
 	ap_hook_post_config(fcgid_init, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_child_init(initialize_child, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_handler(fcgid_handler, NULL, NULL, APR_HOOK_MIDDLE);
+
+	/* Insert fcgid output filter */
+	fcgid_filter_handle =
+		ap_register_output_filter("FCGID_OUT",
+								  fcgid_filter,
+								  NULL, AP_FTYPE_RESOURCE - 10);
 }
 
 module AP_MODULE_DECLARE_DATA fcgid_module = {

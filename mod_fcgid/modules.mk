@@ -3,7 +3,7 @@
 #
 
 MOD_FCGID = fcgid_bridge fcgid_conf fcgid_pm_main fcgid_protocol fcgid_spawn_ctl \
-	mod_fcgid fcgid_proctbl_unix fcgid_pm_unix fcgid_proc_unix fcgid_bucket
+	mod_fcgid fcgid_proctbl_unix fcgid_pm_unix fcgid_proc_unix fcgid_bucket fcgid_filter
 
 mod_fcgid.la: ${MOD_FCGID:=.slo}
 	$(SH_LINK) -rpath $(libexecdir) -module -avoid-version ${MOD_FCGID:=.lo}
