@@ -14,8 +14,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 	conn_rec *c = f->c;
 	server_rec *main_server = f->r->server;
 
-	if( !g_hasinit )
-	{
+	if (!g_hasinit) {
 		g_buffsize = get_output_buffersize(main_server);
 		g_hasinit = 1;
 	}
@@ -57,7 +56,10 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 
 		/* I will pass tmp_brigade to next filter if I have got too much buckets */
 		if (save_size > g_buffsize) {
-			APR_BRIGADE_INSERT_TAIL(tmp_brigade, apr_bucket_flush_create(f->r->connection->bucket_alloc));
+			APR_BRIGADE_INSERT_TAIL(tmp_brigade,
+									apr_bucket_flush_create(f->r->
+															connection->
+															bucket_alloc));
 
 			if ((rv =
 				 ap_pass_brigade(f->next, tmp_brigade)) != APR_SUCCESS)

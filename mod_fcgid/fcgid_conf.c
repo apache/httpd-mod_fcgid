@@ -258,7 +258,8 @@ int get_max_process(server_rec * s)
 	return config ? config->max_process_count : DEFAULT_MAX_PROCESS_COUNT;
 }
 
-const char* set_output_buffersize(cmd_parms * cmd, void *dummy, const char *arg)
+const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
+								  const char *arg)
 {
 	server_rec *s = cmd->server;
 	fcgid_conf *config =
@@ -267,7 +268,7 @@ const char* set_output_buffersize(cmd_parms * cmd, void *dummy, const char *arg)
 	return NULL;
 }
 
-int get_output_buffersize(server_rec* s)
+int get_output_buffersize(server_rec * s)
 {
 	fcgid_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);

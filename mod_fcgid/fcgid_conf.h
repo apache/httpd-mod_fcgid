@@ -89,9 +89,10 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
 								 const char *arg);
 int get_ipc_comm_timeout(server_rec * s);
 
-const char* set_output_buffersize(cmd_parms * cmd, void *dummy, const char *arg);
+const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
+								  const char *arg);
 
-int get_output_buffersize(server_rec* s);
+int get_output_buffersize(server_rec * s);
 
 const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
 								 const char *name, const char *value);
