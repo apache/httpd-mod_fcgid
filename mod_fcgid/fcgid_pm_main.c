@@ -208,8 +208,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
 
 		/* Is it zombie process? */
 		thepid = current_node->proc_id->pid;
-		if (proc_wait_process(main_server, current_node) !=
-			APR_CHILD_NOTDONE) {
+		if (proc_wait_process(main_server, current_node) == APR_CHILD_DONE) {
 			ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
 						 "mod_fcgid: cleanup zombie process %"
 						 APR_PID_T_FMT, thepid);

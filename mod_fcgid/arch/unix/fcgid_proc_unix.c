@@ -238,8 +238,8 @@ proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
 	int exitcode;
 	apr_exit_why_e exitwhy;
 
-	if ((rv = apr_proc_wait(procnode->proc_id, &exitcode, &exitwhy,
-							APR_NOWAIT)) != APR_CHILD_NOTDONE) {
+	rv = apr_proc_wait(procnode->proc_id, &exitcode, &exitwhy, APR_NOWAIT);
+	if (rv == APR_CHILD_DONE || rv == APR_EGENERAL) {
 		/* Log why and how it die */
 		proc_print_exit_info(procnode, exitcode, exitwhy, main_server);
 
@@ -249,6 +249,8 @@ proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
 		/* Destroy pool */
 		apr_pool_destroy(procnode->proc_pool);
 		procnode->proc_pool = NULL;
+
+		return APR_CHILD_DONE;
 	}
 
 	return rv;

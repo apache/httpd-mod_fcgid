@@ -237,7 +237,7 @@ proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
 	apr_exit_why_e exitwhy;
 
 	if ((rv = apr_proc_wait(procnode->proc_id, &exitcode, &exitwhy,
-							APR_NOWAIT)) != APR_CHILD_NOTDONE) {
+							APR_NOWAIT)) == APR_CHILD_DONE) {
 		/* Log why and how it die */
 		proc_print_exit_info(procnode, exitcode, exitwhy, main_server);
 
