@@ -160,16 +160,17 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 		/* Score is higher than up limit? */
 		if (current_node->score >= g_score_uplimit) {
 			ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
-						 "mod_fcgid: spawn score %d >= %d, skip the spawn request",
-						 current_node->score, g_score_uplimit);
+						 "mod_fcgid: %s spawn score %d >= %d, skip the spawn request",
+						 command->cgipath, current_node->score,
+						 g_score_uplimit);
 			return 0;
 		}
 
 		/* Total process count higher than up limit? */
 		if (g_total_process >= g_max_process) {
 			ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
-						 "mod_fcgid: total process count %d >= %d, skip the spawn request",
-						 g_total_process, g_max_process);
+						 "mod_fcgid: %s total process count %d >= %d, skip the spawn request",
+						 command->cgipath, g_total_process, g_max_process);
 			return 0;
 		}
 

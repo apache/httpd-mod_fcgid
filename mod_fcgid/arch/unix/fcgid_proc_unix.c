@@ -46,6 +46,7 @@ proc_spawn_process(fcgid_proc_info * procinfo, fcgid_procnode * procnode)
 	char key_name[_POSIX_PATH_MAX];
 	char *dummy;
 	char *argv[2];
+	sigset_t sigs;
 
 	/* Initialize the global variable if necessary */
 	if (!g_inode_cginame_map)
@@ -163,9 +164,12 @@ APR_SUCCESS
 		return rv;
 	}
 
-	/* fork and exec now */
+	/* fork and exec now, I have to block SIGTERM during the spawning */
+	sigemptyset(&sigs);
+	sigaddset(&sigs, SIGTERM);
 	wrapper_conf =
 		get_wrapper_info(procinfo->cgipath, procinfo->main_server);
+	sigprocmask(SIG_BLOCK, &sigs, NULL);
 	if (wrapper_conf) {
 		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
 					 "mod_fcgid: call %s with wrapper %s",
@@ -178,6 +182,7 @@ APR_SUCCESS
 							 (const char *const *) argv,
 							 (const char *const *) proc_environ, procattr,
 							 procnode->proc_pool)) != APR_SUCCESS) {
+			sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
 						 "mod_fcgid: can't create wrapper process for %s",
 						 procinfo->cgipath);
@@ -192,12 +197,16 @@ APR_SUCCESS
 							 (const char *const *) argv,
 							 (const char *const *) proc_environ, procattr,
 							 procnode->proc_pool)) != APR_SUCCESS) {
+			sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
 						 "mod_fcgid: can't create process");
 			close(unix_socket);
 			return rv;
 		}
 	}
+
+	/* Unblock the SIGTERM signal now */
+	sigprocmask(SIG_UNBLOCK, &sigs, NULL);
 
 	/* Set the (deviceid, inode) -> fastcgi path map for log */
 	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",

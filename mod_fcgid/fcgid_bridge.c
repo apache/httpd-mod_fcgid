@@ -108,6 +108,7 @@ bridge_request_once(request_rec * r, const char *argv0,
 					apr_bucket_brigade * output_brigade)
 {
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
+	server_rec *main_server = r->server;
 	apr_time_t begin_request_time;
 	fcgid_command fcgi_request;
 	fcgid_procnode *procnode;
@@ -151,8 +152,7 @@ bridge_request_once(request_rec * r, const char *argv0,
 			fcgi_request.share_grp_id = 0;
 		}
 
-		procmgr_post_spawn_cmd(&fcgi_request);
-		apr_sleep(apr_time_from_sec(1));
+		procmgr_post_spawn_cmd(&fcgi_request, main_server);
 
 		/* Is it stopping? */
 		if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
@@ -295,7 +295,7 @@ bridge_request_once(request_rec * r, const char *argv0,
 			fcgi_request.share_grp_id = 0;
 		}
 
-		procmgr_post_spawn_cmd(&fcgi_request);
+		procmgr_post_spawn_cmd(&fcgi_request, main_server);
 	}
 
 	apr_brigade_destroy(brigade_stdout);

@@ -25,7 +25,7 @@ typedef struct {
 	char socket_path[_POSIX_PATH_MAX];	/* cgi application socket path */
 	apr_ino_t inode;			/* cgi file inode */
 	apr_dev_t deviceid;			/* cgi file device id */
-	 apr_size_t share_grp_id;	/* cgi wrapper share group id */
+	apr_size_t share_grp_id;	/* cgi wrapper share group id */
 	apr_time_t start_time;		/* the time of this process create */
 	apr_time_t last_active_time;	/* the time this process last active */
 	char diewhy;				/* why it die */

@@ -465,9 +465,12 @@ apr_status_t pm_main(server_rec * main_server, apr_pool_t * configpool)
 			break;
 
 		/* Wait for command */
-		if (procmgr_peek_cmd(&command) == APR_SUCCESS
-			&& is_spawn_allowed(main_server, &command))
-			fastcgi_spawn(&command, main_server, configpool);
+		if (procmgr_peek_cmd(&command, main_server) == APR_SUCCESS) {
+			if (is_spawn_allowed(main_server, &command))
+				fastcgi_spawn(&command, main_server, configpool);
+
+			procmgr_finish_notify(main_server);
+		}
 
 		/* Move matched node to error list */
 		scan_idlelist_zombie(main_server);
