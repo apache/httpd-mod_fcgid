@@ -47,7 +47,7 @@ proc_spawn_process (fcgid_proc_info * procinfo, fcgid_procnode * procnode)
   apr_procattr_t *procattr = NULL;
   char key_name[_POSIX_PATH_MAX];
   char *dummy;
-  char *argv[5];
+  char *argv[3];
 
   /* Initialize the global variable if necessary */
   if (!g_inode_cginame_map)

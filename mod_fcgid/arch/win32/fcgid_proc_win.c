@@ -50,12 +50,13 @@ proc_spawn_process (fcgid_proc_info * procinfo, fcgid_procnode * procnode)
   SECURITY_ATTRIBUTES SecurityAttributes;
   apr_procattr_t *proc_attr;
   apr_status_t rv;
-  const char **argv = NULL;
   apr_file_t *file;
   char **proc_environ;
+  fcgid_wrapper_conf *wrapper_conf;
   char key_name[_POSIX_PATH_MAX];
   char sock_path[_POSIX_PATH_MAX];
   char *dummy;
+  char *argv[3];
   memset (&SecurityAttributes, 0, sizeof (SecurityAttributes));
 
   /* Create the pool if necessary */
@@ -155,16 +156,53 @@ proc_spawn_process (fcgid_proc_info * procinfo, fcgid_procnode * procnode)
 	  apr_os_file_put (&file, &listen_handle, 0,
 			   procnode->proc_pool)) != APR_SUCCESS
       || (rv =
-	  apr_procattr_child_in_set (proc_attr, file, NULL)) != APR_SUCCESS
-      || (rv =
-	  apr_proc_create (procnode->proc_id, procinfo->cgipath, NULL,
-			   proc_environ, proc_attr,
-			   procnode->proc_pool)) != APR_SUCCESS)
+	  apr_procattr_child_in_set (proc_attr, file, NULL)) != APR_SUCCESS)
     {
       ap_log_error (APLOG_MARK, APLOG_WARNING, rv, procinfo->main_server,
-		    "mod_fcgid: can't create fastcgi process");
+		    "mod_fcgid: can't create fastcgi process attribute");
       CloseHandle (listen_handle);
       return APR_ENOPROC;
+    }
+
+  /* fork and exec now */
+  wrapper_conf = get_wrapper_info (procinfo->cgipath, procinfo->main_server);
+  if (wrapper_conf)
+    {
+      ap_log_error (APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
+		    "mod_fcgid: call %s with wrapper %s", procinfo->cgipath,
+		    wrapper_conf->wrapper_path);
+
+      argv[0] = wrapper_conf->wrapper_path;
+      argv[1] = procinfo->cgipath;
+      argv[2] = NULL;
+      if ((rv =
+	   apr_proc_create (procnode->proc_id, wrapper_conf->wrapper_path,
+			    (const char *const *) argv,
+			    (const char *const *) proc_environ, proc_attr,
+			    procnode->proc_pool)) != APR_SUCCESS)
+	{
+	  ap_log_error (APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
+			"mod_fcgid: can't create wrapper process for %s",
+			procinfo->cgipath);
+	  CloseHandle (listen_handle);
+	  return rv;
+	}
+    }
+  else
+    {
+      argv[0] = procinfo->cgipath;
+      argv[1] = NULL;
+      if ((rv =
+	   apr_proc_create (procnode->proc_id, procinfo->cgipath,
+			    (const char *const *) argv,
+			    (const char *const *) proc_environ, proc_attr,
+			    procnode->proc_pool)) != APR_SUCCESS)
+	{
+	  ap_log_error (APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
+			"mod_fcgid: can't create process");
+	  CloseHandle (listen_handle);
+	  return rv;
+	}
     }
 
   /* OK, I created the process, now put it back to idle list */
@@ -285,8 +323,8 @@ proc_connect_ipc (server_rec * main_server,
 						 NULL,	/* no security attributes */
 						 OPEN_EXISTING,	/* opens existing pipe */
 						 0,	/* default attributes */
-						 NULL /* no template file */
-						 );
+						 NULL	/* no template file */
+	    );
 	}
     }
 

@@ -471,7 +471,6 @@ set_wrapper_config (cmd_parms * cmd, void *dummy, const char *arg)
   apr_finfo_t finfo;
   const char *checkarg;
   char dirpath[APR_PATH_MAX];
-  struct fcgi_server_info *serverinfo;
   fcgid_wrapper_conf *wrapper = NULL;
   fcgid_conf *config;
 
