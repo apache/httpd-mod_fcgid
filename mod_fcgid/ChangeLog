@@ -1,3 +1,6 @@
+version 1.01 ( Sep 21st 2004 )
+1. More graceful implementation of suEXEC on UNIX. (Thank radek at karnet.pl for the advice)
+
 version 1.00 ( Sep 10th 2004 )
 1. Release FastCGI process slot before sending buffer back to browser. (less process count)
 

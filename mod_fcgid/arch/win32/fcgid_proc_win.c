@@ -1,5 +1,4 @@
 #include "httpd.h"
-#include "arch/win32/apr_arch_file_io.h"
 #include "apr_thread_proc.h"
 #include "apr_strings.h"
 #include "apr_portable.h"
@@ -16,6 +15,9 @@
 #include "fcgid_spawn_ctl.h"
 #define SHUTDOWN_EVENT_NAME "_FCGI_SHUTDOWN_EVENT_"
 #define FINISH_EVENT_DATA_NAME "finish_event"
+#ifndef SIGKILL
+#define SIGKILL 9
+#endif
 
 /* It's tested on WinNT ONLY, if it work on the other MS platform, let me know */
 #if WINVER < 0x0400
