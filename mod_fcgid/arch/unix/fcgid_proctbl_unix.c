@@ -146,7 +146,7 @@ void safe_lock(server_rec * main_server)
 		ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
 					 "mod_fcgid: server is restarted, %d must exit",
 					 getpid());
-		exit(0);
+		kill(getpid(), SIGTERM);
 	}
 
 	/* Lock error is a fatal error */
