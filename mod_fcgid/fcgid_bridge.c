@@ -217,7 +217,7 @@ handle_request(request_rec * r, const char *argv0,
 	server_rec *main_server = r->server;
 	fcgid_command fcgi_request;
 	fcgid_bucket_ctx *bucket_ctx;
-	int i, stopping;
+	int i, stopping, cond_status;
 	apr_status_t rv;
 	apr_bucket_brigade *brigade_stdout;
 	char sbuf[MAX_STRING_LEN];
@@ -330,11 +330,10 @@ handle_request(request_rec * r, const char *argv0,
 														  bucket_ctx));
 	/*APR_BRIGADE_INSERT_TAIL(brigade_stdout, apr_bucket_flush_create(r->connection->bucket_alloc)); */
 
-	/* Check the script header first */
-	if (ap_scan_script_header_err_core
-		(r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout) != OK) {
-		return HTTP_INTERNAL_SERVER_ERROR;
-	}
+	/* Check the script header first. If got error, return immediately */
+	if ((cond_status = ap_scan_script_header_err_core
+		(r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout)) >= 400)
+		return cond_status;
 
 	/* Check redirect */
 	location = apr_table_get(r->headers_out, "Location");
@@ -368,8 +367,8 @@ handle_request(request_rec * r, const char *argv0,
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 
-	/* OK now */
-	return HTTP_OK;
+	/* Retrun condition status */
+	return cond_status;
 }
 
 int bridge_request(request_rec * r, const char *argv0,
