@@ -1,3 +1,6 @@
+version 1.00 ( Sep 10th 2004 )
+1. Release FastCGI process slot before sending buffer back to browser. (less process count)
+
 version 0.88 ( Sep 3rd 2004 )
 1. Bug fix. File descriptor is closed twice if connect to UNIX domain socket error.
 2. Bug fix. Get server last active time incorrectly.
