@@ -5,6 +5,8 @@ verison 1.03 ( Nov 3rd 2004 )
 	httpd.conf, which will not keep any CGI output in cache buffer.
 	The default value of OutputBufferSize is 64k byte.
 	(Thank Grzegorz Sampolski, gs at blink.pl)
+2. Return HTTP_SERVICE_UNAVAILABLE instead of HTTP_INTERNAL_SERVER_ERROR, while mod_fcgid can not
+	apply a FastCGI process slot. (Thank Grzegorz Sampolski, gs at blink.pl for the suggestion)
 
 version 1.02 ( Oct 1st 2004 )
 1. Bug fix. (Win32 only) Forward request to incorrect process when a script is a directory in the URL.

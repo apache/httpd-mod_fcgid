@@ -304,7 +304,7 @@ handle_request(request_rec * r, const char *argv0,
 	if (!bucket_ctx->procnode) {
 		ap_log_error(APLOG_MARK, APLOG_INFO, 0, r->server,
 					 "mod_fcgid: can't apply process slot for %s", argv0);
-		return HTTP_INTERNAL_SERVER_ERROR;
+		return HTTP_SERVICE_UNAVAILABLE;
 	}
 	bucket_ctx->active_time = bucket_ctx->procnode->last_active_time =
 		apr_time_now();
