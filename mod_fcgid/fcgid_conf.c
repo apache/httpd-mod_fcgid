@@ -405,7 +405,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 			   || strchr(extension, '/') || strchr(extension, '\\'))
 		return "Invalid wrapper file extension";
 	else {
-		hashkey = apr_psprintf(cmd->pool, "%s", extension);
+		hashkey = apr_psprintf(cmd->pool, "%s%s", dirpath, extension);
 		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
 					 wrapper);
 	}
@@ -493,6 +493,7 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 	fcgid_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	char directory[APR_PATH_MAX + 1];
+	char extnamekey[APR_PATH_MAX + 1];
 	char *last_slash;
 	fcgid_wrapper_conf *wrapperinfo;
 
@@ -501,13 +502,7 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 									strlen(cgipath))))
 		return wrapperinfo;
 
-	/* Is it match file name extension? */
-	extension = ap_strrchr_c(cgipath, '.');
-	if (extension != NULL)
-		return apr_hash_get(config->wrapper_info_hash, extension,
-							strlen(extension));
-
-	/* Not match the full path and extension, try the directory now */
+	/* Is it match the directory? */
 	strncpy(directory, cgipath, APR_PATH_MAX);
 	directory[APR_PATH_MAX] = '\0';
 	last_slash = ap_strrchr_c(directory, '/');
@@ -515,7 +510,18 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
 		return NULL;
 	last_slash++;
 	*last_slash = '\0';
+	if ((wrapperinfo = apr_hash_get(config->wrapper_info_hash, directory,
+									strlen(directory))))
+		return wrapperinfo;
 
-	return apr_hash_get(config->wrapper_info_hash, directory,
-						strlen(directory));
+	/* Is it match file name extension? */
+	extension = ap_strrchr_c(cgipath, '.');
+	if (extension != NULL) {
+		strcpy(extnamekey, directory);
+		strncat(extnamekey, extension, APR_PATH_MAX - strlen(directory));
+		return apr_hash_get(config->wrapper_info_hash, extnamekey,
+							strlen(extnamekey));
+	}
+
+	return NULL;
 }
