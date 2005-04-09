@@ -108,6 +108,32 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 							const char *argv0, dev_t deviceid,
 							apr_ino_t inode, apr_size_t share_grp_id)
 {
+	server_rec *main_server = r->server;
+	apr_table_t *initenv;
+	const apr_array_header_t *initenv_arr;
+	const apr_table_entry_t *initenv_entry;
+	int i;
+
+	memset(command, 0, sizeof(*command));
+
+	/* Environment variables */
+	initenv = get_default_env_vars(r);
+	initenv_arr = apr_table_elts(initenv);
+	initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
+	if (initenv_arr->nelts > INITENV_CNT)
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
+					 "mod_fcgid: too much environment variables, Please increase INITENV_CNT in fcgid_pm.h and recompile module mod_fcgid");
+	for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
+		if (initenv_entry->key == NULL || initenv_entry->key[0] == '\0')
+			break;
+		strncpy(command->initenv_key[i], initenv_entry->key,
+				INITENV_KEY_LEN);
+		command->initenv_key[i][INITENV_KEY_LEN - 1] = '\0';
+		strncpy(command->initenv_val[i], initenv_entry->val,
+				INITENV_VAL_LEN);
+		command->initenv_key[i][INITENV_VAL_LEN] = '\0';
+	}
+
 	strncpy(command->cgipath, argv0, _POSIX_PATH_MAX);
 	command->cgipath[_POSIX_PATH_MAX - 1] = '\0';
 	command->deviceid = deviceid;

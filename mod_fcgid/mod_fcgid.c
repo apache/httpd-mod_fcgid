@@ -298,7 +298,7 @@ module AP_MODULE_DECLARE_DATA fcgid_module = {
 	NULL,						/* create per-directory config structure */
 	NULL,						/* merge per-directory config structures */
 	create_fcgid_config,		/* create per-server config structure */
-	NULL,						/* merge per-server config structures */
+	merge_fcgid_config,			/* merge per-server config structures */
 	fcgid_cmds,					/* command apr_table_t */
 	register_hooks				/* register hooks */
 };

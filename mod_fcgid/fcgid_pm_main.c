@@ -13,7 +13,6 @@ static int g_busy_scan_interval;
 static int g_proc_lifetime;
 static int g_error_scan_interval;
 static int g_zombie_scan_interval;
-static apr_table_t *g_default_init_env;
 
 static
 link_node_to_list(server_rec * main_server,
@@ -375,6 +374,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 		*procnode, *idle_list_header;
 	fcgid_proc_info procinfo;
 	apr_status_t rv;
+	int i;
 
 	free_list_header = proctable_get_free_list();
 	idle_list_header = proctable_get_idle_list();
@@ -409,9 +409,8 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	procinfo.gid = command->gid;
 	procinfo.userdir = command->userdir;
 	if (apr_pool_create(&procnode->proc_pool, configpool) != APR_SUCCESS
-		|| (procinfo.proc_environ = apr_table_copy(procnode->proc_pool,
-												   g_default_init_env)) ==
-		NULL) {
+		|| (procinfo.proc_environ =
+			apr_table_make(procnode->proc_pool, INITENV_CNT)) == NULL) {
 		/* Link the node back to free list in this case */
 		if (procnode->proc_pool)
 			apr_pool_destroy(procnode->proc_pool);
@@ -421,6 +420,12 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
 					 "mod_fcgid: can't create pool for process");
 		return;
+	}
+	for (i = 0; i < INITENV_CNT; i++) {
+		if (command->initenv_key[i][0] == '\0')
+			break;
+		apr_table_set(procinfo.proc_environ, command->initenv_key[i],
+					  command->initenv_val[i]);
 	}
 
 	/* Spawn the process now */
@@ -455,7 +460,6 @@ apr_status_t pm_main(server_rec * main_server, apr_pool_t * configpool)
 	g_proc_lifetime = get_proc_lifetime(main_server);
 	g_error_scan_interval = get_error_scan_interval(main_server);
 	g_zombie_scan_interval = get_zombie_scan_interval(main_server);
-	g_default_init_env = get_default_env_vars(main_server);
 	g_busy_timeout = get_busy_timeout(main_server);
 	g_busy_timeout += 10;
 

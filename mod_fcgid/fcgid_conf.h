@@ -31,6 +31,7 @@ typedef struct {
 } fcgid_conf;
 
 void *create_fcgid_config(apr_pool_t * p, server_rec * s);
+void *merge_fcgid_config(apr_pool_t * p, void *basev, void *overridesv);
 
 const char *set_idle_timeout(cmd_parms * cmd, void *dummy,
 							 const char *arg);
@@ -96,7 +97,7 @@ int get_output_buffersize(server_rec * s);
 
 const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
 								 const char *name, const char *value);
-apr_table_t *get_default_env_vars(server_rec * s);
+apr_table_t *get_default_env_vars(request_rec * r);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 							   const char *wrapper, const char *extension);

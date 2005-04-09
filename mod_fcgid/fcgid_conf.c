@@ -52,6 +52,27 @@ void *create_fcgid_config(apr_pool_t * p, server_rec * s)
 	return config;
 }
 
+void *merge_fcgid_config(apr_pool_t * p, void *basev, void *overridesv)
+{
+	int i;
+	fcgid_conf *base = (fcgid_conf *) basev;
+	fcgid_conf *overrides = (fcgid_conf *) overridesv;
+
+	const apr_array_header_t *baseenv_array =
+		apr_table_elts(base->default_init_env);
+	const apr_table_entry_t *baseenv_entry =
+		(apr_table_entry_t *) baseenv_array->elts;
+	for (i = 0; i < baseenv_array->nelts; ++i) {
+		if (apr_table_get
+			(overrides->default_init_env, baseenv_entry[i].key))
+			continue;
+		apr_table_set(overrides->default_init_env, baseenv_entry[i].key,
+					  baseenv_entry[i].val);
+	}
+
+	return overridesv;
+}
+
 const char *set_idle_timeout(cmd_parms * cmd, void *dummy, const char *arg)
 {
 	server_rec *s = cmd->server;
@@ -338,10 +359,10 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
 	return NULL;
 }
 
-apr_table_t *get_default_env_vars(server_rec * s)
+apr_table_t *get_default_env_vars(request_rec * r)
 {
 	fcgid_conf *config =
-		ap_get_module_config(s->module_config, &fcgid_module);
+		ap_get_module_config(r->server->module_config, &fcgid_module);
 	return config->default_init_env;
 }
 
