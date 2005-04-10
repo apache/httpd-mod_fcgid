@@ -124,14 +124,14 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
 					 "mod_fcgid: too much environment variables, Please increase INITENV_CNT in fcgid_pm.h and recompile module mod_fcgid");
 	for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
-		if (initenv_entry->key == NULL || initenv_entry->key[0] == '\0')
+		if (initenv_entry[i].key == NULL || initenv_entry[i].key[0] == '\0')
 			break;
-		strncpy(command->initenv_key[i], initenv_entry->key,
+		strncpy(command->initenv_key[i], initenv_entry[i].key,
 				INITENV_KEY_LEN);
 		command->initenv_key[i][INITENV_KEY_LEN - 1] = '\0';
-		strncpy(command->initenv_val[i], initenv_entry->val,
+		strncpy(command->initenv_val[i], initenv_entry[i].val,
 				INITENV_VAL_LEN);
-		command->initenv_key[i][INITENV_VAL_LEN] = '\0';
+		command->initenv_val[i][INITENV_VAL_LEN - 1] = '\0';
 	}
 
 	strncpy(command->cgipath, argv0, _POSIX_PATH_MAX);
