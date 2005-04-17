@@ -22,7 +22,8 @@ typedef struct {
 	request_rec *request;
 } fcgid_ipc;
 
-apr_status_t proc_spawn_process(fcgid_proc_info * procinfo,
+apr_status_t proc_spawn_process(char *lpszwapper,
+								fcgid_proc_info * procinfo,
 								fcgid_procnode * procnode);
 
 apr_status_t proc_kill_gracefully(fcgid_procnode * procnode,

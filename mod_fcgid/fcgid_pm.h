@@ -7,6 +7,7 @@
 
 typedef struct {
 	char cgipath[_POSIX_PATH_MAX];
+	char wrapperpath[_POSIX_PATH_MAX];
 	apr_ino_t inode;
 	dev_t deviceid;
 	apr_size_t share_grp_id;

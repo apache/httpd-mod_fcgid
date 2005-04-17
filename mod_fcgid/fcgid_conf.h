@@ -1,9 +1,10 @@
 #ifndef FCGID_CONF_H
 #define FCGID_CONF_H
 #include "apr_user.h"
+#include "fcgid_global.h"
 
 typedef struct {
-	char wrapper_path[APR_PATH_MAX];
+	char wrapper_path[_POSIX_PATH_MAX];
 	apr_ino_t inode;
 	apr_dev_t deviceid;
 	apr_size_t share_group_id;
@@ -101,8 +102,6 @@ apr_table_t *get_default_env_vars(request_rec * r);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 							   const char *wrapper, const char *extension);
-const char *set_wrappergrp_config(cmd_parms * cmd, void *dummy,
-								  const char *thearg);
-fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s);
+fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r);
 
 #endif

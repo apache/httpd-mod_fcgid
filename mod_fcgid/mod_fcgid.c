@@ -119,7 +119,7 @@ static int fcgid_handler(request_rec * r)
 	p = r->main ? r->main->pool : r->pool;
 
 	/* Build the command line */
-	if ((wrapper_conf = get_wrapper_info(r->filename, r->server))) {
+	if ((wrapper_conf = get_wrapper_info(r->filename, r))) {
 		if ((rv =
 			 default_build_command(&command, &argv, r, p,
 								   &e_info)) != APR_SUCCESS) {
@@ -274,9 +274,6 @@ static const command_rec fcgid_cmds[] = {
 				   "an environment variable name and optional value to pass to FastCGI."),
 	AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL, ACCESS_CONF,
 				   "The CGI wrapper setting"),
-	AP_INIT_RAW_ARGS("FCGIWrapperGroup", set_wrappergrp_config, NULL,
-					 ACCESS_CONF,
-					 "The CGI wrapper group setting"),
 	{NULL}
 };
 

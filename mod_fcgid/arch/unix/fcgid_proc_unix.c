@@ -139,7 +139,8 @@ static apr_status_t exec_setuid_cleanup(void *dummy)
 }
 
 apr_status_t
-proc_spawn_process(fcgid_proc_info * procinfo, fcgid_procnode * procnode)
+proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
+				   fcgid_procnode * procnode)
 {
 	server_rec *main_server = procinfo->main_server;
 	apr_status_t rv;
@@ -279,18 +280,16 @@ APR_SUCCESS
 	}
 
 	/* fork and exec now */
-	wrapper_conf =
-		get_wrapper_info(procinfo->cgipath, procinfo->main_server);
-	if (wrapper_conf) {
+	if (lpszwapper != NULL && lpszwapper[0] != '\0') {
 		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
 					 "mod_fcgid: call %s with wrapper %s",
-					 procinfo->cgipath, wrapper_conf->wrapper_path);
+					 procinfo->cgipath, lpszwapper);
 
-		argv[0] = wrapper_conf->wrapper_path;
+		argv[0] = lpszwapper;
 		argv[1] = NULL;
 		if ((rv =
 			 fcgid_create_privileged_process(procnode->proc_id,
-											 wrapper_conf->wrapper_path,
+											 lpszwapper,
 											 (const char *const *) argv,
 											 (const char *const *)
 											 proc_environ, procattr,

@@ -42,7 +42,8 @@ static apr_status_t close_finish_event(void *finishevent)
 }
 
 apr_status_t
-proc_spawn_process(fcgid_proc_info * procinfo, fcgid_procnode * procnode)
+proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
+				   fcgid_procnode * procnode)
 {
 	HANDLE *finish_event, listen_handle;
 	int bufused = 0;
@@ -51,7 +52,6 @@ proc_spawn_process(fcgid_proc_info * procinfo, fcgid_procnode * procnode)
 	apr_status_t rv;
 	apr_file_t *file;
 	char **proc_environ;
-	fcgid_wrapper_conf *wrapper_conf;
 	char key_name[_POSIX_PATH_MAX];
 	char sock_path[_POSIX_PATH_MAX];
 	char *dummy;
@@ -158,17 +158,15 @@ APR_SUCCESS
 	}
 
 	/* fork and exec now */
-	wrapper_conf =
-		get_wrapper_info(procinfo->cgipath, procinfo->main_server);
-	if (wrapper_conf) {
+	if (wrapperpath != NULL && wrapperpath[0] != '\0') {
 		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
 					 "mod_fcgid: call %s with wrapper %s",
-					 procinfo->cgipath, wrapper_conf->wrapper_path);
+					 procinfo->cgipath, wrapperpath);
 
-		argv[0] = wrapper_conf->wrapper_path;
+		argv[0] = wrapperpath;
 		argv[1] = NULL;
 		if ((rv =
-			 apr_proc_create(procnode->proc_id, wrapper_conf->wrapper_path,
+			 apr_proc_create(procnode->proc_id, wrapperpath,
 							 (const char *const *) argv,
 							 (const char *const *) proc_environ, proc_attr,
 							 procnode->proc_pool)) != APR_SUCCESS) {

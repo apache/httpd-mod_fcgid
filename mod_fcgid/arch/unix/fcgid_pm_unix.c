@@ -332,6 +332,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 	apr_table_t *initenv;
 	const apr_array_header_t *initenv_arr;
 	const apr_table_entry_t *initenv_entry;
+	fcgid_wrapper_conf *wrapperconf;
 	int i;
 
 	memset(command, 0, sizeof(*command));
@@ -354,9 +355,10 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 	if (initenv_arr->nelts > INITENV_CNT)
 		ap_log_error(APLOG_MARK, LOG_WARNING, 0, main_server,
 					 "mod_fcgid: too much environment variables, Please increase INITENV_CNT in fcgid_pm.h and recompile module mod_fcgid");
-	
+
 	for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
-		if (initenv_entry[i].key == NULL || initenv_entry[i].key[0] == '\0')
+		if (initenv_entry[i].key == NULL
+			|| initenv_entry[i].key[0] == '\0')
 			break;
 		strncpy(command->initenv_key[i], initenv_entry[i].key,
 				INITENV_KEY_LEN);
@@ -371,6 +373,17 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 	command->deviceid = deviceid;
 	command->inode = inode;
 	command->share_grp_id = share_grp_id;
+
+	/* Update fcgid_command with wrapper info */
+	command->wrapperpath[0] = '\0';
+	if ((wrapperconf = get_wrapper_info(argv0, r))) {
+		strncpy(command->wrapperpath, wrapperconf->wrapper_path,
+				_POSIX_PATH_MAX);
+		command->wrapperpath[_POSIX_PATH_MAX - 1] = '\0';
+		command->deviceid = wrapperconf->deviceid;
+		command->inode = wrapperconf->inode;
+		command->share_grp_id = wrapperconf->share_group_id;
+	}
 }
 
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,

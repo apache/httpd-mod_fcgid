@@ -58,6 +58,7 @@ void *merge_fcgid_config(apr_pool_t * p, void *basev, void *overridesv)
 	fcgid_conf *base = (fcgid_conf *) basev;
 	fcgid_conf *overrides = (fcgid_conf *) overridesv;
 
+	/* Merge environment variables */
 	const apr_array_header_t *baseenv_array =
 		apr_table_elts(base->default_init_env);
 	const apr_table_entry_t *baseenv_entry =
@@ -69,6 +70,13 @@ void *merge_fcgid_config(apr_pool_t * p, void *basev, void *overridesv)
 		apr_table_set(overrides->default_init_env, baseenv_entry[i].key,
 					  baseenv_entry[i].val);
 	}
+
+	/* Merge wrapper info */
+	overrides->wrapper_info_hash = apr_hash_overlay(p,
+													overrides->
+													wrapper_info_hash,
+													base->
+													wrapper_info_hash);
 
 	return overridesv;
 }
@@ -372,176 +380,54 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 {
 	apr_status_t rv;
 	apr_finfo_t finfo;
-	const char *checkarg;
-	char *hashkey, *tmpfilename;
-	char dirpath[APR_PATH_MAX];
 	fcgid_wrapper_conf *wrapper = NULL;
 	fcgid_conf *config;
-
-	if ((checkarg =
-		 ap_check_cmd_context(cmd, NOT_IN_FILES | NOT_IN_LOCATION)))
-		return checkarg;
 
 	config =
 		ap_get_module_config(cmd->server->module_config, &fcgid_module);
 
-	/* Get the file path */
-	apr_snprintf(dirpath, APR_PATH_MAX - 1, "%s", cmd->path);
-	dirpath[APR_PATH_MAX - 1] = '\0';
+	/* Sanity check */
+	if (wrapperpath == NULL || extension == NULL
+		|| *extension != '.' || *(extension + 1) == '\0'
+		|| strchr(extension, '/') || strchr(extension, '\\'))
+		return "Invalid wrapper file extension";
 
-	/* Append the missing '/' */
-	if ((rv = apr_filepath_merge(&tmpfilename, dirpath, "",
-								 APR_FILEPATH_NOTRELATIVE,
-								 cmd->temp_pool)) != APR_SUCCESS)
-		return "Can't merge file path";
-	apr_snprintf(dirpath, APR_PATH_MAX - 1, "%s", tmpfilename);
-	dirpath[APR_PATH_MAX - 1] = '\0';
+	/* Is the wrapper exist? */
+	if ((rv = apr_stat(&finfo, wrapperpath, APR_FINFO_NORM,
+					   cmd->temp_pool)) != APR_SUCCESS) {
+		return apr_psprintf(cmd->pool,
+							"can't get fastcgi file info: %s, errno: %d",
+							wrapperpath, apr_get_os_error());
+	}
 
 	/* Create the wrapper node */
 	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
 	if (!wrapper)
 		return "Can't alloc memory for wrapper";
-	strncpy(wrapper->wrapper_path, wrapperpath, APR_PATH_MAX - 1);
-	wrapper->wrapper_path[APR_PATH_MAX - 1] = '\0';
-
-	/* Is the wrapper exist? */
-	if ((rv = apr_stat(&finfo, wrapper->wrapper_path, APR_FINFO_NORM,
-					   cmd->temp_pool)) != APR_SUCCESS) {
-		return apr_psprintf(cmd->pool,
-							"can't get fastcgi file info: %s, errno: %d",
-							wrapper->wrapper_path, apr_get_os_error());
-	}
-
-	/* Set inode, device id & shareid */
+	strncpy(wrapper->wrapper_path, wrapperpath, _POSIX_PATH_MAX - 1);
+	wrapper->wrapper_path[_POSIX_PATH_MAX - 1] = '\0';
 	wrapper->inode = finfo.inode;
 	wrapper->deviceid = finfo.device;
 	wrapper->share_group_id = (apr_size_t) - 1;
 
 	/* Add the node now */
-	if (extension == NULL) {
-		hashkey = apr_psprintf(cmd->pool, "%s", dirpath);
-		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
-					 wrapper);
-	} else if (*extension != '.' || *(extension + 1) == '\0'
-			   || strchr(extension, '/') || strchr(extension, '\\'))
-		return "Invalid wrapper file extension";
-	else {
-		hashkey = apr_psprintf(cmd->pool, "%s%s", dirpath, extension);
-		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
-					 wrapper);
-	}
+	apr_hash_set(config->wrapper_info_hash, extension, strlen(extension),
+				 wrapper);
 
 	return NULL;
 }
 
-const char *set_wrappergrp_config(cmd_parms * cmd, void *dummy,
-								  const char *thearg)
-{
-	fcgid_conf *config = ap_get_module_config(cmd->server->module_config,
-											  &fcgid_module);
-	const char *args = thearg;
-	char *wrapperpath, *thisdir;
-	apr_status_t rv;
-	apr_finfo_t finfo;
-	const char *arg;
-	apr_size_t share_group_id;
-
-	/* Get the file path */
-	if ((arg = ap_check_cmd_context(cmd, NOT_IN_FILES | NOT_IN_LOCATION)))
-		return arg;
-
-	/* Sanity check */
-	if (*args == '\0')
-		return "ServerConfig requires an argument";
-
-	/* Append the missing '/' */
-	if ((rv = apr_filepath_merge(&thisdir, cmd->path, "",
-								 APR_FILEPATH_NOTRELATIVE,
-								 cmd->temp_pool)) != APR_SUCCESS)
-		return "Can't merge file path";
-
-	/* Get the wrapper file path */
-	arg = ap_getword_conf(cmd->pool, &args);
-	if ((rv = apr_filepath_merge(&wrapperpath, cmd->path, arg,
-								 APR_FILEPATH_NOTRELATIVE,
-								 cmd->temp_pool)) != APR_SUCCESS)
-		return "Can't merge wrapper file path";
-
-	/* Get the wrapper device id and inode */
-	if ((rv =
-		 apr_stat(&finfo, wrapperpath, APR_FINFO_INODE | APR_FINFO_DEV,
-				  cmd->temp_pool)) != APR_SUCCESS) {
-		return apr_psprintf(cmd->pool,
-							"can't get fastcgi wrapper file info: %s, errno: %d",
-							wrapperpath, apr_get_os_error());
-	}
-
-	/* Now insert the node which share this wrapper */
-	share_group_id = apr_hash_count(config->wrapper_info_hash);
-	while (1) {
-		fcgid_wrapper_conf *wrapper;
-		char *hashkey;
-
-		arg = ap_getword_conf(cmd->pool, &args);
-		if (!arg)
-			break;
-		if (*arg == '\0')
-			break;
-
-		/* Create wrapper node */
-		wrapper =
-			apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
-		if (!wrapper)
-			return "Can't alloc memory for wrapper";
-		strncpy(wrapper->wrapper_path, wrapperpath, APR_PATH_MAX - 1);
-		wrapper->wrapper_path[APR_PATH_MAX - 1] = '\0';
-		wrapper->inode = finfo.inode;
-		wrapper->deviceid = finfo.device;
-		wrapper->share_group_id = share_group_id;
-
-		/* Add the node now */
-		hashkey = apr_psprintf(cmd->pool, "%s%s", thisdir, arg);
-		apr_hash_set(config->wrapper_info_hash, hashkey, strlen(hashkey),
-					 wrapper);
-	}
-
-	return NULL;
-}
-
-fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, server_rec * s)
+fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
 {
 	char *extension;
 	fcgid_conf *config =
-		ap_get_module_config(s->module_config, &fcgid_module);
-	char directory[APR_PATH_MAX + 1];
-	char extnamekey[APR_PATH_MAX + 1];
-	char *last_slash;
-	fcgid_wrapper_conf *wrapperinfo;
-
-	/* Is it match the file path exactly? */
-	if ((wrapperinfo = apr_hash_get(config->wrapper_info_hash, cgipath,
-									strlen(cgipath))))
-		return wrapperinfo;
-
-	/* Is it match the directory? */
-	strncpy(directory, cgipath, APR_PATH_MAX);
-	directory[APR_PATH_MAX] = '\0';
-	last_slash = ap_strrchr_c(directory, '/');
-	if (last_slash == NULL)
-		return NULL;
-	last_slash++;
-	*last_slash = '\0';
-	if ((wrapperinfo = apr_hash_get(config->wrapper_info_hash, directory,
-									strlen(directory))))
-		return wrapperinfo;
+		ap_get_module_config(r->server->module_config, &fcgid_module);
 
 	/* Is it match file name extension? */
 	extension = ap_strrchr_c(cgipath, '.');
 	if (extension != NULL) {
-		strcpy(extnamekey, directory);
-		strncat(extnamekey, extension, APR_PATH_MAX - strlen(directory));
-		return apr_hash_get(config->wrapper_info_hash, extnamekey,
-							strlen(extnamekey));
+		return apr_hash_get(config->wrapper_info_hash, extension,
+							strlen(extension));
 	}
 
 	return NULL;
