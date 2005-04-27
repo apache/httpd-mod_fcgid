@@ -31,8 +31,10 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 		if (APR_BUCKET_IS_EOS(e))
 			break;
 
-		if (APR_BUCKET_IS_METADATA(e))
+		if (APR_BUCKET_IS_METADATA(e)) {
+			apr_bucket_delete(e);
 			continue;
+		}
 
 		/* Read the bucket now */
 		if ((rv = apr_bucket_read(e, &buffer, &readlen,

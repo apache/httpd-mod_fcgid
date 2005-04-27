@@ -28,11 +28,17 @@ typedef struct {
 	int ipc_comm_timeout;
 	int output_buffersize;
 	apr_table_t *default_init_env;
-	apr_hash_t *wrapper_info_hash;
-} fcgid_conf;
+} fcgid_server_conf;
 
-void *create_fcgid_config(apr_pool_t * p, server_rec * s);
-void *merge_fcgid_config(apr_pool_t * p, void *basev, void *overridesv);
+typedef struct {
+	apr_hash_t *wrapper_info_hash;
+} fcgid_dir_conf;
+
+void *create_fcgid_server_config(apr_pool_t * p, server_rec * s);
+void *merge_fcgid_server_config(apr_pool_t * p, void *basev,
+								void *overridesv);
+
+void *create_fcgid_dir_config(apr_pool_t * p, char *dummy);
 
 const char *set_idle_timeout(cmd_parms * cmd, void *dummy,
 							 const char *arg);

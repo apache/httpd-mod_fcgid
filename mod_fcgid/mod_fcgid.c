@@ -292,10 +292,10 @@ static void register_hooks(apr_pool_t * p)
 
 module AP_MODULE_DECLARE_DATA fcgid_module = {
 	STANDARD20_MODULE_STUFF,
-	NULL,						/* create per-directory config structure */
+	create_fcgid_dir_config,	/* create per-directory config structure */
 	NULL,						/* merge per-directory config structures */
-	create_fcgid_config,		/* create per-server config structure */
-	merge_fcgid_config,			/* merge per-server config structures */
+	create_fcgid_server_config,	/* create per-server config structure */
+	merge_fcgid_server_config,	/* merge per-server config structures */
 	fcgid_cmds,					/* command apr_table_t */
 	register_hooks				/* register hooks */
 };

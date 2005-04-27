@@ -1,3 +1,10 @@
+version 1.06 ( Apr 27th 2005 )
+1. "DefaultInitEnv" now can be placed inside VirtualHost section
+2. Bug fix. "FCGIWrapper" now stores in a per-directory config structure. (The old implementation
+	stores it in a per-server config structure, which may be overwrited by another 
+	<VirtualHost> section)
+	(Thank phyre at rogers.com for bug report and the great help for the bug fix AGAIN)
+
 version 1.05 ( Mar 4th 2005 )
 1. Bug fix. suEXEC wrapper in virtualhost environment will shares the process interpreters.
 	(Thank phyre at rogers.com for bug report and the great help for the bug fix)
