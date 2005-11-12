@@ -14,6 +14,7 @@ include ${top_builddir}/build/special.mk
 
 APXS      = apxs
 APACHECTL = apachectl
+EXTRA_CFLAGS = -I$(builddir)
 
 #DEFS=-Dmy_define=my_value
 #INCLUDES=-Imy/include/dir

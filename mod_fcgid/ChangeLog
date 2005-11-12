@@ -1,3 +1,9 @@
+version 1.07 ( Nov 10th 2005 )
+1. Configuration IPCConnectTimeout, IPCCommTimeout, BusyTimeout can be overwrite in VirtualHost section
+	(Thank cthulhu at planet-multiplayer.de for the suggestion)
+2. Add EXTRA_CFLAGS = -I$(builddir) in Makefile
+	(Thank contagion@gmail.com for the suggestion)
+
 version 1.06 ( Apr 27th 2005 )
 1. "DefaultInitEnv" now can be placed inside VirtualHost section
 2. Bug fix. "FCGIWrapper" now stores in a per-directory config structure. (The old implementation

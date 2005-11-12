@@ -13,7 +13,6 @@ typedef struct {
 typedef struct {
 	int idle_timeout;
 	int idle_scan_interval;
-	int busy_timeout;
 	int busy_scan_interval;
 	int proc_lifetime;
 	int error_scan_interval;
@@ -24,10 +23,15 @@ typedef struct {
 	int termination_score;
 	int max_process_count;
 	int default_max_class_process_count;
-	int ipc_connect_timeout;
-	int ipc_comm_timeout;
 	int output_buffersize;
 	apr_table_t *default_init_env;
+
+	int ipc_connect_timeout;
+	int ipc_connect_timeout_overwrite;
+	int ipc_comm_timeout;
+	int ipc_comm_timeout_overwrite;
+	int busy_timeout;
+	int busy_timeout_overwrite;
 } fcgid_server_conf;
 
 typedef struct {

@@ -34,7 +34,6 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 		ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
 	config->idle_timeout = DEFAULT_IDLE_TIMEOUT;
 	config->idle_scan_interval = DEFAULT_IDLE_SCAN_INTERVAL;
-	config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
 	config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;
 	config->proc_lifetime = DEFAULT_PROC_LIFETIME;
 	config->error_scan_interval = DEFAULT_ERROR_SCAN_INTERVAL;
@@ -45,9 +44,13 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 	config->default_max_class_process_count =
 		DEFAULT_MAX_CLASS_PROCESS_COUNT;
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
-	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
-	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
 	config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
+	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
+	config->ipc_comm_timeout_overwrite = 0;
+	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
+	config->ipc_connect_timeout_overwrite = 0;
+	config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
+	config->busy_timeout_overwrite = 0;
 	return config;
 }
 
@@ -70,6 +73,16 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev,
 		apr_table_set(overrides->default_init_env, baseenv_entry[i].key,
 					  baseenv_entry[i].val);
 	}
+
+	// Merge the other configurations
+	if (base->ipc_comm_timeout_overwrite
+		&& !overrides->ipc_comm_timeout_overwrite)
+		overrides->ipc_comm_timeout = base->ipc_comm_timeout;
+	if (base->ipc_connect_timeout_overwrite
+		&& !overrides->ipc_connect_timeout_overwrite)
+		overrides->ipc_connect_timeout = base->ipc_connect_timeout;
+	if (base->busy_timeout_overwrite && !overrides->busy_timeout_overwrite)
+		overrides->busy_timeout = base->busy_timeout;
 
 	return overridesv;
 }
@@ -121,6 +134,7 @@ const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	config->busy_timeout = atol(arg);
+	config->busy_timeout_overwrite = 1;
 	return NULL;
 }
 
@@ -330,6 +344,7 @@ const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	config->ipc_connect_timeout = atol(arg);
+	config->ipc_connect_timeout_overwrite = 1;
 	return NULL;
 }
 
@@ -348,6 +363,7 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	config->ipc_comm_timeout = atol(arg);
+	config->ipc_comm_timeout_overwrite = 1;
 	return NULL;
 }
 
