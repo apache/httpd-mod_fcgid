@@ -56,16 +56,16 @@ apr_status_t proctable_child_init(server_rec * main_server,
 apr_status_t proctable_post_config(server_rec * main_server,
 								   apr_pool_t * pconf);
 
-apr_status_t proctable_lock_table();
-apr_status_t proctable_unlock_table();
+apr_status_t proctable_lock_table(void);
+apr_status_t proctable_unlock_table(void);
 
-fcgid_procnode *proctable_get_free_list();
-fcgid_procnode *proctable_get_busy_list();
-fcgid_procnode *proctable_get_idle_list();
-fcgid_procnode *proctable_get_error_list();
-fcgid_procnode *proctable_get_table_array();
-size_t proctable_get_table_size();
-fcgid_global_share *proctable_get_globalshare();
+fcgid_procnode *proctable_get_free_list(void);
+fcgid_procnode *proctable_get_busy_list(void);
+fcgid_procnode *proctable_get_idle_list(void);
+fcgid_procnode *proctable_get_error_list(void);
+fcgid_procnode *proctable_get_table_array(void);
+size_t proctable_get_table_size(void);
+fcgid_global_share *proctable_get_globalshare(void);
 
 void safe_lock(server_rec * main_server);
 void safe_unlock(server_rec * main_server);

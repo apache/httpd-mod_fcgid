@@ -134,14 +134,12 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 		   In this case I will do nothing and return, let the process manager 
 		   do the job   
 		 */
-		if (apr_time_sec(apr_time_now()) -
-			apr_time_sec(ctx->active_time) > g_busy_timeout) {
+		int dt = apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time);
+		if (dt > g_busy_timeout) {
 			/* Do nothing but print log */
 			ap_log_error(APLOG_MARK, APLOG_INFO, 0,
 						 main_server,
-						 "mod_fcgid: process busy timeout, take %d seconds for this request",
-						 apr_time_sec(apr_time_now()) -
-						 apr_time_sec(ctx->active_time));
+						 "mod_fcgid: process busy timeout, take %d seconds for this request", dt);
 		} else if (ctx->has_error) {
 			ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
 			return_procnode(main_server, ctx->procnode,
@@ -174,7 +172,7 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 
 		rv = apr_bucket_read(e, &bucket_data, &bucket_data_len,
 							 APR_BLOCK_READ);
-		if (!APR_STATUS_IS_SUCCESS(rv)) {
+		if (rv != APR_SUCCESS) {
 			return 0;
 		}
 
@@ -370,7 +368,7 @@ int bridge_request(request_rec * r, const char *argv0,
 {
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
 	server_rec *main_server = r->server;
-	apr_status_t rv;
+	apr_status_t rv = APR_SUCCESS;
 	int seen_eos;
 	FCGI_Header *stdin_request_header;
 	apr_bucket_brigade *output_brigade;

@@ -14,7 +14,7 @@ static int g_proc_lifetime;
 static int g_error_scan_interval;
 static int g_zombie_scan_interval;
 
-static
+static void
 link_node_to_list(server_rec * main_server,
 				  fcgid_procnode * header,
 				  fcgid_procnode * node, fcgid_procnode * table_array)
@@ -246,7 +246,7 @@ static void scan_errorlist(server_rec * main_server)
 	   kill() and wait() every node in error list
 	   put them back to free list after that
 	 */
-	char *dummy;
+	void *dummy;
 	fcgid_procnode *previous_node, *current_node, *next_node;
 	apr_time_t now = apr_time_now();
 	fcgid_procnode *error_list_header = proctable_get_error_list();
@@ -293,7 +293,7 @@ static void scan_errorlist(server_rec * main_server)
 		 current_node = &proc_table[current_node->next_index]) {
 		/* Try gracefully first */
 		dummy = NULL;
-		apr_pool_userdata_get((void **) &dummy, HAS_GRACEFUL_KILL,
+		apr_pool_userdata_get(&dummy, HAS_GRACEFUL_KILL,
 							  current_node->proc_pool);
 		if (!dummy) {
 			proc_kill_gracefully(current_node, main_server);

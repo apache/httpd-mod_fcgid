@@ -2,6 +2,8 @@
 #include "apr_shm.h"
 #include "apr_global_mutex.h"
 #include "fcgid_global.h"
+#include "unixd.h"
+#include <unistd.h>
 
 static apr_shm_t *g_sharemem = NULL;
 static apr_global_mutex_t *g_sharelock = NULL;
@@ -29,7 +31,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
 							 main_server->process->pconf)) != APR_SUCCESS)
 	{
 		ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-					 "mod_fcgid: Can't create share memory for size %ld byte",
+					 "mod_fcgid: Can't create share memory for size %d byte",
 					 shmem_size);
 		exit(1);
 	}
@@ -93,47 +95,47 @@ proctable_child_init(server_rec * main_server, apr_pool_t * configpool)
 	return rv;
 }
 
-apr_status_t proctable_lock_table()
+apr_status_t proctable_lock_table(void)
 {
 	return apr_global_mutex_lock(g_sharelock);
 }
 
-apr_status_t proctable_unlock_table()
+apr_status_t proctable_unlock_table(void)
 {
 	return apr_global_mutex_unlock(g_sharelock);
 }
 
-fcgid_procnode *proctable_get_free_list()
+fcgid_procnode *proctable_get_free_list(void)
 {
 	return g_free_list_header;
 }
 
-fcgid_procnode *proctable_get_busy_list()
+fcgid_procnode *proctable_get_busy_list(void)
 {
 	return g_busy_list_header;
 }
 
-fcgid_procnode *proctable_get_idle_list()
+fcgid_procnode *proctable_get_idle_list(void)
 {
 	return g_idle_list_header;
 }
 
-fcgid_procnode *proctable_get_table_array()
+fcgid_procnode *proctable_get_table_array(void)
 {
 	return g_proc_array;
 }
 
-fcgid_procnode *proctable_get_error_list()
+fcgid_procnode *proctable_get_error_list(void)
 {
 	return g_error_list_header;
 }
 
-fcgid_global_share *proctable_get_globalshare()
+fcgid_global_share *proctable_get_globalshare(void)
 {
 	return g_global_share;
 }
 
-size_t proctable_get_table_size()
+size_t proctable_get_table_size(void)
 {
 	return g_table_size;
 }

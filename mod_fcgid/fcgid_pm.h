@@ -33,6 +33,6 @@ apr_status_t procmgr_post_config(server_rec * main_server,
 								 apr_pool_t * pconf);
 
 apr_status_t procmgr_stop_procmgr(void *dummy);
-int procmgr_must_exit();
+int procmgr_must_exit(void);
 
 #endif

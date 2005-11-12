@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <sys/un.h>
 #include <sys/types.h>
 #include <netinet/tcp.h>		/* For TCP_NODELAY */
@@ -18,6 +19,7 @@
 #include "fcgid_protocol.h"
 #include "fcgid_conf.h"
 #include "fcgid_pm.h"
+#include "fcgid_spawn_ctl.h"
 #define DEFAULT_FCGID_LISTENBACKLOG 5
 typedef struct {
 	int handle_socket;
@@ -143,16 +145,14 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 				   fcgid_procnode * procnode)
 {
 	server_rec *main_server = procinfo->main_server;
-	apr_status_t rv;
+	apr_status_t rv = APR_SUCCESS;
 	apr_file_t *file;
-	int omask, retcode, unix_socket, i;
+	int omask, retcode, unix_socket;
 	char **proc_environ;
 	struct sockaddr_un unix_addr;
-	fcgid_wrapper_conf *wrapper_conf;
 	apr_procattr_t *procattr = NULL;
 	char key_name[_POSIX_PATH_MAX];
-	fcgid_ipc ipc_handle;
-	char *dummy;
+	void *dummy;
 	char *argv[2];
 
 	/* Initialize the variables */
@@ -323,13 +323,13 @@ APR_SUCCESS
 
 	/* Set the (deviceid, inode) -> fastcgi path map for log */
 	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-				 procnode->inode, procnode->deviceid);
+				 procnode->inode, (unsigned long)procnode->deviceid);
 	dummy = NULL;
 	apr_pool_userdata_get((void **) &dummy, key_name, g_inode_cginame_map);
 	if (!dummy) {
 		/* Insert a new item if key not found */
 		char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
-									 procnode->inode, procnode->deviceid);
+									 procnode->inode, (unsigned long)procnode->deviceid);
 		char *fcgipath = apr_psprintf(g_inode_cginame_map, "%s",
 									  procinfo->cgipath);
 
@@ -730,7 +730,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 
 	/* Get the file name infomation base on inode and deviceid */
 	apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-				 procnode->inode, procnode->deviceid);
+				 procnode->inode, (unsigned long)procnode->deviceid);
 	apr_pool_userdata_get((void **) &cgipath, key_name,
 						  g_inode_cginame_map);
 

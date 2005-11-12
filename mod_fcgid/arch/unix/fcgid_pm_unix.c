@@ -4,10 +4,13 @@
 #include "apr_strings.h"
 #include "apr_queue.h"
 #include "apr_global_mutex.h"
+#include "apr_support.h"
 #include "fcgid_pm.h"
 #include "fcgid_pm_main.h"
 #include "fcgid_conf.h"
 #include "fcgid_proctbl.h"
+#include "fcgid_spawn_ctl.h"
+#include <unistd.h>
 static apr_status_t create_process_manager(server_rec * main_server,
 										   apr_pool_t * configpool);
 
@@ -20,7 +23,6 @@ static apr_file_t *g_ap_read_pipe = NULL;
 static apr_global_mutex_t *g_pipelock = NULL;
 char g_pipelock_name[L_tmpnam];
 
-static int g_nProcIdleTimeOut = 0;
 static int volatile g_caughtSigTerm = 0;
 static pid_t g_pm_pid;
 static void signal_handler(int signo)
@@ -42,7 +44,6 @@ static void signal_handler(int signo)
 static apr_status_t init_signal(server_rec * main_server)
 {
 	struct sigaction sa;
-	apr_status_t rv;
 
 	/* Setup handlers */
 	sa.sa_handler = signal_handler;
@@ -52,21 +53,21 @@ static apr_status_t init_signal(server_rec * main_server)
 	if (sigaction(SIGTERM, &sa, NULL) < 0) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
 					 "mod_fcgid: Can't install SIGTERM handler");
-		return errno;
+		return APR_EGENERAL;
 	}
 
 	/* Httpd restart */
 	if (sigaction(SIGHUP, &sa, NULL) < 0) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
 					 "mod_fcgid: Can't install SIGHUP handler");
-		return errno;
+		return APR_EGENERAL;
 	}
 
 	/* Httpd graceful restart */
 	if (sigaction(SIGUSR1, &sa, NULL) < 0) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
 					 "mod_fcgid: Can't install SIGUSR1 handler");
-		return errno;
+		return APR_EGENERAL;
 	}
 
 	/* Ignore SIGPIPE */
@@ -74,7 +75,7 @@ static apr_status_t init_signal(server_rec * main_server)
 	if (sigaction(SIGPIPE, &sa, NULL) < 0) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
 					 "mod_fcgid: Can't install SIGPIPE handler");
-		return errno;
+		return APR_EGENERAL;
 	}
 
 	return APR_SUCCESS;
@@ -84,7 +85,6 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
 {
 	apr_proc_t *proc = data;
 	int mpm_state;
-	int stopping;
 
 	switch (reason) {
 	case APR_OC_REASON_DEATH:
@@ -391,7 +391,6 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 {
 	apr_status_t rv;
 	char notifybyte;
-	ap_unix_identity_t *ugid;
 	apr_size_t nbytes = sizeof(*command);
 	server_rec *main_server = r->server;
 
