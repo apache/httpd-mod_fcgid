@@ -5,6 +5,7 @@ version 1.07 ( Nov 10th 2005 )
 	(Thank contagion at gmail.com for the suggestion)
 3. Support Apache 2.1 now (Patch by nick at webthing.com)
 	(Thank nick at webthing.com for the excellent patch)
+4. Support "\r\n\t" HTTP header from CGI
 
 version 1.06 ( Apr 27th 2005 )
 1. "DefaultInitEnv" now can be placed inside VirtualHost section

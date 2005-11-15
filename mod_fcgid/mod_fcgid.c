@@ -188,7 +188,8 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
 	void *dummy = NULL;
 
 	/* Initialize process manager only once */
-	apr_pool_userdata_get(&dummy, userdata_key, main_server->process->pool);
+	apr_pool_userdata_get(&dummy, userdata_key,
+						  main_server->process->pool);
 	if (!dummy) {
 		procnew =
 			apr_pcalloc(main_server->process->pool, sizeof(*procnew));
@@ -198,8 +199,7 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
 							  apr_pool_cleanup_null,
 							  main_server->process->pool);
 		return OK;
-	}
-	else {
+	} else {
 		procnew = dummy;
 	}
 

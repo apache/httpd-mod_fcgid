@@ -134,12 +134,14 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 		   In this case I will do nothing and return, let the process manager 
 		   do the job   
 		 */
-		int dt = apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time);
+		int dt =
+			apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time);
 		if (dt > g_busy_timeout) {
 			/* Do nothing but print log */
 			ap_log_error(APLOG_MARK, APLOG_INFO, 0,
 						 main_server,
-						 "mod_fcgid: process busy timeout, take %d seconds for this request", dt);
+						 "mod_fcgid: process busy timeout, take %d seconds for this request",
+						 dt);
 		} else if (ctx->has_error) {
 			ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
 			return_procnode(main_server, ctx->procnode,
@@ -162,6 +164,7 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 	apr_bucket *e = APR_BRIGADE_FIRST(bb);
 	apr_status_t rv;
 	int done = 0;
+	int getLF = 0;
 
 	while ((dst < dst_end) && !done && !APR_BUCKET_IS_EOS(e)) {
 		const char *bucket_data;
@@ -182,6 +185,9 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 			next = APR_BUCKET_NEXT(e);
 			apr_bucket_delete(e);
 			e = next;
+			if (getLF) {
+				done = 1;
+			}
 			continue;
 		}
 
@@ -191,8 +197,17 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 		src = bucket_data;
 		src_end = bucket_data + bucket_data_len;
 		while ((src < src_end) && (dst < dst_end) && !done) {
-			if (*src == '\n') {
+			if (getLF && *src != ' ' && *src != '\t') {
 				done = 1;
+				break;
+			} else if (getLF && (*src == ' ' || *src == '\t')) {
+				*dst++ = '\r';
+				*dst++ = '\n';
+				getLF = 0;
+			}
+
+			if (*src == '\n') {
+				getLF = 1;
 			} else if (*src != '\r') {
 				*dst++ = *src;
 			}
