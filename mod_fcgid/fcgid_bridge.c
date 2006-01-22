@@ -165,6 +165,7 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 	apr_status_t rv;
 	int done = 0;
 	int getLF = 0;
+	int getColon = 0;
 
 	while ((dst < dst_end) && !done && !APR_BUCKET_IS_EOS(e)) {
 		const char *bucket_data;
@@ -194,11 +195,16 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 		if (bucket_data_len == 0)
 			return 0;
 
+		/* Base on RFC2616 section 4.2 */
 		src = bucket_data;
 		src_end = bucket_data + bucket_data_len;
 		while ((src < src_end) && (dst < dst_end) && !done) {
-			if (getLF && *src != ' ' && *src != '\t') {
+			if (*src == ':')
+				getColon = 1;
+
+			if (getLF && ((*src != ' ' && *src != '\t') || !getColon)) {
 				done = 1;
+				getColon = 0;
 				break;
 			} else if (getLF && (*src == ' ' || *src == '\t')) {
 				*dst++ = '\r';
@@ -474,7 +480,17 @@ int bridge_request(request_rec * r, const char *argv0,
 									   sizeof(*stdin_request_header),
 									   apr_bucket_free,
 									   r->connection->bucket_alloc);
-			apr_bucket_copy(bucket_input, &bucket_stdin);
+			if (APR_BUCKET_IS_HEAP(bucket_input))
+				apr_bucket_copy(bucket_input, &bucket_stdin);
+			else {
+				/* mod_ssl have a bug? */
+				char *pcopydata =
+					apr_bucket_alloc(len, r->connection->bucket_alloc);
+				memcpy(pcopydata, data, len);
+				bucket_stdin =
+					apr_bucket_heap_create(pcopydata, len, apr_bucket_free,
+										   r->connection->bucket_alloc);
+			}
 			if (!stdin_request_header || !bucket_header || !bucket_stdin
 				|| !init_header(FCGI_STDIN, 1, len, 0,
 								stdin_request_header)) {

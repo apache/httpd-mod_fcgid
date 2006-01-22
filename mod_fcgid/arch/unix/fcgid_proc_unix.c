@@ -9,6 +9,7 @@
 #include "apr_portable.h"
 #include "apr_pools.h"
 #include "apr_network_io.h"
+#include "mpm_common.h"
 #include "util_script.h"
 #include "unixd.h"
 #include "mod_core.h"
@@ -264,10 +265,12 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 || (rv =
 	apr_procattr_dir_set(procattr,
 						 ap_make_dirstr_parent(procnode->proc_pool,
+											   (lpszwapper != NULL
+												&& lpszwapper[0] !=
+												'\0') ? lpszwapper :
 											   procinfo->cgipath))) !=
 APR_SUCCESS
-|| (rv =
-	apr_procattr_cmdtype_set(procattr, APR_PROGRAM)) != APR_SUCCESS
+|| (rv = apr_procattr_cmdtype_set(procattr, APR_PROGRAM)) != APR_SUCCESS
 || (rv =
 	apr_os_file_put(&file, &unix_socket, 0,
 					procnode->proc_pool)) != APR_SUCCESS
