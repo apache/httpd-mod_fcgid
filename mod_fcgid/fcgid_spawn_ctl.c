@@ -23,6 +23,7 @@ static int g_score_uplimit;
 static int g_max_process;
 static int g_total_process;
 static int g_max_class_process;
+static int g_min_class_process;
 
 static void
 register_life_death(server_rec * main_server,
@@ -109,7 +110,8 @@ void spawn_control_init(server_rec * main_server, apr_pool_t * configpool)
 	g_spawn_score = get_spawn_score(main_server);
 	g_score_uplimit = get_spawnscore_uplimit(main_server);
 	g_max_process = get_max_process(main_server);
-	g_max_class_process = get_default_max_class_process(main_server);
+	g_max_class_process = get_max_class_process(main_server);
+	g_min_class_process = get_min_class_process(main_server);
 }
 
 void
@@ -197,3 +199,33 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 		return 1;
 	}
 }
+
+int is_kill_allowed(fcgid_procnode * procnode)
+{
+	struct fcgid_stat_node *previous_node, *current_node;
+
+	if (!g_stat_pool || !procnode)
+		return;
+
+	/* Can I find the node base on inode, device id and share group id? */
+	previous_node = g_stat_list_header;
+	for (current_node = previous_node;
+		 current_node != NULL; current_node = current_node->next) {
+		if (current_node->inode == procnode->inode
+			&& current_node->deviceid == procnode->deviceid
+			&& current_node->share_grp_id == procnode->share_grp_id
+			&& current_node->uid == procnode->uid
+			&& current_node->gid == procnode->gid)
+			break;
+		previous_node = current_node;
+	}
+
+	if (current_node) {
+		/* Found the node */
+		if( current_node->process_counter <= g_min_class_process )
+			return 0;
+	}
+
+	return 1;
+}
+

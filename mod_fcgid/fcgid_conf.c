@@ -21,8 +21,9 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_TERMINATION_SCORE 2
 #define DEFAULT_MAX_PROCESS_COUNT 1000
 #define DEFAULT_MAX_CLASS_PROCESS_COUNT 100
-#define DEFAULT_IPC_CONNECT_TIMEOUT 2
-#define DEFAULT_IPC_COMM_TIMEOUT 5
+#define DEFAULT_MIN_CLASS_PROCESS_COUNT 3
+#define DEFAULT_IPC_CONNECT_TIMEOUT 3
+#define DEFAULT_IPC_COMM_TIMEOUT 20
 #define DEFAULT_OUTPUT_BUFFERSIZE 65536
 
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
@@ -41,8 +42,9 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 	config->spawn_score = DEFAULT_SPAWN_SCORE;
 	config->spawnscore_uplimit = DEFAULT_SPAWNSOCRE_UPLIMIT;
 	config->termination_score = DEFAULT_TERMINATION_SCORE;
-	config->default_max_class_process_count =
+	config->max_class_process_count =
 		DEFAULT_MAX_CLASS_PROCESS_COUNT;
+	config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
 	config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
 	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
@@ -319,22 +321,40 @@ int get_output_buffersize(server_rec * s)
 	return config ? config->output_buffersize : DEFAULT_OUTPUT_BUFFERSIZE;
 }
 
-const char *set_default_max_class_process(cmd_parms * cmd, void *dummy,
+const char *set_max_class_process(cmd_parms * cmd, void *dummy,
 										  const char *arg)
 {
 	server_rec *s = cmd->server;
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
-	config->default_max_class_process_count = atol(arg);
+	config->max_class_process_count = atol(arg);
 	return NULL;
 }
 
-int get_default_max_class_process(server_rec * s)
+int get_max_class_process(server_rec * s)
 {
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	return config ? config->
-		default_max_class_process_count : DEFAULT_MAX_CLASS_PROCESS_COUNT;
+		max_class_process_count : DEFAULT_MAX_CLASS_PROCESS_COUNT;
+}
+
+const char *set_min_class_process(cmd_parms * cmd, void *dummy,
+										const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->min_class_process_count = atol(arg);
+	return NULL;
+}
+
+int get_min_class_process(server_rec * s)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config ? config->
+		min_class_process_count : DEFAULT_MIN_CLASS_PROCESS_COUNT;
 }
 
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,

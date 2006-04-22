@@ -22,7 +22,8 @@ typedef struct {
 	int spawn_score;
 	int termination_score;
 	int max_process_count;
-	int default_max_class_process_count;
+	int max_class_process_count;
+	int min_class_process_count;
 	int output_buffersize;
 	apr_table_t *default_init_env;
 
@@ -89,9 +90,13 @@ int get_spawnscore_uplimit(server_rec * s);
 const char *set_max_process(cmd_parms * cmd, void *dummy, const char *arg);
 int get_max_process(server_rec * s);
 
-const char *set_default_max_class_process(cmd_parms * cmd, void *dummy,
+const char *set_max_class_process(cmd_parms * cmd, void *dummy,
 										  const char *arg);
-int get_default_max_class_process(server_rec * s);
+int get_max_class_process(server_rec * s);
+
+const char *set_min_class_process(cmd_parms * cmd, void *dummy,
+										const char *arg);
+int get_min_class_process(server_rec * s);
 
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
 									const char *arg);

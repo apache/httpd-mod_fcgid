@@ -22,8 +22,6 @@ EXTRA_CFLAGS = -I$(builddir)
 
 all: local-shared-build
 
-install: install-modules
-
 clean:
 	-rm -f *.o *.lo *.slo *.la 
 
