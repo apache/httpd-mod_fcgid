@@ -98,6 +98,7 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 	/* Handle FCGI_STDERR body, write the content to log file */
 	if (header.type == FCGI_STDERR) {
 		char *logbuf = apr_bucket_alloc(APR_BUCKET_BUFF_SIZE, b->list);
+		char* line;
 
 		if (!logbuf)
 			return APR_ENOMEM;
@@ -127,8 +128,21 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 		}
 
 		/* Now I get the log data, write log and release the buffer */
-		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-					 "mod_fcgid: stderr: %s", logbuf);
+		line = logbuf;
+		while (*line) {
+			char* end = strpbrk(line, "\r\n");
+			if (end != NULL) {
+				*end = '\0';
+			}
+			ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
+						 "mod_fcgid: stderr: %s", line);
+			if (end == NULL) {
+				break;
+			}
+			++end;
+			line = end+strspn(end, "\r\n");
+		}
+
 		apr_bucket_free(logbuf);
 	}
 
