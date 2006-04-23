@@ -98,7 +98,7 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 	/* Handle FCGI_STDERR body, write the content to log file */
 	if (header.type == FCGI_STDERR) {
 		char *logbuf = apr_bucket_alloc(APR_BUCKET_BUFF_SIZE, b->list);
-		char* line;
+		char *line;
 
 		if (!logbuf)
 			return APR_ENOMEM;
@@ -130,7 +130,8 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 		/* Now I get the log data, write log and release the buffer */
 		line = logbuf;
 		while (*line) {
-			char* end = strpbrk(line, "\r\n");
+			char *end = strpbrk(line, "\r\n");
+
 			if (end != NULL) {
 				*end = '\0';
 			}
@@ -140,7 +141,7 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 				break;
 			}
 			++end;
-			line = end+strspn(end, "\r\n");
+			line = end + strspn(end, "\r\n");
 		}
 
 		apr_bucket_free(logbuf);

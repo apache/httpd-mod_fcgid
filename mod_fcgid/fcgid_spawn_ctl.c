@@ -222,10 +222,9 @@ int is_kill_allowed(fcgid_procnode * procnode)
 
 	if (current_node) {
 		/* Found the node */
-		if( current_node->process_counter <= g_min_class_process )
+		if (current_node->process_counter <= g_min_class_process)
 			return 0;
 	}
 
 	return 1;
 }
-

@@ -93,11 +93,11 @@ const char *set_max_process(cmd_parms * cmd, void *dummy, const char *arg);
 int get_max_process(server_rec * s);
 
 const char *set_max_class_process(cmd_parms * cmd, void *dummy,
-										  const char *arg);
+								  const char *arg);
 int get_max_class_process(server_rec * s);
 
 const char *set_min_class_process(cmd_parms * cmd, void *dummy,
-										const char *arg);
+								  const char *arg);
 int get_min_class_process(server_rec * s);
 
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,

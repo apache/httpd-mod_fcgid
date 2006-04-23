@@ -81,20 +81,20 @@ default_build_command(const char **cmd, const char ***argv,
 
 /* End of stolen */
 
-static void fcgid_add_cgi_vars(request_rec *r)
+static void fcgid_add_cgi_vars(request_rec * r)
 {
 	/* Work around cgi.fix_pathinfo = 1 in php.ini */
-	if( g_php_fix_pathinfo_enable )
-	{
-		char* merge_path;
-	    apr_table_t *e = r->subprocess_env;
+	if (g_php_fix_pathinfo_enable) {
+		char *merge_path;
+		apr_table_t *e = r->subprocess_env;
 
 		/* "DOCUMENT_ROOT"/"SCRIPT_NAME" -> "SCRIPT_NAME" */
-		const char* doc_root = apr_table_get(e, "DOCUMENT_ROOT");
-		const char* script_name = apr_table_get(e, "SCRIPT_NAME");
-		if( doc_root && script_name 
-			&& apr_filepath_merge(&merge_path, doc_root, script_name, 0, r->pool)==APR_SUCCESS )
-		{
+		const char *doc_root = apr_table_get(e, "DOCUMENT_ROOT");
+		const char *script_name = apr_table_get(e, "SCRIPT_NAME");
+
+		if (doc_root && script_name
+			&& apr_filepath_merge(&merge_path, doc_root, script_name, 0,
+								  r->pool) == APR_SUCCESS) {
 			apr_table_setn(e, "SCRIPT_NAME", merge_path);
 		}
 	}

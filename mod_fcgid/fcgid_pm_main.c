@@ -57,11 +57,11 @@ static void scan_idlelist(server_rec * main_server)
 		next_node = &proc_table[current_node->next_index];
 		last_active_time = current_node->last_active_time;
 		start_time = current_node->start_time;
-		if ( (apr_time_sec(now) - apr_time_sec(last_active_time) >
-			g_idle_timeout
-			|| apr_time_sec(now) - apr_time_sec(start_time) >
-			g_proc_lifetime )
-			&& is_kill_allowed(current_node) ) {
+		if ((apr_time_sec(now) - apr_time_sec(last_active_time) >
+			 g_idle_timeout
+			 || apr_time_sec(now) - apr_time_sec(start_time) >
+			 g_proc_lifetime)
+			&& is_kill_allowed(current_node)) {
 			/* Set die reason for log */
 			if (apr_time_sec(now) - apr_time_sec(last_active_time) >
 				g_idle_timeout)

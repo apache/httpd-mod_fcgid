@@ -42,8 +42,7 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 	config->spawn_score = DEFAULT_SPAWN_SCORE;
 	config->spawnscore_uplimit = DEFAULT_SPAWNSOCRE_UPLIMIT;
 	config->termination_score = DEFAULT_TERMINATION_SCORE;
-	config->max_class_process_count =
-		DEFAULT_MAX_CLASS_PROCESS_COUNT;
+	config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
 	config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
 	config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
@@ -323,7 +322,7 @@ int get_output_buffersize(server_rec * s)
 }
 
 const char *set_max_class_process(cmd_parms * cmd, void *dummy,
-										  const char *arg)
+								  const char *arg)
 {
 	server_rec *s = cmd->server;
 	fcgid_server_conf *config =
@@ -341,7 +340,7 @@ int get_max_class_process(server_rec * s)
 }
 
 const char *set_min_class_process(cmd_parms * cmd, void *dummy,
-										const char *arg)
+								  const char *arg)
 {
 	server_rec *s = cmd->server;
 	fcgid_server_conf *config =
@@ -372,8 +371,7 @@ int get_php_fix_pathinfo_enable(server_rec * s)
 {
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
-	return config ? config->
-		php_fix_pathinfo_enable : 0;
+	return config ? config->php_fix_pathinfo_enable : 0;
 }
 
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
