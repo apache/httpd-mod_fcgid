@@ -17,6 +17,7 @@
 module AP_MODULE_DECLARE_DATA fcgid_module;
 static APR_OPTIONAL_FN_TYPE(ap_cgi_build_command) * cgi_build_command;
 static ap_filter_rec_t *fcgid_filter_handle;
+static int g_php_fix_pathinfo_enable = 0;
 
 /* Stolen from mod_cgi.c */
 /* KLUDGE --- for back-combatibility, we don't have to check ExecCGI
@@ -79,6 +80,25 @@ default_build_command(const char **cmd, const char ***argv,
 }
 
 /* End of stolen */
+
+static void fcgid_add_cgi_vars(request_rec *r)
+{
+	/* Work around cgi.fix_pathinfo = 1 in php.ini */
+	if( g_php_fix_pathinfo_enable )
+	{
+		char* merge_path;
+	    apr_table_t *e = r->subprocess_env;
+
+		/* "DOCUMENT_ROOT"/"SCRIPT_NAME" -> "SCRIPT_NAME" */
+		const char* doc_root = apr_table_get(e, "DOCUMENT_ROOT");
+		const char* script_name = apr_table_get(e, "SCRIPT_NAME");
+		if( doc_root && script_name 
+			&& apr_filepath_merge(&merge_path, doc_root, script_name, 0, r->pool)==APR_SUCCESS )
+		{
+			apr_table_setn(e, "SCRIPT_NAME", merge_path);
+		}
+	}
+}
 
 static int fcgid_handler(request_rec * r)
 {
@@ -150,6 +170,7 @@ static int fcgid_handler(request_rec * r)
 
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
+	fcgid_add_cgi_vars(r);
 
 	/* Insert output filter */
 	ap_add_output_filter_handle(fcgid_filter_handle, NULL, r,
@@ -186,6 +207,8 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
 	const char *userdata_key = "fcgid_init";
 	apr_status_t rv;
 	void *dummy = NULL;
+
+	g_php_fix_pathinfo_enable = get_php_fix_pathinfo_enable(main_server);
 
 	/* Initialize process manager only once */
 	apr_pool_userdata_get(&dummy, userdata_key,
@@ -281,6 +304,10 @@ static const command_rec fcgid_cmds[] = {
 				   "an environment variable name and optional value to pass to FastCGI."),
 	AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL, ACCESS_CONF,
 				   "The CGI wrapper setting"),
+	AP_INIT_TAKE1("PHP_Fix_Pathinfo_Enable",
+				  set_php_fix_pathinfo_enable,
+				  NULL, RSRC_CONF,
+				  "Set 1, if cgi.fix_pathinfo=1 in php.ini"),
 	{NULL}
 };
 

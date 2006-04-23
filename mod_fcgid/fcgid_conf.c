@@ -53,6 +53,7 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 	config->ipc_connect_timeout_overwrite = 0;
 	config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
 	config->busy_timeout_overwrite = 0;
+	config->php_fix_pathinfo_enable = 0;
 	return config;
 }
 
@@ -355,6 +356,24 @@ int get_min_class_process(server_rec * s)
 		ap_get_module_config(s->module_config, &fcgid_module);
 	return config ? config->
 		min_class_process_count : DEFAULT_MIN_CLASS_PROCESS_COUNT;
+}
+
+const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
+										const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->php_fix_pathinfo_enable = atol(arg);
+	return NULL;
+}
+
+int get_php_fix_pathinfo_enable(server_rec * s)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config ? config->
+		php_fix_pathinfo_enable : 0;
 }
 
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,

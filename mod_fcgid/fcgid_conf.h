@@ -33,6 +33,8 @@ typedef struct {
 	int ipc_comm_timeout_overwrite;
 	int busy_timeout;
 	int busy_timeout_overwrite;
+
+	int php_fix_pathinfo_enable;
 } fcgid_server_conf;
 
 typedef struct {
@@ -118,5 +120,9 @@ apr_table_t *get_default_env_vars(request_rec * r);
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 							   const char *wrapper, const char *extension);
 fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r);
+
+const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
+										const char *arg);
+int get_php_fix_pathinfo_enable(server_rec * s);
 
 #endif
