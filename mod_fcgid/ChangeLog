@@ -1,3 +1,13 @@
+version 1.09 ( Apr 25th 2006 )
+1. Add configuration DefaultMinClassProcessCount(default 3). Idle fastcgi will not be killed if their count 
+	less than DefaultMinClassProcessCount.  
+	(Thank Finn Smith, finn at timeghost.net for suggestion)
+2. Add  configuration PHP_Fix_Pathinfo_Enable(default 0). If you are using PHP and set cgi.fix_pathinfo=1 in
+	php.ini, please add "PHP_Fix_Pathinfo_Enable 1" in httpd.conf.  
+	(Thank Florian Munz,  flo at myhosting.de for bug report)?
+3. Split error log whle '\r' or '\n' are inside the text send to "stderr". 
+	(Thank frederic at jolliton.com for the patch)
+
 version 1.08 ( Jan 22nd 2006 )
 1. apr_bucket_copy() does not work with buckets from mod_ssl, use apr_bucket_heap_create() instead :(
 	(Thank Grzegorz Sampolski, gs at blink.pl for the bug report)
