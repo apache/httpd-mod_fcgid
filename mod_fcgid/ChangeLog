@@ -1,3 +1,12 @@
+version 1.10 ( )
+1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with
+large number of logfiles. Apache2 calls poll() (when OS supports it), and in that
+case it doesn't need to be recompiled with larger FD_SETSIZE. select() is
+still limited to FD_SETSIZE." 
+	Thank Piotr Gackiewicz gacek at intertele.pl for the patch.
+2. Bug fix: "Some requests fail with HTTP 500 and no errorlog entry is generated"
+	Thank Piotr Gackiewicz gacek at intertele.pl for the patch.
+
 version 1.09 ( Apr 25th 2006 )
 1. Add configuration DefaultMinClassProcessCount(default 3). Idle fastcgi will not be killed if their count 
 	less than DefaultMinClassProcessCount.  

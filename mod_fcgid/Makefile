@@ -16,10 +16,6 @@ APXS      = apxs
 APACHECTL = apachectl
 EXTRA_CFLAGS = -I$(builddir)
 
-#DEFS=-Dmy_define=my_value
-#INCLUDES=-Imy/include/dir
-#LIBS=-Lmy/lib/dir -lmylib
-
 all: local-shared-build
 
 clean:

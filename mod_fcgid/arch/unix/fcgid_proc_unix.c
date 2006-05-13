@@ -2,6 +2,7 @@
 #include <sys/un.h>
 #include <sys/types.h>
 #include <netinet/tcp.h>		/* For TCP_NODELAY */
+#include <sys/poll.h>
 #define CORE_PRIVATE
 #include "httpd.h"
 #include "apr_thread_proc.h"
@@ -525,10 +526,9 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 						   fcgid_ipc * ipc_handle, const char *buffer,
 						   apr_size_t * size)
 {
-	fd_set rset;
-	struct timeval tv;
 	int retcode, unix_socket;
 	fcgid_namedpipe_handle *handle_info;
+	struct pollfd pollfds[1];
 
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 	unix_socket = handle_info->handle_socket;
@@ -547,17 +547,16 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 	}
 
 	/* I have to wait a while */
-	FD_ZERO(&rset);
-	FD_SET(unix_socket, &rset);
+
+	pollfds[0].fd = unix_socket;
+	pollfds[0].events = POLLIN;
 	do {
-		tv.tv_usec = 0;
-		tv.tv_sec = ipc_handle->communation_timeout;
-		retcode = select(unix_socket + 1, &rset, NULL, NULL, &tv);
-	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+		retcode = poll(pollfds, 1, ipc_handle->communation_timeout*1000);
+	} while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
 	if (retcode == -1) {
-		ap_log_error(APLOG_MARK, APLOG_INFO, errno,
+		ap_log_error(APLOG_MARK, APLOG_ERR, errno,
 					 main_server,
-					 "mod_fcgid: select unix domain socket error");
+					 "mod_fcgid: poll unix domain socket error");
 		return errno;
 	} else if (retcode == 0) {
 		ap_log_error(APLOG_MARK, APLOG_INFO, 0,
@@ -567,7 +566,6 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 		return APR_ETIMEDOUT;
 	}
 
-	/* Read again after select() */
 	do {
 		if ((retcode = read(unix_socket, (void *) buffer, *size)) > 0) {
 			*size = retcode;
@@ -592,10 +590,9 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
 								  struct iovec *vec, int nvec,
 								  int *writecnt)
 {
-	fd_set wset;
-	struct timeval tv;
 	int retcode, unix_socket;
 	fcgid_namedpipe_handle *handle_info;
+	struct pollfd pollfds[1];
 
 	handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 	unix_socket = handle_info->handle_socket;
@@ -610,14 +607,12 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
 	if (!APR_STATUS_IS_EAGAIN(errno))
 		return errno;
 
-	/* Select() */
-	FD_ZERO(&wset);
-	FD_SET(unix_socket, &wset);
+	/* poll() */
+	pollfds[0].fd = unix_socket;
+	pollfds[0].events = POLLOUT;
 	do {
-		tv.tv_usec = 0;
-		tv.tv_sec = ipc_handle->communation_timeout;
-		retcode = select(unix_socket + 1, NULL, &wset, NULL, &tv);
-	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+		retcode = poll(pollfds, 1, ipc_handle->communation_timeout*1000);
+	} while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
 	if (retcode == -1)
 		return errno;
 

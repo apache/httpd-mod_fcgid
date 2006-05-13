@@ -256,8 +256,11 @@ handle_request(request_rec * r, const char *argv0,
 	}
 
 	bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
-	if (!bucket_ctx)
+	if (!bucket_ctx) {
+		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
+					 "mod_fcgid: apr_calloc of %d bytes failed in handle_request function", sizeof(*bucket_ctx));
 		return HTTP_INTERNAL_SERVER_ERROR;
+	}
 	bucket_ctx->ipc.connect_timeout = g_connect_timeout;
 	bucket_ctx->ipc.communation_timeout = g_comm_timeout;
 	bucket_ctx->ipc.request = r;
@@ -315,7 +318,7 @@ handle_request(request_rec * r, const char *argv0,
 
 	/* Now I get a connected ipc handle */
 	if (!bucket_ctx->procnode) {
-		ap_log_error(APLOG_MARK, APLOG_INFO, 0, r->server,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
 					 "mod_fcgid: can't apply process slot for %s", argv0);
 		return HTTP_SERVICE_UNAVAILABLE;
 	}
@@ -326,7 +329,7 @@ handle_request(request_rec * r, const char *argv0,
 	if ((rv =
 		 proc_write_ipc(main_server, &bucket_ctx->ipc,
 						output_brigade)) != APR_SUCCESS) {
-		ap_log_error(APLOG_MARK, APLOG_INFO, rv, r->server,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
 					 "mod_fcgid: write data to fastcgi server error");
 		bucket_ctx->has_error = 1;
 		return HTTP_INTERNAL_SERVER_ERROR;
@@ -335,8 +338,11 @@ handle_request(request_rec * r, const char *argv0,
 	/* Create brigade */
 	brigade_stdout =
 		apr_brigade_create(request_pool, r->connection->bucket_alloc);
-	if (!brigade_stdout)
+	if (!brigade_stdout) {
+		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
+					 "mod_fcgid: apr_brigade_create failed in handle_request function");
 		return HTTP_INTERNAL_SERVER_ERROR;
+	}
 	APR_BRIGADE_INSERT_TAIL(brigade_stdout,
 							ap_bucket_fcgid_header_create(r->connection->
 														  bucket_alloc,
@@ -346,7 +352,11 @@ handle_request(request_rec * r, const char *argv0,
 	/* Check the script header first. If got error, return immediately */
 	if ((cond_status = ap_scan_script_header_err_core
 		 (r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout)) >= 400)
+	{
+		ap_log_error(APLOG_MARK, APLOG_INFO, rv, r->server,
+					"mod_fcgid: ap_scan_script_header_err_core failed in handle_request function: %d", cond_status);
 		return cond_status;
+	}
 
 	/* Check redirect */
 	location = apr_table_get(r->headers_out, "Location");
@@ -377,6 +387,9 @@ handle_request(request_rec * r, const char *argv0,
 	if ((rv =
 		 ap_pass_brigade(r->output_filters,
 						 brigade_stdout)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
+					 "mod_fcgid: ap_pass_brigade failed in handle_request function");
+
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 
@@ -437,7 +450,7 @@ int bridge_request(request_rec * r, const char *argv0,
 									AP_MODE_READBYTES,
 									APR_BLOCK_READ,
 									HUGE_STRING_LEN)) != APR_SUCCESS) {
-			ap_log_error(APLOG_MARK, APLOG_INFO, rv,
+			ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
 						 main_server,
 						 "mod_fcgid: can't get data from http client");
 			apr_brigade_destroy(output_brigade);
