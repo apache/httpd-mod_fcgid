@@ -1,5 +1,4 @@
 #include "httpd.h"
-#include "ap_mpm.h"
 #include "http_request.h"
 #include "apr_strings.h"
 #include "apr_portable.h"
@@ -14,7 +13,7 @@
 #include "fcgid_protocol.h"
 #include "fcgid_bucket.h"
 #define FCGID_APPLY_TRY_COUNT 2
-#define FCGID_REQUEST_COUNT 3
+#define FCGID_REQUEST_COUNT 32
 
 static int g_variables_inited = 0;
 static int g_busy_timeout;
@@ -240,7 +239,7 @@ handle_request(request_rec * r, const char *argv0,
 	server_rec *main_server = r->server;
 	fcgid_command fcgi_request;
 	fcgid_bucket_ctx *bucket_ctx;
-	int i, stopping, cond_status;
+	int i, j, cond_status;
 	apr_status_t rv;
 	apr_bucket_brigade *brigade_stdout;
 	char sbuf[MAX_STRING_LEN];
@@ -258,7 +257,8 @@ handle_request(request_rec * r, const char *argv0,
 	bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
 	if (!bucket_ctx) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-					 "mod_fcgid: apr_calloc of %d bytes failed in handle_request function", sizeof(*bucket_ctx));
+					 "mod_fcgid: apr_calloc of %d bytes failed in handle_request function",
+					 sizeof(*bucket_ctx));
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 	bucket_ctx->ipc.connect_timeout = g_connect_timeout;
@@ -268,10 +268,9 @@ handle_request(request_rec * r, const char *argv0,
 							  bucket_ctx_cleanup, apr_pool_cleanup_null);
 
 	/* Try to get a connected ipc handle */
-	stopping = 0;
-	for (i = 0; i < FCGID_REQUEST_COUNT && !stopping; i++) {
+	for (i = 0; i < FCGID_REQUEST_COUNT; i++) {
 		/* Apply a free process slot, send a spawn request if I can't get one */
-		for (i = 0; i < FCGID_APPLY_TRY_COUNT && !stopping; i++) {
+		for (j = 0; j < FCGID_APPLY_TRY_COUNT; j++) {
 			int mpm_state = 0;
 			apr_ino_t inode =
 				wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
@@ -290,15 +289,15 @@ handle_request(request_rec * r, const char *argv0,
 			if (bucket_ctx->procnode)
 				break;
 
+			apr_sleep(apr_time_from_sec(1));
+
+			bucket_ctx->procnode =
+				apply_free_procnode(r->server, &fcgi_request);
+			if (bucket_ctx->procnode)
+				break;
+
 			/* Send a spawn request if I can't get a process slot */
 			procmgr_post_spawn_cmd(&fcgi_request, r);
-
-			/* Is it stopping? */
-			if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
-				&& mpm_state == AP_MPMQ_STOPPING) {
-				stopping = 1;
-				break;
-			}
 		}
 
 		/* Connect to the fastcgi server */
@@ -340,7 +339,7 @@ handle_request(request_rec * r, const char *argv0,
 		apr_brigade_create(request_pool, r->connection->bucket_alloc);
 	if (!brigade_stdout) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-					 "mod_fcgid: apr_brigade_create failed in handle_request function");
+			"mod_fcgid: apr_brigade_create failed in handle_request function");
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 	APR_BRIGADE_INSERT_TAIL(brigade_stdout,
@@ -352,11 +351,7 @@ handle_request(request_rec * r, const char *argv0,
 	/* Check the script header first. If got error, return immediately */
 	if ((cond_status = ap_scan_script_header_err_core
 		 (r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout)) >= 400)
-	{
-		ap_log_error(APLOG_MARK, APLOG_INFO, rv, r->server,
-					"mod_fcgid: ap_scan_script_header_err_core failed in handle_request function: %d", cond_status);
 		return cond_status;
-	}
 
 	/* Check redirect */
 	location = apr_table_get(r->headers_out, "Location");
@@ -389,7 +384,6 @@ handle_request(request_rec * r, const char *argv0,
 						 brigade_stdout)) != APR_SUCCESS) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
 					 "mod_fcgid: ap_pass_brigade failed in handle_request function");
-
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 

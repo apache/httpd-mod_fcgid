@@ -551,7 +551,7 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 	pollfds[0].fd = unix_socket;
 	pollfds[0].events = POLLIN;
 	do {
-		retcode = poll(pollfds, 1, ipc_handle->communation_timeout*1000);
+		retcode = poll(pollfds, 1, ipc_handle->communation_timeout * 1000);
 	} while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
 	if (retcode == -1) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, errno,
@@ -611,7 +611,7 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
 	pollfds[0].fd = unix_socket;
 	pollfds[0].events = POLLOUT;
 	do {
-		retcode = poll(pollfds, 1, ipc_handle->communation_timeout*1000);
+		retcode = poll(pollfds, 1, ipc_handle->communation_timeout * 1000);
 	} while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
 	if (retcode == -1)
 		return errno;
