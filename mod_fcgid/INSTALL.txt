@@ -23,3 +23,10 @@ It's tested on Win2k ONLY, but it SHOULD work on NT4 and above
 5. add the following line in httpd.con
 
 LoadModule fcgid_module modules/mod_fcgid.so
+
+
+Compile with apxs
+If you know what apxs is, you can compile the module with this command:
+apxs -c -o mod_fcgid.so -Iarch/unix -I. fcgid_bridge.c fcgid_conf.c fcgid_pm_main.c fcgid_protocol.c fcgid_spawn_ctl.c mod_fcgid.c arch/unix/fcgid_proctbl_unix.c arch/unix/fcgid_pm_unix.c arch/unix/fcgid_proc_unix.c fcgid_bucket.c fcgid_filter.c
+
+And you will the mod_fcgid.so in .lib directory
