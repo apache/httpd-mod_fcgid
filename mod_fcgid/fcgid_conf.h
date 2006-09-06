@@ -25,6 +25,7 @@ typedef struct {
 	int max_class_process_count;
 	int min_class_process_count;
 	int output_buffersize;
+	int max_requests_per_process;
 	apr_table_t *default_init_env;
 
 	int ipc_connect_timeout;
@@ -124,5 +125,9 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r);
 const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 										const char *arg);
 int get_php_fix_pathinfo_enable(server_rec * s);
+
+const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
+										const char *arg);
+int get_max_requests_per_process(server_rec * s);
 
 #endif

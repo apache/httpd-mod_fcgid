@@ -30,6 +30,7 @@ typedef struct {
 	apr_size_t share_grp_id;	/* cgi wrapper share group id */
 	apr_time_t start_time;		/* the time of this process create */
 	apr_time_t last_active_time;	/* the time this process last active */
+	int requests_handled;		/* number of requests process has handled */
 	char diewhy;				/* why it die */
 } fcgid_procnode;
 

@@ -308,6 +308,9 @@ static const command_rec fcgid_cmds[] = {
 				  set_php_fix_pathinfo_enable,
 				  NULL, RSRC_CONF,
 				  "Set 1, if cgi.fix_pathinfo=1 in php.ini"),
+	AP_INIT_TAKE1("MaxRequestsPerProcess", set_max_requests_per_process,
+				  NULL, RSRC_CONF,
+				  "Max requests handled by each fastcgi application"),
 	{NULL}
 };
 

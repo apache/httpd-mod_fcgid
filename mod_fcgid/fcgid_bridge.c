@@ -19,6 +19,7 @@ static int g_variables_inited = 0;
 static int g_busy_timeout;
 static int g_connect_timeout;
 static int g_comm_timeout;
+static int g_max_requests_per_process;
 
 static fcgid_procnode *apply_free_procnode(server_rec * main_server,
 										   fcgid_command * command)
@@ -145,6 +146,11 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 			ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
 			return_procnode(main_server, ctx->procnode,
 							1 /* communication error */ );
+		} else if ( g_max_requests_per_process!=-1 && ++ctx->procnode->requests_handled >=
+			g_max_requests_per_process) {
+			ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
+			return_procnode(main_server, ctx->procnode,
+							1 /* handled all requests */ );
 		} else
 			return_procnode(main_server, ctx->procnode,
 							0 /* communication ok */ );
@@ -249,6 +255,7 @@ handle_request(request_rec * r, const char *argv0,
 		g_connect_timeout = get_ipc_connect_timeout(r->server);
 		g_comm_timeout = get_ipc_comm_timeout(r->server);
 		g_busy_timeout = get_busy_timeout(r->server);
+		g_max_requests_per_process = get_max_requests_per_process(r->server);
 		if (g_comm_timeout == 0)
 			g_comm_timeout = 1;
 		g_variables_inited = 1;

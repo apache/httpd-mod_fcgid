@@ -401,6 +401,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	procnode->uid = command->uid;
 	procnode->gid = command->gid;
 	procnode->start_time = procnode->last_active_time = apr_time_now();
+	procnode->requests_handled = 0;
 	procnode->diewhy = FCGID_DIE_KILLSELF;
 	procnode->proc_pool = NULL;
 	procinfo.cgipath = command->cgipath;
