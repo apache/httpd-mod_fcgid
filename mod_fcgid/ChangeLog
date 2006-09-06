@@ -3,11 +3,11 @@ version 1.11 ( )
 	Thank Hans Christian Saustrup, hc at saustrup.net for the suggestion.
 2. Bug fix. (Win32 only) PHP script can not create socket on Win32.
 	Thank bbscool at zjip.com for the bug report and the help.
-3. Patchs from Robert L Mathews, rob at tigertech.com
+3. GREAT patchs from Robert L Mathews, rob at tigertech.com
 	Fix compile warnings
 	Adds a MaxRequestsPerProcess parameter that allows mod_fcgid to exit after handling a certain number of requests
 	Close socket before fork 
-	
+	avoid the 1-second sleep the first time a process is spawned
 
 version 1.10 ( Jul 3rd 2006 )
 1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with
