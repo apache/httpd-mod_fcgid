@@ -205,7 +205,7 @@ int is_kill_allowed(fcgid_procnode * procnode)
 	struct fcgid_stat_node *previous_node, *current_node;
 
 	if (!g_stat_pool || !procnode)
-		return;
+		return 0;
 
 	/* Can I find the node base on inode, device id and share group id? */
 	previous_node = g_stat_list_header;

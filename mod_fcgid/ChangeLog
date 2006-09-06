@@ -3,6 +3,9 @@ version 1.11 ( )
 	Thank Hans Christian Saustrup, hc at saustrup.net for the suggestion.
 2. Bug fix. (Win32 only) PHP script can not create socket on Win32.
 	Thank bbscool at zjip.com for the bug report and the help.
+3. Patchs from Robert L Mathews, rob at tigertech.com
+	Fix compile warnings
+	
 
 version 1.10 ( Jul 3rd 2006 )
 1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with

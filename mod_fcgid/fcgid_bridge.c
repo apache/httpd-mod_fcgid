@@ -256,7 +256,7 @@ handle_request(request_rec * r, const char *argv0,
 
 	bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
 	if (!bucket_ctx) {
-		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
 					 "mod_fcgid: apr_calloc of %d bytes failed in handle_request function",
 					 sizeof(*bucket_ctx));
 		return HTTP_INTERNAL_SERVER_ERROR;
@@ -271,7 +271,6 @@ handle_request(request_rec * r, const char *argv0,
 	for (i = 0; i < FCGID_REQUEST_COUNT; i++) {
 		/* Apply a free process slot, send a spawn request if I can't get one */
 		for (j = 0; j < FCGID_APPLY_TRY_COUNT; j++) {
-			int mpm_state = 0;
 			apr_ino_t inode =
 				wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
 			apr_dev_t deviceid =
