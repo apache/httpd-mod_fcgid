@@ -144,7 +144,7 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
 											   procinfo->cgipath))) !=
 APR_SUCCESS
 || (rv =
-	apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM)) != APR_SUCCESS
+	apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM_ENV)) != APR_SUCCESS
 || (rv = apr_procattr_detach_set(proc_attr, 1)) != APR_SUCCESS
 || (rv =
 	apr_os_file_put(&file, &listen_handle, 0,

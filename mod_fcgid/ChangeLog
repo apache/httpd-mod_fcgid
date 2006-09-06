@@ -1,4 +1,10 @@
-version 1.10 ( )
+version 1.11 ( )
+1. Add apxs compile instruction in INSTALL.txt.
+	Thank Hans Christian Saustrup, hc at saustrup.net for the suggestion.
+2. Bug fix. (Win32 only) PHP script can not create socket on Win32.
+	Thank bbscool at zjip.com for the bug report and the help.
+
+version 1.10 ( Jul 3rd 2006 )
 1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with
 large number of logfiles. Apache2 calls poll() (when OS supports it), and in that
 case it doesn't need to be recompiled with larger FD_SETSIZE. select() is
@@ -6,6 +12,9 @@ still limited to FD_SETSIZE."
 	Thank Piotr Gackiewicz gacek at intertele.pl for the patch.
 2. Bug fix: "Some requests fail with HTTP 500 and no errorlog entry is generated"
 	Thank Piotr Gackiewicz gacek at intertele.pl for the patch.
+3. Use anonymouse share memeory to make OS X happy.
+	Thank andkjar at obtech.net for the patch.
+4. Add config.m4, mod_fcgid now can be static linked in httpd(See INSTALL.txt)
 
 version 1.09 ( Apr 25th 2006 )
 1. Add configuration DefaultMinClassProcessCount(default 3). Idle fastcgi will not be killed if their count 

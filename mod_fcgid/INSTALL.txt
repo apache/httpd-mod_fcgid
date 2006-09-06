@@ -11,7 +11,20 @@ NOTE: This module MUST run on share memory supported system
 5. add the following line in httpd.conf
 
 LoadModule fcgid_module modules/mod_fcgid.so
+
+
+
  
+UNIX (static link to httpd)
+1. copy mod_fcgid to $httpd_src_path/modules
+2. run buildconf in $httpd_src_path
+3. run "configure -enable-fcgid $other_arguments" in $httpd_src_path
+4. make
+5. make install
+6. run "httpd -l" in $httpd_installed_path/bin/ to verify the module is included.
+
+
+
 
 Windows
 It's tested on Win2k ONLY, but it SHOULD work on NT4 and above
@@ -23,6 +36,8 @@ It's tested on Win2k ONLY, but it SHOULD work on NT4 and above
 5. add the following line in httpd.con
 
 LoadModule fcgid_module modules/mod_fcgid.so
+
+
 
 
 Compile with apxs
