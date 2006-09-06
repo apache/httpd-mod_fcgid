@@ -5,6 +5,8 @@ version 1.11 ( )
 	Thank bbscool at zjip.com for the bug report and the help.
 3. Patchs from Robert L Mathews, rob at tigertech.com
 	Fix compile warnings
+	Adds a MaxRequestsPerProcess parameter that allows mod_fcgid to exit after handling a certain number of requests
+	Close socket before fork 
 	
 
 version 1.10 ( Jul 3rd 2006 )
