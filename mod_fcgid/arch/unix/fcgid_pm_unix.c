@@ -271,6 +271,7 @@ apr_status_t
 procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 {
 	apr_status_t rv;
+	apr_finfo_t finfo;
 	int error_scan_interval, busy_scan_interval, idle_scan_interval;
 
 	/* Calculate procmgr_peek_cmd wake up interval */
@@ -282,15 +283,19 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 	if (g_wakeup_timeout == 0)
 		g_wakeup_timeout = 1;	/* Make it reasonable */
 
-	/* Make dir for unix domain socket */
-	if ((rv = apr_dir_make_recursive(get_socketpath(main_server),
+	rv = apr_stat(&finfo, get_socketpath(main_server), APR_FINFO_USER, configpool);
+	if (rv != APR_SUCCESS || !(finfo.valid & APR_FINFO_USER) || finfo.user!=unixd_config.user_id )
+	{
+		/* Make dir for unix domain socket */
+		if ((rv = apr_dir_make_recursive(get_socketpath(main_server),
 									 APR_UREAD | APR_UWRITE | APR_UEXECUTE,
 									 configpool)) != APR_SUCCESS
-		|| chown(get_socketpath(main_server), unixd_config.user_id,
-				 -1) < 0) {
-		ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
-					 "mod_fcgid: Can't create unix socket dir");
-		exit(1);
+			|| chown(get_socketpath(main_server), unixd_config.user_id,
+					 -1) < 0) {
+			ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
+						 "mod_fcgid: Can't create unix socket dir");
+			exit(1);
+		}
 	}
 
 	/* Create pipes to communicate between process manager and apache */
