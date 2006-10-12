@@ -8,6 +8,7 @@ version 1.11 ( )
 	Adds a MaxRequestsPerProcess parameter that allows mod_fcgid to exit after handling a certain number of requests
 	Close socket before fork 
 	avoid the 1-second sleep the first time a process is spawned
+4. Print warning log while read data error from FastCGI process.
 
 version 1.10 ( Jul 3rd 2006 )
 1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with

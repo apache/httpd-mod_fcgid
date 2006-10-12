@@ -560,7 +560,7 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 		}
 	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
 	if (retcode == -1 && !APR_STATUS_IS_EAGAIN(errno)) {
-		ap_log_error(APLOG_MARK, APLOG_INFO, errno,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
 					 main_server,
 					 "mod_fcgid: read data from fastcgi server error");
 		return errno;
@@ -574,12 +574,12 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 		retcode = poll(pollfds, 1, ipc_handle->communation_timeout * 1000);
 	} while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
 	if (retcode == -1) {
-		ap_log_error(APLOG_MARK, APLOG_ERR, errno,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
 					 main_server,
 					 "mod_fcgid: poll unix domain socket error");
 		return errno;
 	} else if (retcode == 0) {
-		ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
 					 main_server,
 					 "mod_fcgid: read data timeout in %d seconds",
 					 ipc_handle->communation_timeout);
@@ -594,13 +594,13 @@ apr_status_t proc_read_ipc(server_rec * main_server,
 	} while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
 
 	if (retcode == 0) {
-		ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
 					 main_server,
 					 "mod_fcgid: Read data error, fastcgi server has close connection");
 		return APR_EPIPE;
 	}
 
-	ap_log_error(APLOG_MARK, APLOG_INFO, errno,
+	ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
 				 main_server,
 				 "mod_fcgid: read data from fastcgi server error.");
 	return errno;
