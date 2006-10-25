@@ -239,20 +239,21 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 	}
 
 	{
-		int oldflags = fcntl (unix_socket, F_GETFD, 0);
+		int oldflags = fcntl(unix_socket, F_GETFD, 0);
+
 		if (oldflags < 0) {
 			ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-						procinfo->main_server,
-						"mod_fcgid: fcntl F_GETFD failed");
+						 procinfo->main_server,
+						 "mod_fcgid: fcntl F_GETFD failed");
 			close(unix_socket);
 			return errno;
 		}
-		
+
 		oldflags |= FD_CLOEXEC;
-		if (fcntl (unix_socket, F_SETFD, oldflags) < 0) {
+		if (fcntl(unix_socket, F_SETFD, oldflags) < 0) {
 			ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-						procinfo->main_server,
-						"mod_fcgid: fcntl F_SETFD failed");
+						 procinfo->main_server,
+						 "mod_fcgid: fcntl F_SETFD failed");
 			close(unix_socket);
 			return errno;
 		}

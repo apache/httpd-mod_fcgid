@@ -96,6 +96,12 @@ void *create_fcgid_dir_config(apr_pool_t * p, char *dummy)
 	fcgid_dir_conf *config = apr_pcalloc(p, sizeof(fcgid_dir_conf));
 
 	config->wrapper_info_hash = apr_hash_make(p);
+	config->authenticator_info = NULL;
+	config->authenticator_authoritative = 1;
+	config->authorizer_info = NULL;
+	config->authorizer_authoritative = 1;
+	config->access_info = NULL;
+	config->access_authoritative = 1;
 	return (void *) config;
 }
 
@@ -370,7 +376,7 @@ const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 }
 
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
-										  const char *arg)
+										 const char *arg)
 {
 	server_rec *s = cmd->server;
 	fcgid_server_conf *config =
@@ -449,6 +455,163 @@ apr_table_t *get_default_env_vars(request_rec * r)
 	return config->default_init_env;
 }
 
+const char *set_authenticator_info(cmd_parms * cmd, void *config,
+								   const char *authenticator)
+{
+	apr_status_t rv;
+	apr_finfo_t finfo;
+	fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+
+	/* Is the wrapper exist? */
+	if ((rv = apr_stat(&finfo, authenticator, APR_FINFO_NORM,
+					   cmd->temp_pool)) != APR_SUCCESS) {
+		return apr_psprintf(cmd->pool,
+							"can't get authenticator file info: %s, errno: %d",
+							authenticator, apr_get_os_error());
+	}
+
+	/* Create the wrapper node */
+	dirconfig->authenticator_info =
+		apr_pcalloc(cmd->server->process->pconf,
+					sizeof(*dirconfig->authenticator_info));
+	if (!dirconfig->authenticator_info)
+		return "Can't alloc memory for authenticator_info";
+	strncpy(dirconfig->authenticator_info->path, authenticator,
+			_POSIX_PATH_MAX - 1);
+	dirconfig->authenticator_info->path[_POSIX_PATH_MAX - 1] = '\0';
+	dirconfig->authenticator_info->inode = finfo.inode;
+	dirconfig->authenticator_info->deviceid = finfo.device;
+	dirconfig->authenticator_info->share_group_id = (apr_size_t) - 1;
+	return NULL;
+}
+
+const char *set_authenticator_authoritative(cmd_parms * cmd,
+											void *config, int arg)
+{
+	fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+
+	dirconfig->authenticator_authoritative = arg;
+	return NULL;
+}
+
+fcgid_wrapper_conf *get_authenticator_info(request_rec * r,
+										   int *authoritative)
+{
+	fcgid_dir_conf *config =
+		ap_get_module_config(r->per_dir_config, &fcgid_module);
+
+	if (config != NULL && config->authenticator_info != NULL) {
+		*authoritative = config->authenticator_authoritative;
+		return config->authenticator_info;
+	}
+
+	return NULL;
+}
+
+const char *set_authorizer_info(cmd_parms * cmd, void *config,
+								const char *authorizer)
+{
+	apr_status_t rv;
+	apr_finfo_t finfo;
+	fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+
+	/* Is the wrapper exist? */
+	if ((rv = apr_stat(&finfo, authorizer, APR_FINFO_NORM,
+					   cmd->temp_pool)) != APR_SUCCESS) {
+		return apr_psprintf(cmd->pool,
+							"can't get authorizer file info: %s, errno: %d",
+							authorizer, apr_get_os_error());
+	}
+
+	/* Create the wrapper node */
+	dirconfig->authorizer_info =
+		apr_pcalloc(cmd->server->process->pconf,
+					sizeof(*dirconfig->authorizer_info));
+	if (!dirconfig->authorizer_info)
+		return "Can't alloc memory for authorizer";
+	strncpy(dirconfig->authorizer_info->path, authorizer,
+			_POSIX_PATH_MAX - 1);
+	dirconfig->authorizer_info->path[_POSIX_PATH_MAX - 1] = '\0';
+	dirconfig->authorizer_info->inode = finfo.inode;
+	dirconfig->authorizer_info->deviceid = finfo.device;
+	dirconfig->authorizer_info->share_group_id = (apr_size_t) - 1;
+	return NULL;
+}
+
+const char *set_authorizer_authoritative(cmd_parms * cmd,
+										 void *config, int arg)
+{
+	fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+
+	dirconfig->authorizer_authoritative = arg;
+	return NULL;
+}
+
+fcgid_wrapper_conf *get_authorizer_info(request_rec * r,
+										int *authoritative)
+{
+	fcgid_dir_conf *config =
+		ap_get_module_config(r->per_dir_config, &fcgid_module);
+
+	if (config != NULL && config->authorizer_info != NULL) {
+		*authoritative = config->authorizer_authoritative;
+		return config->authorizer_info;
+	}
+
+	return NULL;
+}
+
+const char *set_access_info(cmd_parms * cmd, void *config,
+							const char *access)
+{
+	apr_status_t rv;
+	apr_finfo_t finfo;
+	fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+
+	/* Is the wrapper exist? */
+	if ((rv = apr_stat(&finfo, access, APR_FINFO_NORM,
+					   cmd->temp_pool)) != APR_SUCCESS) {
+		return apr_psprintf(cmd->pool,
+							"can't get authorizer file info: %s, errno: %d",
+							access, apr_get_os_error());
+	}
+
+	/* Create the wrapper node */
+	dirconfig->access_info =
+		apr_pcalloc(cmd->server->process->pconf,
+					sizeof(*dirconfig->access_info));
+	if (!dirconfig->access_info)
+		return "Can't alloc memory for access";
+	strncpy(dirconfig->access_info->path, access, _POSIX_PATH_MAX - 1);
+	dirconfig->access_info->path[_POSIX_PATH_MAX - 1] = '\0';
+	dirconfig->access_info->inode = finfo.inode;
+	dirconfig->access_info->deviceid = finfo.device;
+	dirconfig->access_info->share_group_id = (apr_size_t) - 1;
+	return NULL;
+}
+
+const char *set_access_authoritative(cmd_parms * cmd,
+									 void *config, int arg)
+{
+	fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+
+	dirconfig->access_authoritative = arg;
+	return NULL;
+}
+
+fcgid_wrapper_conf *get_access_info(request_rec * r, int *authoritative)
+{
+	fcgid_dir_conf *config =
+		ap_get_module_config(r->per_dir_config, &fcgid_module);
+
+	if (config != NULL && config->access_info != NULL) {
+		*authoritative = config->access_authoritative;
+		return config->access_info;
+	}
+
+	return NULL;
+}
+
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 							   const char *wrapperpath,
 							   const char *extension)
@@ -476,8 +639,8 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
 	if (!wrapper)
 		return "Can't alloc memory for wrapper";
-	strncpy(wrapper->wrapper_path, wrapperpath, _POSIX_PATH_MAX - 1);
-	wrapper->wrapper_path[_POSIX_PATH_MAX - 1] = '\0';
+	strncpy(wrapper->path, wrapperpath, _POSIX_PATH_MAX - 1);
+	wrapper->path[_POSIX_PATH_MAX - 1] = '\0';
 	wrapper->inode = finfo.inode;
 	wrapper->deviceid = finfo.device;
 	wrapper->share_group_id = (apr_size_t) - 1;

@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"Debug/mod_fcgid.so" /base:@..\..\os\win32\BaseAddr.ref,mod_fcgid.so
-# ADD LINK32 kernel32.lib User32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"g:/apache2/modules/mod_fcgid.so"
+# ADD LINK32 kernel32.lib User32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

@@ -283,13 +283,15 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 	if (g_wakeup_timeout == 0)
 		g_wakeup_timeout = 1;	/* Make it reasonable */
 
-	rv = apr_stat(&finfo, get_socketpath(main_server), APR_FINFO_USER, configpool);
-	if (rv != APR_SUCCESS || !(finfo.valid & APR_FINFO_USER) || finfo.user!=unixd_config.user_id )
-	{
+	rv = apr_stat(&finfo, get_socketpath(main_server), APR_FINFO_USER,
+				  configpool);
+	if (rv != APR_SUCCESS || !(finfo.valid & APR_FINFO_USER)
+		|| finfo.user != unixd_config.user_id) {
 		/* Make dir for unix domain socket */
 		if ((rv = apr_dir_make_recursive(get_socketpath(main_server),
-									 APR_UREAD | APR_UWRITE | APR_UEXECUTE,
-									 configpool)) != APR_SUCCESS
+										 APR_UREAD | APR_UWRITE |
+										 APR_UEXECUTE,
+										 configpool)) != APR_SUCCESS
 			|| chown(get_socketpath(main_server), unixd_config.user_id,
 					 -1) < 0) {
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
@@ -382,8 +384,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 	/* Update fcgid_command with wrapper info */
 	command->wrapperpath[0] = '\0';
 	if ((wrapperconf = get_wrapper_info(argv0, r))) {
-		strncpy(command->wrapperpath, wrapperconf->wrapper_path,
-				_POSIX_PATH_MAX);
+		strncpy(command->wrapperpath, wrapperconf->path, _POSIX_PATH_MAX);
 		command->wrapperpath[_POSIX_PATH_MAX - 1] = '\0';
 		command->deviceid = wrapperconf->deviceid;
 		command->inode = wrapperconf->inode;

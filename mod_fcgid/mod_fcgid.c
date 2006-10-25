@@ -2,6 +2,8 @@
 #include "ap_mmn.h"
 #include "httpd.h"
 #include "http_core.h"
+#include "http_request.h"
+#include "http_protocol.h"
 #include "apr_buckets.h"
 #include "apr_thread_proc.h"
 #include "mod_cgi.h"
@@ -13,6 +15,7 @@
 #include "fcgid_spawn_ctl.h"
 #include "fcgid_bridge.h"
 #include "fcgid_filter.h"
+#include "fcgid_protocol.h"
 
 module AP_MODULE_DECLARE_DATA fcgid_module;
 static APR_OPTIONAL_FN_TYPE(ap_cgi_build_command) * cgi_build_command;
@@ -176,8 +179,261 @@ static int fcgid_handler(request_rec * r)
 	ap_add_output_filter_handle(fcgid_filter_handle, NULL, r,
 								r->connection);
 
-	http_retcode = bridge_request(r, command, wrapper_conf);
+	http_retcode =
+		bridge_request(r, FCGI_RESPONDER, command, wrapper_conf);
 	return (http_retcode == HTTP_OK ? OK : http_retcode);
+}
+
+static int mod_fcgid_modify_auth_header(void *subprocess_env,
+										const char *key, const char *val)
+{
+	/* When the application gives a 200 response, the server ignores response 
+	   headers whose names aren't prefixed with Variable- prefix, and ignores 
+	   any response content */
+	if (strncasecmp(key, "Variable-", 9) == 0)
+		apr_table_setn(subprocess_env, key + 9, val);
+	return 1;
+}
+
+static int mod_fcgid_authenticator(request_rec * r)
+{
+	int res = 0;
+	const char *password = NULL;
+	const char *location = NULL;
+	apr_table_t *saved_subprocess_env = NULL;
+	fcgid_wrapper_conf *wrapper_conf, *authenticator_info;
+	int authoritative;
+
+	authenticator_info = get_authenticator_info(r, &authoritative);
+
+	/* Is authenticator enable? */
+	if (authenticator_info == NULL)
+		return DECLINED;
+
+	/* Check wrapper */
+	wrapper_conf = get_wrapper_info(authenticator_info->path, r);
+
+	/* Get the user password */
+	if ((res = ap_get_basic_auth_pw(r, &password)) != OK)
+		return res;
+
+	/* Save old process environment */
+	saved_subprocess_env = apr_table_copy(r->pool, r->subprocess_env);
+
+	/* Add some environment variables */
+	ap_add_common_vars(r);
+	ap_add_cgi_vars(r);
+	apr_table_setn(r->subprocess_env, "REMOTE_PASSWD", password);
+	apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE", "AUTHENTICATOR");
+
+	/* Remove some environment variables */
+	/* The Web server does not send CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED, and SCRIPT_NAME headers */
+	apr_table_unset(r->subprocess_env, "CONTENT_LENGTH");
+	apr_table_unset(r->subprocess_env, "PATH_INFO");
+	apr_table_unset(r->subprocess_env, "PATH_TRANSLATED");
+	apr_table_unset(r->subprocess_env, "SCRIPT_NAME");
+
+	/* Handle the request */
+	res =
+		bridge_request(r, FCGI_AUTHORIZER, authenticator_info->path,
+					   wrapper_conf);
+
+	/* Restore r->subprocess_env */
+	r->subprocess_env = saved_subprocess_env;
+
+	if (res == OK && r->status == 200
+		&& (location = apr_table_get(r->headers_out, "Location")) == NULL)
+	{
+		/* Pass */
+		ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
+					  "mod_fcgid: user %s authentication pass", r->user);
+
+		/* Modify headers: An Authorizer application's 200 response may include headers
+		   whose names are prefixed with Variable-.  */
+		apr_table_do(mod_fcgid_modify_auth_header, r->subprocess_env,
+					 r->err_headers_out, NULL);
+
+		return OK;
+	} else {
+		/* Print error info first */
+		if (res != OK)
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s authentication failed, respond %d, URI %s",
+						  r->user, res, r->uri);
+		else if (r->status != 200)
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s authentication failed, status %d, URI %s",
+						  r->user, r->status, r->uri);
+		else
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s authentication failed, redirected is not allowed",
+						  r->user);
+
+		/* Handle error */
+		if (authoritative)
+			return DECLINED;
+		else {
+			ap_note_basic_auth_failure(r);
+			return (res == OK) ? HTTP_UNAUTHORIZED : res;
+		}
+	}
+}
+
+static int mod_fcgid_authorizer(request_rec * r)
+{
+	int res = 0;
+	const char *location = NULL;
+	apr_table_t *saved_subprocess_env = NULL;
+	fcgid_wrapper_conf *wrapper_conf, *authorizer_info;
+	int authoritative;
+
+	authorizer_info = get_authorizer_info(r, &authoritative);
+
+	/* Is authenticator enable? */
+	if (authorizer_info == NULL)
+		return DECLINED;
+
+	/* Check wrapper */
+	wrapper_conf = get_wrapper_info(authorizer_info->path, r);
+
+	/* Save old process environment */
+	saved_subprocess_env = apr_table_copy(r->pool, r->subprocess_env);
+
+	/* Add some environment variables */
+	ap_add_common_vars(r);
+	ap_add_cgi_vars(r);
+	apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE", "AUTHORIZER");
+
+	/* Remove some environment variables */
+	/* The Web server does not send CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED, and SCRIPT_NAME headers */
+	apr_table_unset(r->subprocess_env, "CONTENT_LENGTH");
+	apr_table_unset(r->subprocess_env, "PATH_INFO");
+	apr_table_unset(r->subprocess_env, "PATH_TRANSLATED");
+	apr_table_unset(r->subprocess_env, "SCRIPT_NAME");
+
+	/* Handle the request */
+	res =
+		bridge_request(r, FCGI_AUTHORIZER, authorizer_info->path,
+					   wrapper_conf);
+
+	/* Restore r->subprocess_env */
+	r->subprocess_env = saved_subprocess_env;
+
+	if (res == OK && r->status == 200
+		&& (location = apr_table_get(r->headers_out, "Location")) == NULL)
+	{
+		/* Pass */
+		ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
+					  "mod_fcgid: access granted");
+
+		/* Modify headers: An Authorizer application's 200 response may include headers
+		   whose names are prefixed with Variable-.  */
+		apr_table_do(mod_fcgid_modify_auth_header, r->subprocess_env,
+					 r->err_headers_out, NULL);
+
+		return OK;
+	} else {
+		/* Print error info first */
+		if (res != OK)
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s access check failed, respond %d, URI %s",
+						  r->user, res, r->uri);
+		else if (r->status != 200)
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s access check failed, status %d, URI %s",
+						  r->user, r->status, r->uri);
+		else
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s access check failed, redirected is not allowed",
+						  r->user);
+
+		/* Handle error */
+		if (authoritative)
+			return DECLINED;
+		else {
+			ap_note_basic_auth_failure(r);
+			return (res == OK) ? HTTP_UNAUTHORIZED : res;
+		}
+	}
+}
+
+static int mod_fcgid_check_access(request_rec * r)
+{
+	int res = 0;
+	const char *location = NULL;
+	apr_table_t *saved_subprocess_env = NULL;
+	fcgid_wrapper_conf *wrapper_conf, *access_info;
+	int authoritative;
+
+	access_info = get_access_info(r, &authoritative);
+
+	/* Is access check enable? */
+	if (access_info == NULL)
+		return DECLINED;
+
+	/* Check wrapper */
+	wrapper_conf = get_wrapper_info(access_info->path, r);
+
+	/* Save old process environment */
+	saved_subprocess_env = apr_table_copy(r->pool, r->subprocess_env);
+
+	/* Add some environment variables */
+	ap_add_common_vars(r);
+	ap_add_cgi_vars(r);
+	apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE",
+				   "ACCESS_CHECKER");
+
+	/* Remove some environment variables */
+	/* The Web server does not send CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED, and SCRIPT_NAME headers */
+	apr_table_unset(r->subprocess_env, "CONTENT_LENGTH");
+	apr_table_unset(r->subprocess_env, "PATH_INFO");
+	apr_table_unset(r->subprocess_env, "PATH_TRANSLATED");
+	apr_table_unset(r->subprocess_env, "SCRIPT_NAME");
+
+	/* Handle the request */
+	res =
+		bridge_request(r, FCGI_AUTHORIZER, access_info->path,
+					   wrapper_conf);
+
+	/* Restore r->subprocess_env */
+	r->subprocess_env = saved_subprocess_env;
+
+	if (res == OK && r->status == 200
+		&& (location = apr_table_get(r->headers_out, "Location")) == NULL)
+	{
+		/* Pass */
+		ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
+					  "mod_fcgid: access check pass");
+
+		/* Modify headers: An Authorizer application's 200 response may include headers
+		   whose names are prefixed with Variable-.  */
+		apr_table_do(mod_fcgid_modify_auth_header, r->subprocess_env,
+					 r->err_headers_out, NULL);
+
+		return OK;
+	} else {
+		/* Print error info first */
+		if (res != OK)
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s access check failed, respond %d, URI %s",
+						  r->user, res, r->uri);
+		else if (r->status != 200)
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s access check failed, status %d, URI %s",
+						  r->user, r->status, r->uri);
+		else
+			ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
+						  "mod_fcgid: user %s access check failed, redirected is not allowed",
+						  r->user);
+
+		/* Handle error */
+		if (authoritative)
+			return DECLINED;
+		else {
+			ap_note_basic_auth_failure(r);
+			return (res == OK) ? HTTP_UNAUTHORIZED : res;
+		}
+	}
 }
 
 static void initialize_child(apr_pool_t * pchild, server_rec * main_server)
@@ -311,6 +567,24 @@ static const command_rec fcgid_cmds[] = {
 	AP_INIT_TAKE1("MaxRequestsPerProcess", set_max_requests_per_process,
 				  NULL, RSRC_CONF,
 				  "Max requests handled by each fastcgi application"),
+	AP_INIT_TAKE1("FastCgiAuthenticator", set_authenticator_info, NULL,
+				  ACCESS_CONF,
+				  "a absolute authenticator file path"),
+	AP_INIT_FLAG("FastCgiAuthenticatorAuthoritative",
+				 set_authenticator_authoritative, NULL, ACCESS_CONF,
+				 "Set to 'off' to allow authentication to be passed along to lower modules upon failure"),
+	AP_INIT_TAKE1("FastCgiAuthenticator", set_authorizer_info, NULL,
+				  ACCESS_CONF,
+				  "a absolute authorizer file path"),
+	AP_INIT_FLAG("FastCgiAuthenticatorAuthoritative",
+				 set_authorizer_authoritative, NULL, ACCESS_CONF,
+				 "Set to 'off' to allow authorization to be passed along to lower modules upon failure"),
+	AP_INIT_TAKE1("FastCgiAccessChecker", set_access_info, NULL,
+				  ACCESS_CONF,
+				  "a absolute access checker file path"),
+	AP_INIT_FLAG("FastCgiAccessCheckerAuthoritative",
+				 set_access_authoritative, NULL, ACCESS_CONF,
+				 "Set to 'off' to allow access control to be passed along to lower modules upon failure"),
 	{NULL}
 };
 
@@ -319,6 +593,12 @@ static void register_hooks(apr_pool_t * p)
 	ap_hook_post_config(fcgid_init, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_child_init(initialize_child, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_handler(fcgid_handler, NULL, NULL, APR_HOOK_MIDDLE);
+	ap_hook_check_user_id(mod_fcgid_authenticator, NULL, NULL,
+						  APR_HOOK_MIDDLE);
+	ap_hook_auth_checker(mod_fcgid_authorizer, NULL, NULL,
+						 APR_HOOK_MIDDLE);
+	ap_hook_access_checker(mod_fcgid_check_access, NULL, NULL,
+						   APR_HOOK_MIDDLE);
 
 	/* Insert fcgid output filter */
 	fcgid_filter_handle =

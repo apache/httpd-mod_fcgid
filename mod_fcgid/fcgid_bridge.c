@@ -123,7 +123,8 @@ count_busy_processes(server_rec * main_server, fcgid_command * command)
 		if (current_node->inode == command->inode
 			&& current_node->deviceid == command->deviceid
 			&& current_node->share_grp_id == command->share_grp_id
-			&& current_node->uid == command->uid && current_node->gid == command->gid) {
+			&& current_node->uid == command->uid
+			&& current_node->gid == command->gid) {
 			result++;
 		}
 		next_node = &proc_table[current_node->next_index];
@@ -131,7 +132,7 @@ count_busy_processes(server_rec * main_server, fcgid_command * command)
 	}
 
 	safe_unlock(main_server);
-	
+
 	return result;
 }
 
@@ -174,8 +175,9 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 			ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
 			return_procnode(main_server, ctx->procnode,
 							1 /* communication error */ );
-		} else if ( g_max_requests_per_process!=-1 && ++ctx->procnode->requests_handled >=
-			g_max_requests_per_process) {
+		} else if (g_max_requests_per_process != -1
+				   && ++ctx->procnode->requests_handled >=
+				   g_max_requests_per_process) {
 			ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
 			return_procnode(main_server, ctx->procnode,
 							1 /* handled all requests */ );
@@ -283,7 +285,8 @@ handle_request(request_rec * r, const char *argv0,
 		g_connect_timeout = get_ipc_connect_timeout(r->server);
 		g_comm_timeout = get_ipc_comm_timeout(r->server);
 		g_busy_timeout = get_busy_timeout(r->server);
-		g_max_requests_per_process = get_max_requests_per_process(r->server);
+		g_max_requests_per_process =
+			get_max_requests_per_process(r->server);
 		if (g_comm_timeout == 0)
 			g_comm_timeout = 1;
 		g_variables_inited = 1;
@@ -379,7 +382,7 @@ handle_request(request_rec * r, const char *argv0,
 		apr_brigade_create(request_pool, r->connection->bucket_alloc);
 	if (!brigade_stdout) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-			"mod_fcgid: apr_brigade_create failed in handle_request function");
+					 "mod_fcgid: apr_brigade_create failed in handle_request function");
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 	APR_BRIGADE_INSERT_TAIL(brigade_stdout,
@@ -431,7 +434,7 @@ handle_request(request_rec * r, const char *argv0,
 	return cond_status;
 }
 
-int bridge_request(request_rec * r, const char *argv0,
+int bridge_request(request_rec * r, int role, const char *argv0,
 				   fcgid_wrapper_conf * wrapper_conf)
 {
 	apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
@@ -456,7 +459,7 @@ int bridge_request(request_rec * r, const char *argv0,
 
 	/* Build the begin request and environ request, append them to output_brigade */
 	if (!build_begin_block
-		(r->server, r->connection->bucket_alloc, output_brigade)
+		(role, r->server, r->connection->bucket_alloc, output_brigade)
 		|| !build_env_block(r->server, envp, r->connection->bucket_alloc,
 							output_brigade)) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0,

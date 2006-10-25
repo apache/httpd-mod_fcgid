@@ -1,14 +1,15 @@
-version 1.11 ( )
-1. Add apxs compile instruction in INSTALL.txt.
+version 2.0 ( )
+1. Support FastCGI Authorizer protocols now.
+2. Add apxs compile instruction in INSTALL.txt.
 	Thank Hans Christian Saustrup, hc at saustrup.net for the suggestion.
-2. Bug fix. (Win32 only) PHP script can not create socket on Win32.
+3. Bug fix. (Win32 only) PHP script can not create socket on Win32.
 	Thank bbscool at zjip.com for the bug report and the help.
-3. GREAT patchs from Robert L Mathews, rob at tigertech.com
+4. GREAT patchs from Robert L Mathews, rob at tigertech.com
 	Fix compile warnings
 	Adds a MaxRequestsPerProcess parameter that allows mod_fcgid to exit after handling a certain number of requests
 	Close socket before fork 
 	avoid the 1-second sleep the first time a process is spawned
-4. Print warning log while read data error from FastCGI process.
+5. Print warning log while read data error from FastCGI process.
 
 version 1.10 ( Jul 3rd 2006 )
 1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with

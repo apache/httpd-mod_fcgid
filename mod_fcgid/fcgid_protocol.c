@@ -98,7 +98,7 @@ init_header(int type, int requestId, apr_size_t contentLength,
 }
 
 int
-build_begin_block(server_rec * main_server,
+build_begin_block(int role, server_rec * main_server,
 				  apr_bucket_alloc_t * alloc,
 				  apr_bucket_brigade * request_brigade)
 {
@@ -135,7 +135,7 @@ build_begin_block(server_rec * main_server,
 					 "mod_fcgid: can't init begin request header");
 		return 0;
 	}
-	init_begin_request_body(FCGI_RESPONDER, begin_request_body);
+	init_begin_request_body(role, begin_request_body);
 
 	/* Append the header and body to request brigade */
 	APR_BRIGADE_INSERT_TAIL(request_brigade, bucket_header);
