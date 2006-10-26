@@ -31,7 +31,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
 							 main_server->process->pconf)) != APR_SUCCESS)
 	{
 		ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-					 "mod_fcgid: Can't create share memory for size %d byte",
+					 "mod_fcgid: Can't create share memory for size %zu byte",
 					 shmem_size);
 		exit(1);
 	}
@@ -189,7 +189,7 @@ void proctable_print_debug_info(server_rec * main_server)
 		 current_node != g_proc_array;
 		 current_node = &g_proc_array[current_node->next_index]) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-					 "mod_fcgid: idle node index: %d",
+					 "mod_fcgid: idle node index: %td",
 					 current_node - g_proc_array);
 	}
 
@@ -197,7 +197,7 @@ void proctable_print_debug_info(server_rec * main_server)
 		 current_node != g_proc_array;
 		 current_node = &g_proc_array[current_node->next_index]) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-					 "mod_fcgid: busy node index: %d",
+					 "mod_fcgid: busy node index: %td",
 					 current_node - g_proc_array);
 	}
 
@@ -205,7 +205,7 @@ void proctable_print_debug_info(server_rec * main_server)
 		 current_node != g_proc_array;
 		 current_node = &g_proc_array[current_node->next_index]) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-					 "mod_fcgid: error node index: %d",
+					 "mod_fcgid: error node index: %td",
 					 current_node - g_proc_array);
 	}
 }

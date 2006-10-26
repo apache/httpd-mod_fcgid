@@ -10,6 +10,7 @@ version 2.0 ( )
 	Close socket before fork 
 	avoid the 1-second sleep the first time a process is spawned
 5. Print warning log while read data error from FastCGI process.
+6. Apply patch from Scott Lamb, Fix mod_fcgid 1.10 warnings on x86_64
 
 version 1.10 ( Jul 3rd 2006 )
 1. Use poll() instead of select() in UNIX. "It becomes problematic on apache2 with

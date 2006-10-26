@@ -32,7 +32,7 @@ register_life_death(server_rec * main_server,
 	struct fcgid_stat_node *previous_node, *current_node;
 
 	if (!g_stat_pool || !procnode)
-		return;
+		abort();
 
 	/* Can I find the node base on inode, device id and share group id? */
 	previous_node = g_stat_list_header;
