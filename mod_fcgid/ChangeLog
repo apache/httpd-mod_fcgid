@@ -1,4 +1,4 @@
-version 2.0 ( )
+version 2.0 ( Oct 29th 2006 )
 1. Support FastCGI Authorizer protocols now.
 2. Add apxs compile instruction in INSTALL.txt.
 	Thank Hans Christian Saustrup, hc at saustrup.net for the suggestion.

@@ -294,7 +294,8 @@ handle_request(request_rec * r, const char *argv0,
 
 	bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
 	if (!bucket_ctx) {
-		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), r->server,
+		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
+					 r->server,
 					 "mod_fcgid: apr_calloc bucket_ctx failed in handle_request function");
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
