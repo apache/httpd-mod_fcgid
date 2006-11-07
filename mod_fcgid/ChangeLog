@@ -1,3 +1,7 @@
+version 2.01 ()
+1. Add missing config.m4 and Makefile.in for static linking
+	Thank Mark Drago for notice
+
 version 2.0 ( Oct 29th 2006 )
 1. Support FastCGI Authorizer protocols now.
 2. Add apxs compile instruction in INSTALL.txt.
