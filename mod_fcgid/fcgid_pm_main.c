@@ -446,7 +446,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 		/* The job done */
 		link_node_to_list(main_server, idle_list_header,
 						  procnode, proctable_array);
-		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
+		ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
 					 "mod_fcgid: server %s(%" APR_PID_T_FMT ") started",
 					 command->cgipath, procnode->proc_id->pid);
 		register_spawn(main_server, procnode);
