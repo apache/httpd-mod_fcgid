@@ -56,6 +56,22 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
 	char sock_path[_POSIX_PATH_MAX];
 	char *dummy;
 	char *argv[2];
+	int argc;
+	char *wargv[APACHE_ARG_MAX], *word;	/* For wrapper */
+	const char *tmp;
+
+	/* Build wrapper args */
+	argc = 0;
+	tmp = lpszwapper;
+	while (1) {
+		word = ap_getword_white(procnode->proc_pool, &tmp);
+		if (word == NULL || *word == '\0')
+			break;
+		if (argc >= APACHE_ARG_MAX)
+			break;
+		wargv[argc++] = word;
+	}
+	wargv[argc] = NULL;
 
 	memset(&SecurityAttributes, 0, sizeof(SecurityAttributes));
 
@@ -141,6 +157,9 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
 || (rv =
 	apr_procattr_dir_set(proc_attr,
 						 ap_make_dirstr_parent(procnode->proc_pool,
+											   (lpszwapper != NULL
+												&& lpszwapper[0] !=
+												'\0') ? wargv[0] :
 											   procinfo->cgipath))) !=
 APR_SUCCESS
 || (rv =
@@ -162,12 +181,9 @@ APR_SUCCESS
 		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
 					 "mod_fcgid: call %s with wrapper %s",
 					 procinfo->cgipath, wrapperpath);
-
-		argv[0] = wrapperpath;
-		argv[1] = NULL;
 		if ((rv =
-			 apr_proc_create(procnode->proc_id, wrapperpath,
-							 (const char *const *) argv,
+			 apr_proc_create(procnode->proc_id, wargv[0],
+							 (const char *const *) wargv,
 							 (const char *const *) proc_environ, proc_attr,
 							 procnode->proc_pool)) != APR_SUCCESS) {
 			ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,

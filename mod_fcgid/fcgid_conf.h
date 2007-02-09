@@ -8,6 +8,13 @@ typedef struct {
 	apr_ino_t inode;
 	apr_dev_t deviceid;
 	apr_size_t share_group_id;
+} auth_conf;
+
+typedef struct {
+	char args[_POSIX_PATH_MAX];
+	apr_ino_t inode;
+	apr_dev_t deviceid;
+	apr_size_t share_group_id;
 } fcgid_wrapper_conf;
 
 typedef struct {
@@ -43,15 +50,15 @@ typedef struct {
 	apr_hash_t *wrapper_info_hash;
 
 	/* authenticator */
-	fcgid_wrapper_conf *authenticator_info;
+	auth_conf *authenticator_info;
 	int authenticator_authoritative;
 
 	/* authorizer */
-	fcgid_wrapper_conf *authorizer_info;
+	auth_conf *authorizer_info;
 	int authorizer_authoritative;
 
 	/* access check */
-	fcgid_wrapper_conf *access_info;
+	auth_conf *access_info;
 	int access_authoritative;
 } fcgid_dir_conf;
 
@@ -138,21 +145,19 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
 								   const char *arg);
 const char *set_authenticator_authoritative(cmd_parms * cmd,
 											void *config, int arg);
-fcgid_wrapper_conf *get_authenticator_info(request_rec * r,
-										   int *authoritative);
+auth_conf *get_authenticator_info(request_rec * r, int *authoritative);
 
 const char *set_authorizer_info(cmd_parms * cmd, void *config,
 								const char *arg);
 const char *set_authorizer_authoritative(cmd_parms * cmd,
 										 void *config, int arg);
-fcgid_wrapper_conf *get_authorizer_info(request_rec * r,
-										int *authoritative);
+auth_conf *get_authorizer_info(request_rec * r, int *authoritative);
 
 const char *set_access_info(cmd_parms * cmd, void *config,
 							const char *arg);
 const char *set_access_authoritative(cmd_parms * cmd,
 									 void *config, int arg);
-fcgid_wrapper_conf *get_access_info(request_rec * r, int *authoritative);
+auth_conf *get_access_info(request_rec * r, int *authoritative);
 
 const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 										const char *arg);

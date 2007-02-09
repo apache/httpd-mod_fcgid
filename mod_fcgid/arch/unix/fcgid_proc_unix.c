@@ -155,7 +155,23 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 	apr_procattr_t *procattr = NULL;
 	char key_name[_POSIX_PATH_MAX];
 	void *dummy;
+	int argc;
+	char *wargv[APACHE_ARG_MAX], *word;	/* For wrapper */
+	const char *tmp;
 	char *argv[2];
+
+	/* Build wrapper args */
+	argc = 0;
+	tmp = lpszwapper;
+	while (1) {
+		word = ap_getword_white(procnode->proc_pool, &tmp);
+		if (word == NULL || *word == '\0')
+			break;
+		if (argc >= APACHE_ARG_MAX)
+			break;
+		wargv[argc++] = word;
+	}
+	wargv[argc] = NULL;
 
 	/* Initialize the variables */
 	if (!g_inode_cginame_map) {
@@ -289,7 +305,7 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 						 ap_make_dirstr_parent(procnode->proc_pool,
 											   (lpszwapper != NULL
 												&& lpszwapper[0] !=
-												'\0') ? lpszwapper :
+												'\0') ? wargv[0] :
 											   procinfo->cgipath))) !=
 APR_SUCCESS
 || (rv = apr_procattr_cmdtype_set(procattr, APR_PROGRAM)) != APR_SUCCESS
@@ -309,13 +325,10 @@ APR_SUCCESS
 		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
 					 "mod_fcgid: call %s with wrapper %s",
 					 procinfo->cgipath, lpszwapper);
-
-		argv[0] = lpszwapper;
-		argv[1] = NULL;
 		if ((rv =
 			 fcgid_create_privileged_process(procnode->proc_id,
-											 lpszwapper,
-											 (const char *const *) argv,
+											 wargv[0],
+											 (const char *const *) wargv,
 											 (const char *const *)
 											 proc_environ, procattr,
 											 procinfo,

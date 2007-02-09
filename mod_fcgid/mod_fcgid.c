@@ -201,7 +201,8 @@ static int mod_fcgid_authenticator(request_rec * r)
 	const char *password = NULL;
 	const char *location = NULL;
 	apr_table_t *saved_subprocess_env = NULL;
-	fcgid_wrapper_conf *wrapper_conf, *authenticator_info;
+	fcgid_wrapper_conf *wrapper_conf;
+	auth_conf *authenticator_info;
 	int authoritative;
 
 	authenticator_info = get_authenticator_info(r, &authoritative);
@@ -284,7 +285,8 @@ static int mod_fcgid_authorizer(request_rec * r)
 	int res = 0;
 	const char *location = NULL;
 	apr_table_t *saved_subprocess_env = NULL;
-	fcgid_wrapper_conf *wrapper_conf, *authorizer_info;
+	fcgid_wrapper_conf *wrapper_conf;
+	auth_conf *authorizer_info;
 	int authoritative;
 
 	authorizer_info = get_authorizer_info(r, &authoritative);
@@ -362,7 +364,8 @@ static int mod_fcgid_check_access(request_rec * r)
 	int res = 0;
 	const char *location = NULL;
 	apr_table_t *saved_subprocess_env = NULL;
-	fcgid_wrapper_conf *wrapper_conf, *access_info;
+	fcgid_wrapper_conf *wrapper_conf;
+	auth_conf *access_info;
 	int authoritative;
 
 	access_info = get_access_info(r, &authoritative);
@@ -558,7 +561,8 @@ static const command_rec fcgid_cmds[] = {
 				  "Communication timeout to fastcgi server"),
 	AP_INIT_TAKE12("DefaultInitEnv", add_default_env_vars, NULL, RSRC_CONF,
 				   "an environment variable name and optional value to pass to FastCGI."),
-	AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL, RSRC_CONF|ACCESS_CONF|OR_FILEINFO,
+	AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL,
+				   RSRC_CONF | ACCESS_CONF | OR_FILEINFO,
 				   "The CGI wrapper setting"),
 	AP_INIT_TAKE1("PHP_Fix_Pathinfo_Enable",
 				  set_php_fix_pathinfo_enable,
@@ -568,22 +572,24 @@ static const command_rec fcgid_cmds[] = {
 				  NULL, RSRC_CONF,
 				  "Max requests handled by each fastcgi application"),
 	AP_INIT_TAKE1("FastCgiAuthenticator", set_authenticator_info, NULL,
-				  ACCESS_CONF|OR_FILEINFO,
+				  ACCESS_CONF | OR_FILEINFO,
 				  "a absolute authenticator file path"),
 	AP_INIT_FLAG("FastCgiAuthenticatorAuthoritative",
-				 set_authenticator_authoritative, NULL, ACCESS_CONF|OR_FILEINFO,
+				 set_authenticator_authoritative, NULL,
+				 ACCESS_CONF | OR_FILEINFO,
 				 "Set to 'off' to allow authentication to be passed along to lower modules upon failure"),
 	AP_INIT_TAKE1("FastCgiAuthenticator", set_authorizer_info, NULL,
-				  ACCESS_CONF|OR_FILEINFO,
+				  ACCESS_CONF | OR_FILEINFO,
 				  "a absolute authorizer file path"),
 	AP_INIT_FLAG("FastCgiAuthenticatorAuthoritative",
-				 set_authorizer_authoritative, NULL, ACCESS_CONF|OR_FILEINFO,
+				 set_authorizer_authoritative, NULL,
+				 ACCESS_CONF | OR_FILEINFO,
 				 "Set to 'off' to allow authorization to be passed along to lower modules upon failure"),
 	AP_INIT_TAKE1("FastCgiAccessChecker", set_access_info, NULL,
-				  ACCESS_CONF|OR_FILEINFO,
+				  ACCESS_CONF | OR_FILEINFO,
 				  "a absolute access checker file path"),
 	AP_INIT_FLAG("FastCgiAccessCheckerAuthoritative",
-				 set_access_authoritative, NULL, ACCESS_CONF|OR_FILEINFO,
+				 set_access_authoritative, NULL, ACCESS_CONF | OR_FILEINFO,
 				 "Set to 'off' to allow access control to be passed along to lower modules upon failure"),
 	{NULL}
 };

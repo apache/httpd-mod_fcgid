@@ -494,8 +494,7 @@ const char *set_authenticator_authoritative(cmd_parms * cmd,
 	return NULL;
 }
 
-fcgid_wrapper_conf *get_authenticator_info(request_rec * r,
-										   int *authoritative)
+auth_conf *get_authenticator_info(request_rec * r, int *authoritative)
 {
 	fcgid_dir_conf *config =
 		ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -547,8 +546,7 @@ const char *set_authorizer_authoritative(cmd_parms * cmd,
 	return NULL;
 }
 
-fcgid_wrapper_conf *get_authorizer_info(request_rec * r,
-										int *authoritative)
+auth_conf *get_authorizer_info(request_rec * r, int *authoritative)
 {
 	fcgid_dir_conf *config =
 		ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -599,7 +597,7 @@ const char *set_access_authoritative(cmd_parms * cmd,
 	return NULL;
 }
 
-fcgid_wrapper_conf *get_access_info(request_rec * r, int *authoritative)
+auth_conf *get_access_info(request_rec * r, int *authoritative)
 {
 	fcgid_dir_conf *config =
 		ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -616,6 +614,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 							   const char *wrapperpath,
 							   const char *extension)
 {
+	const char *path, *tmp;
 	apr_status_t rv;
 	apr_finfo_t finfo;
 	fcgid_wrapper_conf *wrapper = NULL;
@@ -627,20 +626,27 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 		|| strchr(extension, '/') || strchr(extension, '\\'))
 		return "Invalid wrapper file extension";
 
-	/* Is the wrapper exist? */
-	if ((rv = apr_stat(&finfo, wrapperpath, APR_FINFO_NORM,
-					   cmd->temp_pool)) != APR_SUCCESS) {
-		return apr_psprintf(cmd->pool,
-							"can't get fastcgi file info: %s, errno: %d",
-							wrapperpath, apr_get_os_error());
-	}
-
 	/* Create the wrapper node */
 	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
 	if (!wrapper)
 		return "Can't alloc memory for wrapper";
-	strncpy(wrapper->path, wrapperpath, _POSIX_PATH_MAX - 1);
-	wrapper->path[_POSIX_PATH_MAX - 1] = '\0';
+
+	/* Get wrapper path */
+	tmp = wrapperpath;
+	path = ap_getword_white(cmd->temp_pool, &tmp);
+	if (path == NULL || *path == '\0')
+		return "Invalid wrapper config";
+
+	/* Is the wrapper exist? */
+	if ((rv = apr_stat(&finfo, path, APR_FINFO_NORM,
+					   cmd->temp_pool)) != APR_SUCCESS) {
+		return apr_psprintf(cmd->pool,
+							"can't get fastcgi file info: %s(%s), errno: %d",
+							wrapperpath, path, apr_get_os_error());
+	}
+
+	strncpy(wrapper->args, wrapperpath, _POSIX_PATH_MAX - 1);
+	wrapper->args[_POSIX_PATH_MAX - 1] = '\0';
 	wrapper->inode = finfo.inode;
 	wrapper->deviceid = finfo.device;
 	wrapper->share_group_id = (apr_size_t) - 1;
