@@ -3,6 +3,8 @@ version 2.01 ()
 	Thank Mark Drago for notice
 2. FCGIWrapper disallowed in .htaccess
 	Thank Balinares for patch
+3. Bug fix. Authoritative flag reversed
+	Thank Chris Darroch for the patch
 
 version 2.0 ( Oct 29th 2006 )
 1. Support FastCGI Authorizer protocols now.

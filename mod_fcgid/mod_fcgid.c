@@ -270,7 +270,7 @@ static int mod_fcgid_authenticator(request_rec * r)
 						  r->user);
 
 		/* Handle error */
-		if (authoritative)
+		if (!authoritative)
 			return DECLINED;
 		else {
 			ap_note_basic_auth_failure(r);
@@ -348,7 +348,7 @@ static int mod_fcgid_authorizer(request_rec * r)
 						  r->user);
 
 		/* Handle error */
-		if (authoritative)
+		if (!authoritative)
 			return DECLINED;
 		else {
 			ap_note_basic_auth_failure(r);
@@ -427,7 +427,7 @@ static int mod_fcgid_check_access(request_rec * r)
 						  r->user);
 
 		/* Handle error */
-		if (authoritative)
+		if (!authoritative)
 			return DECLINED;
 		else {
 			ap_note_basic_auth_failure(r);
