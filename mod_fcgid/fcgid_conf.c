@@ -617,6 +617,8 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 	const char *path, *tmp;
 	apr_status_t rv;
 	apr_finfo_t finfo;
+	const char *userdata_key = "fcgid_wrapper_id";
+	apr_size_t *wrapper_id;
 	fcgid_wrapper_conf *wrapper = NULL;
 	fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
 
@@ -626,7 +628,17 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 		|| strchr(extension, '/') || strchr(extension, '\\'))
 		return "Invalid wrapper file extension";
 
-	/* Create the wrapper node */
+	/* Get wrapper_id */
+	apr_pool_userdata_get((void *) &wrapper_id, userdata_key,
+						  cmd->server->process->pool);
+	if (!wrapper_id) {
+		wrapper_id =
+			apr_pcalloc(cmd->server->process->pool, sizeof(*wrapper_id));
+		apr_pool_userdata_set((const void *) wrapper_id, userdata_key,
+							  apr_pool_cleanup_null,
+							  cmd->server->process->pool);
+	}
+
 	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
 	if (!wrapper)
 		return "Can't alloc memory for wrapper";
@@ -649,7 +661,8 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 	wrapper->args[_POSIX_PATH_MAX - 1] = '\0';
 	wrapper->inode = finfo.inode;
 	wrapper->deviceid = finfo.device;
-	wrapper->share_group_id = (apr_size_t) - 1;
+	wrapper->share_group_id = *wrapper_id;
+	*wrapper_id++;
 
 	/* Add the node now */
 	apr_hash_set(config->wrapper_info_hash, extension, strlen(extension),
