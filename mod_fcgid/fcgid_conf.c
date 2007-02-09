@@ -1,6 +1,7 @@
 #include "ap_config.h"
 #include "ap_mmn.h"
 #include "apr_strings.h"
+#include "apr_hash.h"
 #include "http_main.h"
 #include "httpd.h"
 #include "http_config.h"
@@ -610,6 +611,11 @@ auth_conf *get_access_info(request_rec * r, int *authoritative)
 	return NULL;
 }
 
+typedef struct {
+	apr_hash_t *wrapper_id_hash;
+	apr_size_t cur_id;
+} wrapper_id_info;
+
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 							   const char *wrapperpath,
 							   const char *extension)
@@ -618,6 +624,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 	apr_status_t rv;
 	apr_finfo_t finfo;
 	const char *userdata_key = "fcgid_wrapper_id";
+	wrapper_id_info *id_info;
 	apr_size_t *wrapper_id;
 	fcgid_wrapper_conf *wrapper = NULL;
 	fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
@@ -628,15 +635,26 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 		|| strchr(extension, '/') || strchr(extension, '\\'))
 		return "Invalid wrapper file extension";
 
-	/* Get wrapper_id */
-	apr_pool_userdata_get((void *) &wrapper_id, userdata_key,
+	/* Get wrapper_id base on wrapperpath */
+	apr_pool_userdata_get((void *) &id_info, userdata_key,
 						  cmd->server->process->pool);
-	if (!wrapper_id) {
-		wrapper_id =
-			apr_pcalloc(cmd->server->process->pool, sizeof(*wrapper_id));
-		apr_pool_userdata_set((const void *) wrapper_id, userdata_key,
+	if (!id_info) {
+		id_info =
+			apr_pcalloc(cmd->server->process->pool, sizeof(*id_info));
+		id_info->wrapper_id_hash =
+			apr_hash_make(cmd->server->process->pool);
+		apr_pool_userdata_set((const void *) id_info, userdata_key,
 							  apr_pool_cleanup_null,
 							  cmd->server->process->pool);
+	}
+	if ((wrapper_id =
+		 apr_hash_get(id_info->wrapper_id_hash, wrapperpath,
+					  strlen(wrapperpath))) == NULL) {
+		wrapper_id =
+			apr_pcalloc(cmd->server->process->pool, sizeof(*wrapper_id));
+		*wrapper_id = id_info->cur_id++;
+		apr_hash_set(id_info->wrapper_id_hash, wrapperpath,
+					 strlen(wrapperpath), wrapper_id);
 	}
 
 	wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
