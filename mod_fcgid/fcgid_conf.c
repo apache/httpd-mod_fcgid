@@ -17,6 +17,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_ZOMBIE_SCAN_INTERVAL 3
 #define DEFAULT_PROC_LIFETIME (60*60)
 #define DEFAULT_SOCKET_PREFIX "logs/fcgidsock"
+#define DEFAULT_SHM_PATH "logs/fcgid_shm"
 #define DEFAULT_SPAWNSOCRE_UPLIMIT 10
 #define DEFAULT_SPAWN_SCORE 1
 #define DEFAULT_TERMINATION_SCORE 2
@@ -35,6 +36,7 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 	config->default_init_env = apr_table_make(p, 20);
 	config->sockname_prefix =
 		ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
+	config->shmname_path = ap_server_root_relative(p, DEFAULT_SHM_PATH);
 	config->idle_timeout = DEFAULT_IDLE_TIMEOUT;
 	config->idle_scan_interval = DEFAULT_IDLE_SCAN_INTERVAL;
 	config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;
@@ -244,6 +246,25 @@ const char *get_socketpath(server_rec * s)
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	return config->sockname_prefix;
+}
+
+const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->shmname_path = ap_server_root_relative(cmd->pool, arg);
+	if (!config->shmname_path)
+		return "Invalid shmname path";
+
+	return NULL;
+}
+
+const char *get_shmpath(server_rec * s)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config->shmname_path;
 }
 
 const char *set_spawnscore_uplimit(cmd_parms * cmd, void *dummy,

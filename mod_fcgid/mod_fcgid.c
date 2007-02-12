@@ -533,6 +533,8 @@ static const command_rec fcgid_cmds[] = {
 				  "fastcgi application lifetime"),
 	AP_INIT_TAKE1("SocketPath", set_socketpath, NULL, RSRC_CONF,
 				  "fastcgi socket file path"),
+	AP_INIT_TAKE1("SharememPath", set_shmpath, NULL, RSRC_CONF,
+				  "fastcgi share memory file path"),
 	AP_INIT_TAKE1("SpawnScoreUpLimit", set_spawnscore_uplimit, NULL,
 				  RSRC_CONF,
 				  "Spawn score up limit"),

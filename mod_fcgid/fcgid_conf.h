@@ -25,6 +25,7 @@ typedef struct {
 	int error_scan_interval;
 	int zombie_scan_interval;
 	char *sockname_prefix;
+	char *shmname_path;
 	int spawnscore_uplimit;
 	int spawn_score;
 	int termination_score;
@@ -98,6 +99,9 @@ int get_zombie_scan_interval(server_rec * s);
 
 const char *set_socketpath(cmd_parms * cmd, void *dummy, const char *arg);
 const char *get_socketpath(server_rec * s);
+
+const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg);
+const char *get_shmpath(server_rec * s);
 
 const char *set_termination_score(cmd_parms * cmd, void *dummy,
 								  const char *arg);

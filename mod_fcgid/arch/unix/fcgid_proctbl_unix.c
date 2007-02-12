@@ -2,6 +2,7 @@
 #include "apr_shm.h"
 #include "apr_global_mutex.h"
 #include "fcgid_global.h"
+#include "fcgid_conf.h"
 #include "unixd.h"
 #include <unistd.h>
 
@@ -24,10 +25,15 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
 	fcgid_procnode *ptmpnode = NULL;
 	int i;
 	apr_status_t rv;
-	char tempname[L_tmpnam];
+	const char *fname;
+
+	fname = get_shmpath(main_server);
+
+	/* Remove share memory first */
+	apr_shm_remove(fname, main_server->process->pconf);
 
 	/* Create share memory */
-	if ((rv = apr_shm_create(&g_sharemem, shmem_size, tmpnam(tempname),
+	if ((rv = apr_shm_create(&g_sharemem, shmem_size, fname,
 							 main_server->process->pconf)) != APR_SUCCESS)
 	{
 		ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,

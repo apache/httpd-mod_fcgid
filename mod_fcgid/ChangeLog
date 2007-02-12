@@ -6,7 +6,8 @@ version 2.01 ()
 3. Bug fix. Authoritative flag reversed
 	Thank Chris Darroch for the patch
 4. Support arguments in FCGIWrapper
-	Thank Andre Nathan for suggestion
+	Thank Andre Nathan for suggestion and great help on testing it.
+5. Support new config "SharememPath", which specifies the location of share memory path.
 
 version 2.0 ( Oct 29th 2006 )
 1. Support FastCGI Authorizer protocols now.
