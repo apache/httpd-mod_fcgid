@@ -216,17 +216,14 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
 		}
 
 		/* if running as root, switch to configured user */
-		if (unixd_config.suexec_enabled)
-		{
-			if( getuid()!=0 )
-			{
+		if (unixd_config.suexec_enabled) {
+			if (getuid() != 0) {
 				ap_log_error(APLOG_MARK, LOG_EMERG, rv, main_server,
-						"mod_fcgid: current user is not root while suexec is enabled, exit now");
+							 "mod_fcgid: current user is not root while suexec is enabled, exit now");
 				exit(1);
 			}
 			suexec_setup_child();
-		}
-		else
+		} else
 			unixd_setup_child();
 		apr_file_pipe_timeout_set(g_pm_read_pipe,
 								  apr_time_from_sec(g_wakeup_timeout));
