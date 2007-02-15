@@ -62,7 +62,7 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
 
 	/* Build wrapper args */
 	argc = 0;
-	tmp = lpszwapper;
+	tmp = wrapperpath;
 	while (1) {
 		word = ap_getword_white(procnode->proc_pool, &tmp);
 		if (word == NULL || *word == '\0')
@@ -157,8 +157,8 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
 || (rv =
 	apr_procattr_dir_set(proc_attr,
 						 ap_make_dirstr_parent(procnode->proc_pool,
-											   (lpszwapper != NULL
-												&& lpszwapper[0] !=
+											   (wrapperpath != NULL
+												&& wrapperpath[0] !=
 												'\0') ? wargv[0] :
 											   procinfo->cgipath))) !=
 APR_SUCCESS

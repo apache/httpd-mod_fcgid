@@ -1,4 +1,4 @@
-version 2.01 ()
+version 2.10 ( Feb 15th 2007 )
 1. Add missing config.m4 and Makefile.in for static linking
 	Thank Mark Drago for notice
 2. FCGIWrapper disallowed in .htaccess
