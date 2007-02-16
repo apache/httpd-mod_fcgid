@@ -19,5 +19,5 @@ EXTRA_CFLAGS = -I$(builddir)
 all: local-shared-build
 
 clean:
-	-rm -f *.o *.lo *.slo *.la 
+	rm -f *.o *.lo *.slo *.la arch/unix/*.o arch/unix/*.lo arch/unix/*.slo arch/unix/*.la .libs/*
 

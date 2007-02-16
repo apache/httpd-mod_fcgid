@@ -267,7 +267,7 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 }
 
 static int
-handle_request(request_rec * r, const char *argv0,
+handle_request(request_rec * r, int role, const char *argv0,
 			   fcgid_wrapper_conf * wrapper_conf,
 			   apr_bucket_brigade * output_brigade)
 {
@@ -422,9 +422,10 @@ handle_request(request_rec * r, const char *argv0,
 	}
 
 	/* Now pass to output filter */
-	if ((rv =
-		 ap_pass_brigade(r->output_filters,
-						 brigade_stdout)) != APR_SUCCESS) {
+	if (role == FCGI_RESPONDER && (rv =
+								   ap_pass_brigade(r->output_filters,
+												   brigade_stdout)) !=
+		APR_SUCCESS) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
 					 "mod_fcgid: ap_pass_brigade failed in handle_request function");
 		return HTTP_INTERNAL_SERVER_ERROR;
@@ -587,5 +588,5 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 	APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_eos);
 
 	/* Bridge the request */
-	return handle_request(r, argv0, wrapper_conf, output_brigade);
+	return handle_request(r, role, argv0, wrapper_conf, output_brigade);
 }
