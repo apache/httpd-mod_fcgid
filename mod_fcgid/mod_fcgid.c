@@ -86,6 +86,21 @@ default_build_command(const char **cmd, const char ***argv,
 
 static void fcgid_add_cgi_vars(request_rec * r)
 {
+	apr_array_header_t *passheaders = get_pass_headers(r);
+
+	if (passheaders != NULL) {
+		const char **hdr = (const char **) passheaders->elts;
+		int hdrcnt = passheaders->nelts;
+		int i;
+
+		for (i = 0; i < hdrcnt; i++, ++hdr) {
+			const char *val = apr_table_get(r->headers_in, *hdr);
+
+			if (val)
+				apr_table_setn(r->subprocess_env, *hdr, val);
+		}
+	}
+
 	/* Work around cgi.fix_pathinfo = 1 in php.ini */
 	if (g_php_fix_pathinfo_enable) {
 		char *merge_path;
@@ -224,6 +239,7 @@ static int mod_fcgid_authenticator(request_rec * r)
 	/* Add some environment variables */
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
+	fcgid_add_cgi_vars(r);
 	apr_table_setn(r->subprocess_env, "REMOTE_PASSWD", password);
 	apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE", "AUTHENTICATOR");
 
@@ -304,6 +320,7 @@ static int mod_fcgid_authorizer(request_rec * r)
 	/* Add some environment variables */
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
+	fcgid_add_cgi_vars(r);
 	apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE", "AUTHORIZER");
 
 	/* Remove some environment variables */
@@ -383,6 +400,7 @@ static int mod_fcgid_check_access(request_rec * r)
 	/* Add some environment variables */
 	ap_add_common_vars(r);
 	ap_add_cgi_vars(r);
+	fcgid_add_cgi_vars(r);
 	apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE",
 				   "ACCESS_CHECKER");
 
@@ -563,6 +581,8 @@ static const command_rec fcgid_cmds[] = {
 				  "Communication timeout to fastcgi server"),
 	AP_INIT_TAKE12("DefaultInitEnv", add_default_env_vars, NULL, RSRC_CONF,
 				   "an environment variable name and optional value to pass to FastCGI."),
+	AP_INIT_TAKE1("PassHeader", add_pass_headers, NULL, RSRC_CONF,
+				  "Header name which will be passed to FastCGI as environment variable."),
 	AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL,
 				   RSRC_CONF | ACCESS_CONF | OR_FILEINFO,
 				   "The CGI wrapper setting"),

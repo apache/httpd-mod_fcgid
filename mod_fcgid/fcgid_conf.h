@@ -35,14 +35,10 @@ typedef struct {
 	int output_buffersize;
 	int max_requests_per_process;
 	apr_table_t *default_init_env;
-
+	apr_array_header_t *pass_headers;
 	int ipc_connect_timeout;
-	int ipc_connect_timeout_overwrite;
 	int ipc_comm_timeout;
-	int ipc_comm_timeout_overwrite;
 	int busy_timeout;
-	int busy_timeout_overwrite;
-
 	int php_fix_pathinfo_enable;
 } fcgid_server_conf;
 
@@ -140,6 +136,11 @@ int get_output_buffersize(server_rec * s);
 const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
 								 const char *name, const char *value);
 apr_table_t *get_default_env_vars(request_rec * r);
+
+const char *add_pass_headers(cmd_parms * cmd, void *sconf,
+							 const char *name);
+
+apr_array_header_t *get_pass_headers(request_rec * r);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
 							   const char *wrapper, const char *extension);

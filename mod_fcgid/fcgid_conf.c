@@ -2,6 +2,7 @@
 #include "ap_mmn.h"
 #include "apr_strings.h"
 #include "apr_hash.h"
+#include "apr_tables.h"
 #include "http_main.h"
 #include "httpd.h"
 #include "http_config.h"
@@ -29,11 +30,10 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_OUTPUT_BUFFERSIZE 65536
 #define DEFAULT_MAX_REQUESTS_PER_PROCESS -1
 
-void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
+static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 {
-	fcgid_server_conf *config = apr_pcalloc(p, sizeof(*config));
-
-	config->default_init_env = apr_table_make(p, 20);
+	config->default_init_env = NULL;
+	config->pass_headers = NULL;
 	config->sockname_prefix =
 		ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
 	config->shmname_path = ap_server_root_relative(p, DEFAULT_SHM_PATH);
@@ -51,47 +51,85 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
 	config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
 	config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
-	config->ipc_comm_timeout_overwrite = 0;
 	config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
-	config->ipc_connect_timeout_overwrite = 0;
 	config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
-	config->busy_timeout_overwrite = 0;
 	config->php_fix_pathinfo_enable = 0;
 	config->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
+}
+
+void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
+{
+	fcgid_server_conf *config = apr_pcalloc(p, sizeof(*config));
+
+	init_server_config(p, config);
 	return config;
 }
 
-void *merge_fcgid_server_config(apr_pool_t * p, void *basev,
-								void *overridesv)
+void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
 {
 	int i;
+	fcgid_server_conf *merged_config =
+		(fcgid_server_conf *) apr_pcalloc(p, sizeof(fcgid_server_conf));
 	fcgid_server_conf *base = (fcgid_server_conf *) basev;
-	fcgid_server_conf *overrides = (fcgid_server_conf *) overridesv;
+	fcgid_server_conf *local = (fcgid_server_conf *) locv;
+
+	init_server_config(p, merged_config);
 
 	/* Merge environment variables */
 	const apr_array_header_t *baseenv_array =
 		apr_table_elts(base->default_init_env);
-	const apr_table_entry_t *baseenv_entry =
-		(apr_table_entry_t *) baseenv_array->elts;
-	for (i = 0; i < baseenv_array->nelts; ++i) {
-		if (apr_table_get
-			(overrides->default_init_env, baseenv_entry[i].key))
-			continue;
-		apr_table_set(overrides->default_init_env, baseenv_entry[i].key,
-					  baseenv_entry[i].val);
+	const apr_array_header_t *locenv_array =
+		apr_table_elts(local->default_init_env);
+
+	if (baseenv_array != NULL || locenv_array != NULL) {
+		merged_config->default_init_env = apr_table_make(p, 20);
+
+		if (locenv_array != NULL) {
+			const apr_table_entry_t *locenv_entry =
+				(apr_table_entry_t *) locenv_array->elts;
+
+			for (i = 0; i < locenv_array->nelts; ++i) {
+				apr_table_set(merged_config->default_init_env,
+							  locenv_entry[i].key, locenv_entry[i].val);
+			}
+		}
+
+		if (baseenv_array != NULL) {
+			const apr_table_entry_t *baseenv_entry =
+				(apr_table_entry_t *) baseenv_array->elts;
+
+			for (i = 0; i < baseenv_array->nelts; ++i) {
+				if (apr_table_get
+					(merged_config->default_init_env,
+					 baseenv_entry[i].key))
+					continue;
+				apr_table_set(merged_config->default_init_env,
+							  baseenv_entry[i].key, baseenv_entry[i].val);
+			}
+		}
 	}
 
+	/* Merge pass headers */
+	if (local->pass_headers != NULL || base->pass_headers != NULL) {
+		merged_config->pass_headers =
+			apr_array_make(p, 10, sizeof(const char *));
+		if (base->pass_headers != NULL)
+			apr_array_cat(merged_config->pass_headers, base->pass_headers);
+		if (local->pass_headers != NULL)
+			apr_array_cat(merged_config->pass_headers,
+						  local->pass_headers);
+	}
 	// Merge the other configurations
-	if (base->ipc_comm_timeout_overwrite
-		&& !overrides->ipc_comm_timeout_overwrite)
-		overrides->ipc_comm_timeout = base->ipc_comm_timeout;
-	if (base->ipc_connect_timeout_overwrite
-		&& !overrides->ipc_connect_timeout_overwrite)
-		overrides->ipc_connect_timeout = base->ipc_connect_timeout;
-	if (base->busy_timeout_overwrite && !overrides->busy_timeout_overwrite)
-		overrides->busy_timeout = base->busy_timeout;
+	merged_config->ipc_comm_timeout = base->ipc_comm_timeout;
+	merged_config->ipc_comm_timeout = local->ipc_comm_timeout;
 
-	return overridesv;
+	merged_config->ipc_connect_timeout = base->ipc_connect_timeout;
+	merged_config->ipc_connect_timeout = local->ipc_connect_timeout;
+
+	merged_config->busy_timeout = base->busy_timeout;
+	merged_config->busy_timeout = local->busy_timeout;
+
+	return merged_config;
 }
 
 void *create_fcgid_dir_config(apr_pool_t * p, char *dummy)
@@ -147,7 +185,6 @@ const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	config->busy_timeout = atol(arg);
-	config->busy_timeout_overwrite = 1;
 	return NULL;
 }
 
@@ -429,7 +466,6 @@ const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	config->ipc_connect_timeout = atol(arg);
-	config->ipc_connect_timeout_overwrite = 1;
 	return NULL;
 }
 
@@ -448,7 +484,6 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	config->ipc_comm_timeout = atol(arg);
-	config->ipc_comm_timeout_overwrite = 1;
 	return NULL;
 }
 
@@ -463,8 +498,9 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
 								 const char *name, const char *value)
 {
 	fcgid_server_conf *config =
-		ap_get_module_config(cmd->server->module_config,
-							 &fcgid_module);
+		ap_get_module_config(cmd->server->module_config, &fcgid_module);;
+	if (config->default_init_env == NULL)
+		config->default_init_env = apr_table_make(cmd->pool, 20);
 
 	apr_table_set(config->default_init_env, name, value ? value : "");
 	return NULL;
@@ -475,6 +511,29 @@ apr_table_t *get_default_env_vars(request_rec * r)
 	fcgid_server_conf *config =
 		ap_get_module_config(r->server->module_config, &fcgid_module);
 	return config->default_init_env;
+}
+
+const char *add_pass_headers(cmd_parms * cmd, void *dummy,
+							 const char *names)
+{
+	const char **header;
+	fcgid_server_conf *config =
+		ap_get_module_config(cmd->server->module_config, &fcgid_module);
+	if (config->pass_headers == NULL)
+		config->pass_headers =
+			apr_array_make(cmd->pool, 10, sizeof(const char *));
+
+	header = (const char **) apr_array_push(config->pass_headers);
+	*header = ap_getword_conf(cmd->pool, &names);
+
+	return header ? NULL : "Invalid PassHeaders";
+}
+
+apr_array_header_t *get_pass_headers(request_rec * r)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(r->server->module_config, &fcgid_module);
+	return config->pass_headers;
 }
 
 const char *set_authenticator_info(cmd_parms * cmd, void *config,
