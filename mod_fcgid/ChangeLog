@@ -1,6 +1,8 @@
 version 2.2
 1. Support configuration "PassHeader"
 	Thank Hans Christian Saustrup for the suggestion.
+2. Support apr_shm_remove() in httpd.2.0.X
+	Thank Hans Christian Saustrup for bug report.
 
 version 2.1 ( Feb 15th 2007 )
 1. Add missing config.m4 and Makefile.in for static linking
