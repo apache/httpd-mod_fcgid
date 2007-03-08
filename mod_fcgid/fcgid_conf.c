@@ -22,6 +22,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_SPAWNSOCRE_UPLIMIT 10
 #define DEFAULT_SPAWN_SCORE 1
 #define DEFAULT_TERMINATION_SCORE 2
+#define DEFAULT_TIME_SCORE 1
 #define DEFAULT_MAX_PROCESS_COUNT 1000
 #define DEFAULT_MAX_CLASS_PROCESS_COUNT 100
 #define DEFAULT_MIN_CLASS_PROCESS_COUNT 3
@@ -46,6 +47,7 @@ static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 	config->spawn_score = DEFAULT_SPAWN_SCORE;
 	config->spawnscore_uplimit = DEFAULT_SPAWNSOCRE_UPLIMIT;
 	config->termination_score = DEFAULT_TERMINATION_SCORE;
+	config->time_score = DEFAULT_TIME_SCORE;
 	config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
 	config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
 	config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
@@ -336,6 +338,23 @@ int get_spawn_score(server_rec * s)
 	fcgid_server_conf *config =
 		ap_get_module_config(s->module_config, &fcgid_module);
 	return config ? config->spawn_score : DEFAULT_SPAWN_SCORE;
+}
+
+const char *set_time_score(cmd_parms * cmd, void *dummy,
+								  const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->time_score = atol(arg);
+	return NULL;
+}
+
+int get_time_score(server_rec * s)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config ? config->time_score : DEFAULT_TIME_SCORE;
 }
 
 const char *set_termination_score(cmd_parms * cmd, void *dummy,

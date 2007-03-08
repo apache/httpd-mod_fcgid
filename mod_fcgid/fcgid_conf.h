@@ -29,6 +29,7 @@ typedef struct {
 	int spawnscore_uplimit;
 	int spawn_score;
 	int termination_score;
+	int time_score;
 	int max_process_count;
 	int max_class_process_count;
 	int min_class_process_count;
@@ -98,6 +99,10 @@ const char *get_socketpath(server_rec * s);
 
 const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg);
 const char *get_shmpath(server_rec * s);
+
+const char *set_time_score(cmd_parms * cmd, void *dummy,
+								  const char *arg);
+int get_time_score(server_rec * s);
 
 const char *set_termination_score(cmd_parms * cmd, void *dummy,
 								  const char *arg);

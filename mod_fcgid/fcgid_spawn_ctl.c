@@ -17,6 +17,7 @@ struct fcgid_stat_node {
 
 static apr_pool_t *g_stat_pool = NULL;
 static struct fcgid_stat_node *g_stat_list_header = NULL;
+static int g_time_score;
 static int g_termination_score;
 static int g_spawn_score;
 static int g_score_uplimit;
@@ -61,7 +62,7 @@ register_life_death(server_rec * main_server,
 		}
 
 		/* Decrease the score base on the time passing */
-		current_node->score -= (int) (apr_time_sec(now)
+		current_node->score -= g_time_score * (int) (apr_time_sec(now)
 									  -
 									  apr_time_sec(current_node->
 												   last_stat_time));
@@ -106,6 +107,7 @@ void spawn_control_init(server_rec * main_server, apr_pool_t * configpool)
 	}
 
 	/* Initialize the variables from configuration */
+	g_time_score = get_time_score(main_server);
 	g_termination_score = get_termination_score(main_server);
 	g_spawn_score = get_spawn_score(main_server);
 	g_score_uplimit = get_spawnscore_uplimit(main_server);
@@ -131,7 +133,7 @@ void register_spawn(server_rec * main_server, fcgid_procnode * procnode)
 	Spawn control is base on such strategy:
 	1. Increate score if application is terminated
 	2. Increate score if application is spawned
-	3. Decrease one score per second while score is positive
+	3. Decrease score each second while score is positive
 	4. Negative spawn request if score is higher than up limit
 	5. Negative spawn request if total process count higher than up limit
 	6. Negative spawn request if process count of this class higher than up limit
@@ -159,7 +161,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 	else {
 		apr_time_t now = apr_time_now();
 
-		current_node->score -= (int) (apr_time_sec(now)
+		current_node->score -= g_time_score * (int) (apr_time_sec(now)
 									  -
 									  apr_time_sec(current_node->
 												   last_stat_time));
