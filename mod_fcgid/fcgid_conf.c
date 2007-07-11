@@ -30,6 +30,8 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_IPC_COMM_TIMEOUT 40
 #define DEFAULT_OUTPUT_BUFFERSIZE 65536
 #define DEFAULT_MAX_REQUESTS_PER_PROCESS -1
+#define DEFAULT_MAX_REQUEST_LEN (1024*1024*1024)	/* 1G */
+#define DEFAULT_MAX_MEM_REQUEST_LEN (1024*64)	/* 64k */
 
 static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 {
@@ -57,6 +59,8 @@ static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 	config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
 	config->php_fix_pathinfo_enable = 0;
 	config->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
+	config->max_request_len = DEFAULT_MAX_REQUEST_LEN;
+	config->max_mem_request_len = DEFAULT_MAX_MEM_REQUEST_LEN;
 }
 
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
@@ -324,6 +328,41 @@ int get_spawnscore_uplimit(server_rec * s)
 		spawnscore_uplimit : DEFAULT_SPAWNSOCRE_UPLIMIT;
 }
 
+const char *set_max_request_len(cmd_parms * cmd, void *dummy,
+								const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->max_request_len = atol(arg);
+	return NULL;
+}
+
+int get_max_request_len(server_rec * s)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config ? config->max_request_len : DEFAULT_MAX_REQUEST_LEN;
+}
+
+const char *set_max_mem_request_len(cmd_parms * cmd, void *dummy,
+									const char *arg)
+{
+	server_rec *s = cmd->server;
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	config->max_mem_request_len = atol(arg);
+	return NULL;
+}
+
+int get_max_mem_request_len(server_rec * s)
+{
+	fcgid_server_conf *config =
+		ap_get_module_config(s->module_config, &fcgid_module);
+	return config ? config->
+		max_mem_request_len : DEFAULT_MAX_MEM_REQUEST_LEN;
+}
+
 const char *set_spawn_score(cmd_parms * cmd, void *dummy, const char *arg)
 {
 	server_rec *s = cmd->server;
@@ -340,8 +379,7 @@ int get_spawn_score(server_rec * s)
 	return config ? config->spawn_score : DEFAULT_SPAWN_SCORE;
 }
 
-const char *set_time_score(cmd_parms * cmd, void *dummy,
-								  const char *arg)
+const char *set_time_score(cmd_parms * cmd, void *dummy, const char *arg)
 {
 	server_rec *s = cmd->server;
 	fcgid_server_conf *config =

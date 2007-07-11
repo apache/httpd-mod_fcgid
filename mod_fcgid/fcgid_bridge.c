@@ -3,6 +3,7 @@
 #include "apr_strings.h"
 #include "apr_portable.h"
 #include "apr_pools.h"
+#include "apr_file_io.h"
 #include "util_script.h"
 #include "fcgid_bridge.h"
 #include "fcgid_pm.h"
@@ -442,9 +443,15 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 	server_rec *main_server = r->server;
 	apr_status_t rv = APR_SUCCESS;
 	int seen_eos;
+	size_t request_size = 0;
+	apr_file_t *fd = NULL;
+	int need_truncate = 1;
+	apr_off_t cur_pos = 0;
 	FCGI_Header *stdin_request_header;
 	apr_bucket_brigade *output_brigade;
 	apr_bucket *bucket_input, *bucket_header, *bucket_eos;
+	size_t max_request_len = get_max_request_len(main_server);
+	size_t max_mem_request_len = get_max_mem_request_len(main_server);
 	char **envp = ap_create_environment(request_pool,
 										r->subprocess_env);
 
@@ -497,6 +504,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 			return HTTP_INTERNAL_SERVER_ERROR;
 		}
 
+		request_size = 0;
 		for (bucket_input = APR_BRIGADE_FIRST(input_brigade);
 			 bucket_input != APR_BRIGADE_SENTINEL(input_brigade);
 			 bucket_input = APR_BUCKET_NEXT(bucket_input)) {
@@ -531,17 +539,86 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 									   sizeof(*stdin_request_header),
 									   apr_bucket_free,
 									   r->connection->bucket_alloc);
-			if (APR_BUCKET_IS_HEAP(bucket_input))
-				apr_bucket_copy(bucket_input, &bucket_stdin);
-			else {
-				/* mod_ssl have a bug? */
-				char *pcopydata =
-					apr_bucket_alloc(len, r->connection->bucket_alloc);
-				memcpy(pcopydata, data, len);
-				bucket_stdin =
-					apr_bucket_heap_create(pcopydata, len, apr_bucket_free,
-										   r->connection->bucket_alloc);
+
+			request_size += len;
+			if (request_size > max_request_len) {
+				ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
+							 main_server,
+							 "mod_fcgid: http request length %d > %d",
+							 request_size, max_request_len);
+				return HTTP_INTERNAL_SERVER_ERROR;
 			}
+
+			if (request_size > max_mem_request_len) {
+				apr_size_t wrote_len;
+				static const char *fd_key = "fcgid_fd";
+
+				if (fd == NULL)
+					apr_pool_userdata_get((void **) &fd, fd_key,
+										  r->connection->pool);
+
+				if (fd == NULL) {
+					const char *tempdir = NULL;
+					char *template;
+
+					rv = apr_temp_dir_get(&tempdir, r->pool);
+					if (rv != APR_SUCCESS) {
+						ap_log_error(APLOG_MARK, APLOG_WARNING,
+									 apr_get_os_error(), main_server,
+									 "mod_fcigd: can't get tmp dir");
+						return HTTP_INTERNAL_SERVER_ERROR;
+					}
+
+					apr_filepath_merge(&template, tempdir,
+									   "fcgid.tmp.XXXXXX",
+									   APR_FILEPATH_NATIVE, r->pool);
+					rv = apr_file_mktemp(&fd, template, 0,
+										 r->connection->pool);
+					if (rv != APR_SUCCESS) {
+						ap_log_error(APLOG_MARK, APLOG_WARNING,
+									 apr_get_os_error(), main_server,
+									 "mod_fcgid: can't open tmp file fot stdin request");
+						return HTTP_INTERNAL_SERVER_ERROR;
+					}
+					apr_pool_userdata_set((const void *) fd, fd_key,
+										  apr_pool_cleanup_null,
+										  r->connection->pool);
+				} else if (need_truncate) {
+					need_truncate = 0;
+					apr_file_trunc(fd, 0);
+					cur_pos = 0;
+				}
+				// Write request to tmp file
+				if ((rv =
+					 apr_file_write_full(fd, (const void *) data, len,
+										 &wrote_len)) != APR_SUCCESS
+					|| len != wrote_len) {
+					ap_log_error(APLOG_MARK, APLOG_WARNING,
+								 apr_get_os_error(), main_server,
+								 "mod_fcgid: can't write tmp file for stdin request");
+					return HTTP_INTERNAL_SERVER_ERROR;
+				}
+				// Create file bucket
+				bucket_stdin =
+					apr_bucket_file_create(fd, cur_pos, len, r->pool,
+										   r->connection->bucket_alloc);
+				cur_pos += len;
+			} else {
+				if (APR_BUCKET_IS_HEAP(bucket_input))
+					apr_bucket_copy(bucket_input, &bucket_stdin);
+				else {
+					/* mod_ssl have a bug? */
+					char *pcopydata =
+						apr_bucket_alloc(len, r->connection->bucket_alloc);
+					memcpy(pcopydata, data, len);
+					bucket_stdin =
+						apr_bucket_heap_create(pcopydata, len,
+											   apr_bucket_free,
+											   r->connection->
+											   bucket_alloc);
+				}
+			}
+
 			if (!stdin_request_header || !bucket_header || !bucket_stdin
 				|| !init_header(FCGI_STDIN, 1, len, 0,
 								stdin_request_header)) {

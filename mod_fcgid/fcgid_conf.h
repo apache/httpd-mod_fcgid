@@ -33,6 +33,8 @@ typedef struct {
 	int max_process_count;
 	int max_class_process_count;
 	int min_class_process_count;
+	int max_request_len;
+	int max_mem_request_len;
 	int output_buffersize;
 	int max_requests_per_process;
 	apr_table_t *default_init_env;
@@ -100,9 +102,16 @@ const char *get_socketpath(server_rec * s);
 const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg);
 const char *get_shmpath(server_rec * s);
 
-const char *set_time_score(cmd_parms * cmd, void *dummy,
-								  const char *arg);
+const char *set_time_score(cmd_parms * cmd, void *dummy, const char *arg);
 int get_time_score(server_rec * s);
+
+const char *set_max_request_len(cmd_parms * cmd, void *dummy,
+								const char *arg);
+int get_max_request_len(server_rec * s);
+
+const char *set_max_mem_request_len(cmd_parms * cmd, void *dummy,
+									const char *arg);
+int get_max_mem_request_len(server_rec * s);
 
 const char *set_termination_score(cmd_parms * cmd, void *dummy,
 								  const char *arg);

@@ -63,9 +63,10 @@ register_life_death(server_rec * main_server,
 
 		/* Decrease the score base on the time passing */
 		current_node->score -= g_time_score * (int) (apr_time_sec(now)
-									  -
-									  apr_time_sec(current_node->
-												   last_stat_time));
+													 -
+													 apr_time_sec
+													 (current_node->
+													  last_stat_time));
 
 		/* Make score reasonable */
 		if (current_node->score < 0)
@@ -162,9 +163,10 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 		apr_time_t now = apr_time_now();
 
 		current_node->score -= g_time_score * (int) (apr_time_sec(now)
-									  -
-									  apr_time_sec(current_node->
-												   last_stat_time));
+													 -
+													 apr_time_sec
+													 (current_node->
+													  last_stat_time));
 		current_node->last_stat_time = now;
 		if (current_node->score < 0)
 			current_node->score = 0;
