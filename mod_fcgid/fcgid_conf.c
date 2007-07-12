@@ -78,14 +78,13 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
 		(fcgid_server_conf *) apr_pcalloc(p, sizeof(fcgid_server_conf));
 	fcgid_server_conf *base = (fcgid_server_conf *) basev;
 	fcgid_server_conf *local = (fcgid_server_conf *) locv;
+	const apr_array_header_t *baseenv_array, *locenv_array;
 
 	init_server_config(p, merged_config);
 
 	/* Merge environment variables */
-	const apr_array_header_t *baseenv_array =
-		apr_table_elts(base->default_init_env);
-	const apr_array_header_t *locenv_array =
-		apr_table_elts(local->default_init_env);
+	baseenv_array = apr_table_elts(base->default_init_env);
+	locenv_array = apr_table_elts(local->default_init_env);
 
 	if (baseenv_array != NULL || locenv_array != NULL) {
 		merged_config->default_init_env = apr_table_make(p, 20);
