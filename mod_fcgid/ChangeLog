@@ -5,6 +5,13 @@ version 2.2
 	Thank Hans Christian Saustrup for bug report.
 3. Support configuration "TimeScore"
 	Thank Tim Jensen for the patch.
+4. Support new configurations "MaxRequestInMem" and "MaxRequestLen"
+	If the length of http request longer than "MaxRequestInMem", it will store in tmp file.
+	It the length of http request longer than "MaxRequestLen", it will return internal server error.
+	Thank Gabriel Barazer(gabriel at oxeva.fr) for the bug report.
+	Thank Steffen(info at apachelounge.com) for the help on this issue.
+5. Fix miner Sanity check bug
+	Thank Yuya Tanaka for bug report
 
 version 2.1 ( Feb 15th 2007 )
 1. Add missing config.m4 and Makefile.in for static linking

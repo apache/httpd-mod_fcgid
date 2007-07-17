@@ -119,7 +119,7 @@ build_begin_block(int role, server_rec * main_server,
 							   alloc);
 
 	/* Sanity check */
-	if (!begin_request_body || !begin_request_body
+	if (!begin_request_header || !begin_request_body
 		|| !bucket_header || !bucket_body) {
 		ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
 					 main_server,
