@@ -1,3 +1,13 @@
+version 2.3
+1. Patch from Gabriel Barazer, gabriel at oxeva.fr
+	When setting multiple virtual hosts with the same SuexecUserGroup 
+	user and group, the process manager use the same process pool for both
+	virtual hosts. This means if one virtual host has a DefaultInitEnv and the other
+	has different values set, a fastcgi request from any of these virtual host can
+	go to the same processes, which is inconsistent (a request from virtualhost a with
+	DefaultInitEnv VAL "a", can go to a process spawned with virtualhost b with
+	DefaultInitEnv VAL "b" set)
+
 version 2.2
 1. Support configuration "PassHeader"
 	Thank Hans Christian Saustrup for the suggestion.

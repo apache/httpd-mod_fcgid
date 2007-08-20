@@ -34,6 +34,7 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
 	uid_t uid = command->uid;
 	gid_t gid = command->gid;
 	apr_size_t share_grp_id = command->share_grp_id;
+	char *virtualhost = command->virtualhost;
 
 	proc_table = proctable_get_table_array();
 	previous_node = proctable_get_idle_list();
@@ -47,6 +48,7 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
 		if (current_node->inode == inode
 			&& current_node->deviceid == deviceid
 			&& current_node->share_grp_id == share_grp_id
+			&& current_node->virtualhost == virtualhost
 			&& current_node->uid == uid && current_node->gid == gid) {
 			/* Unlink from idle list */
 			previous_node->next_index = current_node->next_index;
@@ -124,6 +126,7 @@ count_busy_processes(server_rec * main_server, fcgid_command * command)
 		if (current_node->inode == command->inode
 			&& current_node->deviceid == command->deviceid
 			&& current_node->share_grp_id == command->share_grp_id
+			&& current_node->virtualhost == command->virtualhost
 			&& current_node->uid == command->uid
 			&& current_node->gid == command->gid) {
 			result++;

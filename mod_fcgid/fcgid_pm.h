@@ -11,6 +11,7 @@ typedef struct {
 	apr_ino_t inode;
 	dev_t deviceid;
 	apr_size_t share_grp_id;
+	char *virtualhost;	/* Virtualhost granularity */
 	uid_t uid;					/* For suEXEC */
 	gid_t gid;					/* For suEXEC */
 	int userdir;				/* For suEXEC */

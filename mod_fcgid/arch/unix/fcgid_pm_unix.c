@@ -386,6 +386,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 	command->deviceid = deviceid;
 	command->inode = inode;
 	command->share_grp_id = share_grp_id;
+	command->virtualhost = r->server->server_hostname;
 
 	/* Update fcgid_command with wrapper info */
 	command->wrapperpath[0] = '\0';

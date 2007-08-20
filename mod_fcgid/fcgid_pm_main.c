@@ -386,7 +386,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	if (free_list_header->next_index == 0) {
 		safe_unlock(main_server);
 		ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-					 "mod_fcgid: too much proecess, please increase FCGID_MAX_APPLICATION");
+					 "mod_fcgid: too much processes, please increase FCGID_MAX_APPLICATION");
 		return;
 	}
 	procnode = &proctable_array[free_list_header->next_index];
@@ -398,12 +398,14 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 	procnode->deviceid = command->deviceid;
 	procnode->inode = command->inode;
 	procnode->share_grp_id = command->share_grp_id;
+	procnode->virtualhost = command->virtualhost;
 	procnode->uid = command->uid;
 	procnode->gid = command->gid;
 	procnode->start_time = procnode->last_active_time = apr_time_now();
 	procnode->requests_handled = 0;
 	procnode->diewhy = FCGID_DIE_KILLSELF;
 	procnode->proc_pool = NULL;
+
 	procinfo.cgipath = command->cgipath;
 	procinfo.configpool = configpool;
 	procinfo.main_server = main_server;
@@ -447,8 +449,8 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 		link_node_to_list(main_server, idle_list_header,
 						  procnode, proctable_array);
 		ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
-					 "mod_fcgid: server %s(%" APR_PID_T_FMT ") started",
-					 command->cgipath, procnode->proc_id->pid);
+					 "mod_fcgid: server %s:%s(%" APR_PID_T_FMT ") started",
+					 command->virtualhost, command->cgipath, procnode->proc_id->pid);
 		register_spawn(main_server, procnode);
 	}
 }

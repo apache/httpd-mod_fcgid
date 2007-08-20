@@ -9,6 +9,7 @@ struct fcgid_stat_node {
 	uid_t uid;
 	gid_t gid;
 	apr_size_t share_grp_id;
+	char *virtualhost;
 	int score;
 	int process_counter;
 	apr_time_t last_stat_time;
@@ -42,6 +43,7 @@ register_life_death(server_rec * main_server,
 		if (current_node->inode == procnode->inode
 			&& current_node->deviceid == procnode->deviceid
 			&& current_node->share_grp_id == procnode->share_grp_id
+			&& current_node->virtualhost == procnode->virtualhost
 			&& current_node->uid == procnode->uid
 			&& current_node->gid == procnode->gid)
 			break;
@@ -81,6 +83,7 @@ register_life_death(server_rec * main_server,
 		current_node->deviceid = procnode->deviceid;
 		current_node->inode = procnode->inode;
 		current_node->share_grp_id = procnode->share_grp_id;
+		current_node->virtualhost = procnode->virtualhost;
 		current_node->uid = procnode->uid;
 		current_node->gid = procnode->gid;
 		current_node->last_stat_time = apr_time_now();
@@ -152,6 +155,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 		if (current_node->inode == command->inode
 			&& current_node->deviceid == command->deviceid
 			&& current_node->share_grp_id == command->share_grp_id
+			&& current_node->virtualhost == command->virtualhost
 			&& current_node->uid == command->uid
 			&& current_node->gid == command->gid)
 			break;
@@ -218,6 +222,7 @@ int is_kill_allowed(fcgid_procnode * procnode)
 		if (current_node->inode == procnode->inode
 			&& current_node->deviceid == procnode->deviceid
 			&& current_node->share_grp_id == procnode->share_grp_id
+			&& current_node->virtualhost == procnode->virtualhost
 			&& current_node->uid == procnode->uid
 			&& current_node->gid == procnode->gid)
 			break;
