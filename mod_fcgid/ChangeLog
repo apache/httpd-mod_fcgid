@@ -7,6 +7,9 @@ version 2.3
 	go to the same processes, which is inconsistent (a request from virtualhost a with
 	DefaultInitEnv VAL "a", can go to a process spawned with virtualhost b with
 	DefaultInitEnv VAL "b" set)
+2. Patch from Ulf Haueisen, ulf at dvlp.de
+	Bug fix. Use wrong config name "FastCgiAuthenticator" and "FastCgiAuthenticatorAuthoritative"
+	while loading these configurations.
 
 version 2.2
 1. Support configuration "PassHeader"
