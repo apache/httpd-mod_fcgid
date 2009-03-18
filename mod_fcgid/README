@@ -1,0 +1,6 @@
+Portions of this software were originally developed by
+Ryan Pan (Pan Qingfeng) <pqf@mailtech.cn>.
+
+This software implements portions of the FastCGI specification
+as defined by Open Market, Inc.  The specification is available from
+  http://www.fastcgi.com/devkit/doc/fcgi-spec.html
