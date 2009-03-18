@@ -24,14 +24,14 @@
 #define FCGI_LISTENSOCK_FILENO 0
 
 typedef struct {
-	unsigned char version;
-	unsigned char type;
-	unsigned char requestIdB1;
-	unsigned char requestIdB0;
-	unsigned char contentLengthB1;
-	unsigned char contentLengthB0;
-	unsigned char paddingLength;
-	unsigned char reserved;
+    unsigned char version;
+    unsigned char type;
+    unsigned char requestIdB1;
+    unsigned char requestIdB0;
+    unsigned char contentLengthB1;
+    unsigned char contentLengthB0;
+    unsigned char paddingLength;
+    unsigned char reserved;
 } FCGI_Header;
 
 /*
@@ -67,10 +67,10 @@ typedef struct {
 #define FCGI_NULL_REQUEST_ID     0
 
 typedef struct {
-	unsigned char roleB1;
-	unsigned char roleB0;
-	unsigned char flags;
-	unsigned char reserved[5];
+    unsigned char roleB1;
+    unsigned char roleB0;
+    unsigned char flags;
+    unsigned char reserved[5];
 } FCGI_BeginRequestBody;
 
 /*
@@ -101,13 +101,13 @@ typedef struct {
 #define FCGI_MPXS_CONNS "FCGI_MPXS_CONNS"
 
 int init_header(int type, int requestId, apr_size_t contentLength,
-				apr_size_t paddingLength, FCGI_Header * header);
+                apr_size_t paddingLength, FCGI_Header * header);
 
 int build_begin_block(int role, server_rec * main_server,
-					  apr_bucket_alloc_t * alloc,
-					  apr_bucket_brigade * request_brigade);
+                      apr_bucket_alloc_t * alloc,
+                      apr_bucket_brigade * request_brigade);
 
 int build_env_block(server_rec * main_server, char **envp,
-					apr_bucket_alloc_t * alloc,
-					apr_bucket_brigade * request_brigade);
+                    apr_bucket_alloc_t * alloc,
+                    apr_bucket_brigade * request_brigade);
 #endif

@@ -25,6 +25,6 @@
 
 apr_status_t bucket_ctx_cleanup(void *thectx);
 int bridge_request(request_rec * r, int role, const char *argv0,
-				   fcgid_wrapper_conf * wrapper_conf);
+                   fcgid_wrapper_conf * wrapper_conf);
 
 #endif
