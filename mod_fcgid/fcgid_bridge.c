@@ -564,7 +564,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
             if (request_size > max_request_len) {
                 ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
                              main_server,
-                             "mod_fcgid: http request length %d > %d",
+                             "mod_fcgid: http request length %" APR_SIZE_T_FMT " > %" APR_SIZE_T_FMT,
                              request_size, max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }

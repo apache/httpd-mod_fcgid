@@ -785,7 +785,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     /* Sanity check */
     if (wrapperpath == NULL || extension == NULL
         || *extension != '.' || *(extension + 1) == '\0'
-        || strchr(extension, '/') || strchr(extension, '\\'))
+        || ap_strchr_c(extension, '/') || ap_strchr_c(extension, '\\'))
         return "Invalid wrapper file extension";
 
     /* Get wrapper_id base on wrapperpath */
@@ -833,7 +833,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
     wrapper->share_group_id = *wrapper_id;
-    *wrapper_id++;
+    (*wrapper_id)++;
 
     /* Add the node now */
     apr_hash_set(config->wrapper_info_hash, extension, strlen(extension),
@@ -844,7 +844,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 
 fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
 {
-    char *extension;
+    const char *extension;
     fcgid_wrapper_conf *wrapper;
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);

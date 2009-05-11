@@ -724,11 +724,13 @@ apr_status_t proc_write_ipc(server_rec * main_server,
          e != APR_BRIGADE_SENTINEL(output_brigade);
          e = APR_BUCKET_NEXT(e)) {
         /* Read bucket */
+        apr_size_t len;
         if ((rv = apr_bucket_read(e, (const char **) &vec[nvec].iov_base,
-                                  &vec[nvec].iov_len,
+                                  &len,
                                   APR_BLOCK_READ)) != APR_SUCCESS)
             return rv;
 
+        vec[nvec].iov_len = len;
         if (nvec == (FCGID_VEC_COUNT - 1)) {
             /* It's time to write now */
             if ((rv =

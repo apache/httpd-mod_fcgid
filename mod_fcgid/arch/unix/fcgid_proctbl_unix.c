@@ -121,7 +121,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
                              main_server->process->pconf)) != APR_SUCCESS)
     {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't create share memory for size %zu byte",
+                     "mod_fcgid: Can't create shared memory for size %" APR_SIZE_T_FMT " bytes",
                      shmem_size);
         exit(1);
     }
