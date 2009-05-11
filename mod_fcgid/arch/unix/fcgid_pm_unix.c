@@ -295,11 +295,17 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
         if ((rv = apr_dir_make_recursive(get_socketpath(main_server),
                                          APR_UREAD | APR_UWRITE |
                                          APR_UEXECUTE,
-                                         configpool)) != APR_SUCCESS
-            || chown(get_socketpath(main_server), unixd_config.user_id,
-                     -1) < 0) {
+                                         configpool)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
-                         "mod_fcgid: Can't create unix socket dir");
+                         "mod_fcgid: Can't create unix socket dir %s",
+                         get_socketpath(main_server));
+            exit(1);
+        }
+
+        if (chown(get_socketpath(main_server), unixd_config.user_id, -1) < 0) {
+            ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
+                         "mod_fcgid: Can't set ownership of unix socket dir %s",
+                         get_socketpath(main_server));
             exit(1);
         }
     }
