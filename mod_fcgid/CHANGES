@@ -1,0 +1,22 @@
+                                                         -*- coding: utf-8 -*-
+Changes with mod_fcgid 2.3
+
+  *) Fix formatting of several messages, including the oft-seen "mod_fcgid: 
+     Can't create shared memory for size %zu byte".  [Jeff Trawick]
+
+  *) Fix declared names of FastCgiAuthenticator and FastCgiAuthenticator-
+     Authoritative directives, allowing them to be used.  [Ulf Haueisen
+     <ulf dvlp.de>]
+
+  *) Fix vhost-specific DefaultInitEnv settings.  Previously, when setting 
+     multiple virtual hosts with the same SuexecUserGroup user and group, the
+     process manager use the same process pool for both virtual hosts. This 
+     means if one virtual host has a DefaultInitEnv and the other has 
+     different values set, a fastcgi request from any of these virtual host
+     can go to the same processes, which is inconsistent (a request from 
+     virtualhost a with DefaultInitEnv VAL "a", can go to a process spawned 
+     with virtualhost b with DefaultInitEnv VAL "b" set).  [Gabriel Barazer
+     <gabriel oxeva.fr>]
+
+Note: A log of changes released before moving to the ASF (releases 2.2 and 
+earlier) is in the file ChangeLog.

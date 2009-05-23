@@ -1,15 +1,5 @@
-version 2.3
-1. Patch from Gabriel Barazer, gabriel at oxeva.fr
-	When setting multiple virtual hosts with the same SuexecUserGroup 
-	user and group, the process manager use the same process pool for both
-	virtual hosts. This means if one virtual host has a DefaultInitEnv and the other
-	has different values set, a fastcgi request from any of these virtual host can
-	go to the same processes, which is inconsistent (a request from virtualhost a with
-	DefaultInitEnv VAL "a", can go to a process spawned with virtualhost b with
-	DefaultInitEnv VAL "b" set)
-2. Patch from Ulf Haueisen, ulf at dvlp.de
-	Bug fix. Use wrong config name "FastCgiAuthenticator" and "FastCgiAuthenticatorAuthoritative"
-	while loading these configurations.
+Note: A log of changes released after moving to the ASF (releases after 2.2)
+is in the file CHANGES.
 
 version 2.2
 1. Support configuration "PassHeader"
