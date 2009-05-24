@@ -289,8 +289,7 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 
     rv = apr_stat(&finfo, get_socketpath(main_server), APR_FINFO_USER,
                   configpool);
-    if (rv != APR_SUCCESS || !(finfo.valid & APR_FINFO_USER)
-        || finfo.user != unixd_config.user_id) {
+    if (rv != APR_SUCCESS) {
         /* Make dir for unix domain socket */
         if ((rv = apr_dir_make_recursive(get_socketpath(main_server),
                                          APR_UREAD | APR_UWRITE |
@@ -302,11 +301,24 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
             exit(1);
         }
 
-        if (chown(get_socketpath(main_server), unixd_config.user_id, -1) < 0) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
-                         "mod_fcgid: Can't set ownership of unix socket dir %s",
-                         get_socketpath(main_server));
-            exit(1);
+        /* Child processes need to be able to create sockets in the unix
+         * socket dir.  Change the ownership to the child user only if
+         * running as root and we just successfully created the directory
+         * (avoiding any concerns about changing the target of a link
+         * created by another user).
+         *
+         * If the directory already existed and was owned by a different user,
+         * FastCGI requests will fail at steady state, and manual intervention
+         * will be required.
+         */
+
+        if (!geteuid()) {
+            if (chown(get_socketpath(main_server), unixd_config.user_id, -1) < 0) {
+                ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
+                             "mod_fcgid: Can't set ownership of unix socket dir %s",
+                             get_socketpath(main_server));
+                exit(1);
+            }
         }
     }
 
