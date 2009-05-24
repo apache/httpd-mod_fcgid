@@ -2,9 +2,9 @@
 Changes with mod_fcgid 2.3
 
   *) Don't try to set the ownership of the socket directory unless running
-     as root, resolving startup failures when starting as a non-root id but
-     httpd.conf specifies a different User/Group (e.g., when using the 
-     default httpd.conf as non-root).  [Jeff Trawick]
+     as root and the directory was just created.  This allows the default
+     httpd.conf (with some daemon User/Group) to be used by non-root.
+     [Jeff Trawick]
 
   *) Fix formatting of several messages, including the oft-seen "mod_fcgid: 
      Can't create shared memory for size %zu byte".  [Jeff Trawick]
