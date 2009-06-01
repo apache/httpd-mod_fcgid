@@ -363,7 +363,7 @@ APR_SUCCESS
     apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
                  procnode->inode, (unsigned long) procnode->deviceid);
     dummy = NULL;
-    apr_pool_userdata_get((void **) &dummy, key_name, g_inode_cginame_map);
+    apr_pool_userdata_get(&dummy, key_name, g_inode_cginame_map);
     if (!dummy) {
         /* Insert a new item if key not found */
         char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
@@ -725,12 +725,13 @@ apr_status_t proc_write_ipc(server_rec * main_server,
          e = APR_BUCKET_NEXT(e)) {
         /* Read bucket */
         apr_size_t len;
-        if ((rv = apr_bucket_read(e, (const char **) &vec[nvec].iov_base,
-                                  &len,
+        const char* base;
+        if ((rv = apr_bucket_read(e, &base, &len,
                                   APR_BLOCK_READ)) != APR_SUCCESS)
             return rv;
 
         vec[nvec].iov_len = len;
+        vec[nvec].iov_base = (char*) base;
         if (nvec == (FCGID_VEC_COUNT - 1)) {
             /* It's time to write now */
             if ((rv =
@@ -760,14 +761,16 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     char signal_info[HUGE_STRING_LEN];
     char key_name[_POSIX_PATH_MAX];
     int signum = exitcode;
+    void* tmp;
 
     memset(signal_info, 0, HUGE_STRING_LEN);
 
     /* Get the file name infomation base on inode and deviceid */
     apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
                  procnode->inode, (unsigned long) procnode->deviceid);
-    apr_pool_userdata_get((void **) &cgipath, key_name,
+    apr_pool_userdata_get(&tmp, key_name,
                           g_inode_cginame_map);
+    cgipath = tmp;
 
     /* Reasons to exit */
     switch (procnode->diewhy) {

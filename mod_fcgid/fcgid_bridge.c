@@ -573,9 +573,12 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                 apr_size_t wrote_len;
                 static const char *fd_key = "fcgid_fd";
 
-                if (fd == NULL)
-                    apr_pool_userdata_get((void **) &fd, fd_key,
+                if (fd == NULL){
+                    void *tmp;
+                    apr_pool_userdata_get(&tmp, fd_key,
                                           r->connection->pool);
+                    fd = tmp;
+                }
 
                 if (fd == NULL) {
                     const char *tempdir = NULL;

@@ -789,8 +789,13 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return "Invalid wrapper file extension";
 
     /* Get wrapper_id base on wrapperpath */
-    apr_pool_userdata_get((void *) &id_info, userdata_key,
-                          cmd->server->process->pool);
+    {
+        void *id_info_vp;
+        apr_pool_userdata_get(&id_info_vp, userdata_key,
+                              cmd->server->process->pool);
+        id_info = id_info_vp;
+    }
+    
     if (!id_info) {
         id_info =
             apr_pcalloc(cmd->server->process->pool, sizeof(*id_info));
