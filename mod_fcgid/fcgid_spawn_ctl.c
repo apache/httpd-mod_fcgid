@@ -26,7 +26,7 @@ struct fcgid_stat_node {
     uid_t uid;
     gid_t gid;
     apr_size_t share_grp_id;
-    char *virtualhost;
+    const char *virtualhost;
     int score;
     int process_counter;
     apr_time_t last_stat_time;

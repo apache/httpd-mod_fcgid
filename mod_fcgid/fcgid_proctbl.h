@@ -45,7 +45,7 @@ typedef struct {
     gid_t gid;                  /* for suEXEC */
     uid_t uid;                  /* for suEXEC */
     apr_size_t share_grp_id;    /* cgi wrapper share group id */
-    char *virtualhost;      /* the virtualhost this process belongs to */
+    const char *virtualhost;      /* the virtualhost this process belongs to */
     apr_time_t start_time;      /* the time of this process create */
     apr_time_t last_active_time;    /* the time this process last active */
     int requests_handled;       /* number of requests process has handled */

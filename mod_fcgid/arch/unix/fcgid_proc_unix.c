@@ -43,8 +43,8 @@ static apr_status_t ap_unix_create_privileged_process(apr_proc_t * newproc,
 {
     int i = 0;
     const char **newargs;
-    char *newprogname;
-    char *execuser, *execgroup;
+    const char *newprogname;
+    const char *execuser, *execgroup;
     const char *argv0;
 
     if (!unixd_config.suexec_enabled) {
@@ -156,9 +156,10 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     char key_name[_POSIX_PATH_MAX];
     void *dummy;
     int argc;
-    char *wargv[APACHE_ARG_MAX], *word; /* For wrapper */
+    const char *wargv[APACHE_ARG_MAX];
+    const char *word; /* For wrapper */
     const char *tmp;
-    char *argv[2];
+    const char *argv[2];
 
     /* Build wrapper args */
     argc = 0;
@@ -327,8 +328,7 @@ APR_SUCCESS
                      procinfo->cgipath, lpszwapper);
         if ((rv =
              fcgid_create_privileged_process(procnode->proc_id,
-                                             wargv[0],
-                                             (const char *const *) wargv,
+                                             wargv[0], wargv,
                                              (const char *const *)
                                              proc_environ, procattr,
                                              procinfo,
@@ -346,7 +346,7 @@ APR_SUCCESS
         if ((rv =
              fcgid_create_privileged_process(procnode->proc_id,
                                              procinfo->cgipath,
-                                             (const char *const *) argv,
+                                             argv,
                                              (const char *const *)
                                              proc_environ, procattr,
                                              procinfo,
@@ -366,11 +366,11 @@ APR_SUCCESS
     apr_pool_userdata_get(&dummy, key_name, g_inode_cginame_map);
     if (!dummy) {
         /* Insert a new item if key not found */
-        char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
-                                     procnode->inode,
-                                     (unsigned long) procnode->deviceid);
-        char *fcgipath = apr_psprintf(g_inode_cginame_map, "%s",
-                                      procinfo->cgipath);
+        const char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
+                                           procnode->inode,
+                                           (unsigned long) procnode->deviceid);
+        const char *fcgipath = apr_psprintf(g_inode_cginame_map, "%s",
+                                            procinfo->cgipath);
 
         if (put_key && fcgipath)
             apr_pool_userdata_set(fcgipath, put_key, NULL,
@@ -756,8 +756,8 @@ void
 proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
                      apr_exit_why_e exitwhy, server_rec * main_server)
 {
-    char *cgipath = NULL;
-    char *diewhy = NULL;
+    const char *cgipath = NULL;
+    const char *diewhy = NULL;
     char signal_info[HUGE_STRING_LEN];
     char key_name[_POSIX_PATH_MAX];
     int signum = exitcode;

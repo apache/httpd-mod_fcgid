@@ -51,7 +51,7 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
     uid_t uid = command->uid;
     gid_t gid = command->gid;
     apr_size_t share_grp_id = command->share_grp_id;
-    char *virtualhost = command->virtualhost;
+    const char *virtualhost = command->virtualhost;
 
     proc_table = proctable_get_table_array();
     previous_node = proctable_get_idle_list();
