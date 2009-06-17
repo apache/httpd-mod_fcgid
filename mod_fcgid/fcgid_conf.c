@@ -630,9 +630,8 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
                     sizeof(*dirconfig->authenticator_info));
     if (!dirconfig->authenticator_info)
         return "Can't alloc memory for authenticator_info";
-    strncpy(dirconfig->authenticator_info->path, authenticator,
-            _POSIX_PATH_MAX - 1);
-    dirconfig->authenticator_info->path[_POSIX_PATH_MAX - 1] = '\0';
+    apr_cpystrn(dirconfig->authenticator_info->path, authenticator,
+                _POSIX_PATH_MAX);
     dirconfig->authenticator_info->inode = finfo.inode;
     dirconfig->authenticator_info->deviceid = finfo.device;
     dirconfig->authenticator_info->share_group_id = (apr_size_t) - 1;
@@ -682,9 +681,8 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
                     sizeof(*dirconfig->authorizer_info));
     if (!dirconfig->authorizer_info)
         return "Can't alloc memory for authorizer";
-    strncpy(dirconfig->authorizer_info->path, authorizer,
-            _POSIX_PATH_MAX - 1);
-    dirconfig->authorizer_info->path[_POSIX_PATH_MAX - 1] = '\0';
+    apr_cpystrn(dirconfig->authorizer_info->path, authorizer,
+                _POSIX_PATH_MAX);
     dirconfig->authorizer_info->inode = finfo.inode;
     dirconfig->authorizer_info->deviceid = finfo.device;
     dirconfig->authorizer_info->share_group_id = (apr_size_t) - 1;
@@ -734,8 +732,7 @@ const char *set_access_info(cmd_parms * cmd, void *config,
                     sizeof(*dirconfig->access_info));
     if (!dirconfig->access_info)
         return "Can't alloc memory for access";
-    strncpy(dirconfig->access_info->path, access, _POSIX_PATH_MAX - 1);
-    dirconfig->access_info->path[_POSIX_PATH_MAX - 1] = '\0';
+    apr_cpystrn(dirconfig->access_info->path, access, _POSIX_PATH_MAX);
     dirconfig->access_info->inode = finfo.inode;
     dirconfig->access_info->deviceid = finfo.device;
     dirconfig->access_info->share_group_id = (apr_size_t) - 1;
@@ -833,8 +830,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                             wrapperpath, path, apr_get_os_error());
     }
 
-    strncpy(wrapper->args, wrapperpath, _POSIX_PATH_MAX - 1);
-    wrapper->args[_POSIX_PATH_MAX - 1] = '\0';
+    apr_cpystrn(wrapper->args, wrapperpath, _POSIX_PATH_MAX);
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
     wrapper->share_group_id = *wrapper_id;

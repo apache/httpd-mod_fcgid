@@ -515,8 +515,8 @@ proc_connect_ipc(server_rec * main_server,
     /* Connect to fastcgi server */
     memset(&unix_addr, 0, sizeof(unix_addr));
     unix_addr.sun_family = AF_UNIX;
-    strncpy(unix_addr.sun_path, procnode->socket_path,
-            sizeof(unix_addr.sun_path) - 1);
+    apr_cpystrn(unix_addr.sun_path, procnode->socket_path,
+                sizeof(unix_addr.sun_path));
 
     /* I am the only one who connecting the server
        So I don't have to worry about ECONNREFUSED(listen queue overflow) problem,

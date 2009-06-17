@@ -134,8 +134,7 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
                      "mod_fcgid: can't create namedpipe for subprocess");
         return APR_ENOSOCKET;
     }
-    strncpy(procnode->socket_path, sock_path, _POSIX_PATH_MAX - 1);
-    procnode->socket_path[_POSIX_PATH_MAX - 1] = '\0';
+    apr_cpystrn(procnode->socket_path, sock_path, _POSIX_PATH_MAX);
 
     /* Build environment variables */
     proc_environ = ap_create_environment(procnode->proc_pool,

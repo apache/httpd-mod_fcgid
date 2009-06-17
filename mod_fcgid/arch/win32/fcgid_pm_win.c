@@ -129,17 +129,14 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
             if (initenv_entry[i].key == NULL
                 || initenv_entry[i].key[0] == '\0')
                 break;
-            strncpy(command->initenv_key[i], initenv_entry[i].key,
-                    INITENV_KEY_LEN);
-            command->initenv_key[i][INITENV_KEY_LEN - 1] = '\0';
-            strncpy(command->initenv_val[i], initenv_entry[i].val,
-                    INITENV_VAL_LEN);
-            command->initenv_val[i][INITENV_VAL_LEN - 1] = '\0';
+            apr_cpystrn(command->initenv_key[i], initenv_entry[i].key,
+                        INITENV_KEY_LEN);
+            apr_cpystrn(command->initenv_val[i], initenv_entry[i].val,
+                        INITENV_VAL_LEN);
         }
     }
 
-    strncpy(command->cgipath, argv0, _POSIX_PATH_MAX);
-    command->cgipath[_POSIX_PATH_MAX - 1] = '\0';
+    apr_cpystrn(command->cgipath, argv0, _POSIX_PATH_MAX);
     command->deviceid = deviceid;
     command->inode = inode;
     command->share_grp_id = share_grp_id;
@@ -150,8 +147,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     /* Update fcgid_command with wrapper info */
     command->wrapperpath[0] = '\0';
     if ((wrapperconf = get_wrapper_info(argv0, r))) {
-        strncpy(command->wrapperpath, wrapperconf->args, _POSIX_PATH_MAX);
-        command->wrapperpath[_POSIX_PATH_MAX - 1] = '\0';
+        apr_cpystrn(command->wrapperpath, wrapperconf->args, _POSIX_PATH_MAX);
         command->deviceid = wrapperconf->deviceid;
         command->inode = wrapperconf->inode;
         command->share_grp_id = wrapperconf->share_group_id;
