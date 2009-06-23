@@ -164,6 +164,8 @@ APR_SUCCESS
 || (rv =
     apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM)) != APR_SUCCESS
 || (rv = apr_procattr_detach_set(proc_attr, 1)) != APR_SUCCESS
+|| (rv = apr_procattr_io_set(proc_attr, APR_NO_PIPE, 
+                             APR_NO_FILE, APR_NO_FILE)) != APR_SUCCESS
 || (rv =
     apr_os_file_put(&file, &listen_handle, 0,
                     procnode->proc_pool)) != APR_SUCCESS
