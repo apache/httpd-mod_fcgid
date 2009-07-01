@@ -341,13 +341,15 @@ apr_status_t proc_connect_ipc(server_rec *main_server,
         && ipc_handle->connect_timeout != 0
         && GetLastError() == ERROR_PIPE_BUSY)
     {
-        /* Wait for pipe to be ready for connect, and try again */
+        /* XXX - there appears to be a race, here
+         * Wait for pipe to be ready for connect, and try again
+         */
         if (WaitNamedPipe(procnode->socket_path, ipc_handle->connect_timeout))
         {
             handle_info->handle_pipe = CreateFile(procnode->socket_path,
                                                   GENERIC_READ | GENERIC_WRITE,
                                                   0, NULL, OPEN_EXISTING,
-                                                  0, NULL);
+                                                  FILE_FLAG_OVERLAPPED, NULL);
         }
     }
 
