@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 #include "httpd.h"
 #include "apr_thread_proc.h"
 #include "apr_strings.h"
@@ -41,9 +59,8 @@ static apr_status_t close_finish_event(void *finishevent)
     return APR_SUCCESS;
 }
 
-apr_status_t
-proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
-                   fcgid_procnode * procnode)
+apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
+                                fcgid_procnode *procnode)
 {
     HANDLE *finish_event, listen_handle;
     int bufused = 0;
@@ -147,30 +164,24 @@ proc_spawn_process(char *wrapperpath, fcgid_proc_info * procinfo,
     }
 
     /* Create process now */
-    if (!
-        (procnode->proc_id =
-         apr_pcalloc(procnode->proc_pool, sizeof(apr_proc_t)))
-|| (rv =
-    apr_procattr_create(&proc_attr,
-                        procnode->proc_pool)) != APR_SUCCESS
-|| (rv =
-    apr_procattr_dir_set(proc_attr,
-                         ap_make_dirstr_parent(procnode->proc_pool,
-                                               (wrapperpath != NULL
-                                                && wrapperpath[0] !=
-                                                '\0') ? wargv[0] :
-                                               procinfo->cgipath))) !=
-APR_SUCCESS
-|| (rv =
-    apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM)) != APR_SUCCESS
-|| (rv = apr_procattr_detach_set(proc_attr, 1)) != APR_SUCCESS
-|| (rv = apr_procattr_io_set(proc_attr, APR_NO_PIPE, 
-                             APR_NO_FILE, APR_NO_FILE)) != APR_SUCCESS
-|| (rv =
-    apr_os_file_put(&file, &listen_handle, 0,
-                    procnode->proc_pool)) != APR_SUCCESS
-|| (rv =
-    apr_procattr_child_in_set(proc_attr, file, NULL)) != APR_SUCCESS) {
+    if (!(procnode->proc_id = apr_pcalloc(procnode->proc_pool,
+                                          sizeof(apr_proc_t)))
+        || (rv = apr_procattr_create(&proc_attr, procnode->proc_pool))
+               != APR_SUCCESS
+        || (rv = apr_procattr_dir_set(proc_attr,
+                     ap_make_dirstr_parent(procnode->proc_pool,
+                         (wrapperpath && wrapperpath[0] != '\0') 
+                              ? wargv[0] : procinfo->cgipath))) != APR_SUCCESS
+        || (rv = apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM))
+               != APR_SUCCESS
+        || (rv = apr_procattr_detach_set(proc_attr, 1)) != APR_SUCCESS
+        || (rv = apr_procattr_io_set(proc_attr, APR_NO_PIPE, 
+                                     APR_NO_FILE, APR_NO_FILE)) != APR_SUCCESS
+        || (rv = apr_os_file_put(&file, &listen_handle, 0,
+                                 procnode->proc_pool)) != APR_SUCCESS
+        || (rv = apr_procattr_child_in_set(proc_attr, file, NULL))
+               != APR_SUCCESS)
+    {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, procinfo->main_server,
                      "mod_fcgid: can't create fastcgi process attribute");
         CloseHandle(listen_handle);
@@ -182,11 +193,9 @@ APR_SUCCESS
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",
                      procinfo->cgipath, wrapperpath);
-        if ((rv =
-             apr_proc_create(procnode->proc_id, wargv[0],
-                             (const char *const *) wargv,
-                             (const char *const *) proc_environ, proc_attr,
-                             procnode->proc_pool)) != APR_SUCCESS) {
+        if ((rv = apr_proc_create(procnode->proc_id, wargv[0],
+                                  wargv, proc_environ, proc_attr,
+                                  procnode->proc_pool)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                          "mod_fcgid: can't create wrapper process for %s",
                          procinfo->cgipath);
@@ -198,8 +207,7 @@ APR_SUCCESS
         argv[1] = NULL;
         if ((rv =
              apr_proc_create(procnode->proc_id, procinfo->cgipath,
-                             (const char *const *) argv,
-                             (const char *const *) proc_environ, proc_attr,
+                             argv, proc_environ, proc_attr,
                              procnode->proc_pool)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                          "mod_fcgid: can't create process");
@@ -233,8 +241,8 @@ APR_SUCCESS
     return APR_SUCCESS;
 }
 
-apr_status_t
-proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
+apr_status_t proc_kill_gracefully(fcgid_procnode *procnode,
+                                  server_rec *main_server)
 {
     HANDLE *finish_event = NULL;
 
@@ -246,14 +254,14 @@ proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
     return APR_SUCCESS;
 }
 
-apr_status_t proc_kill_force(fcgid_procnode * procnode,
-                             server_rec * main_server)
+apr_status_t proc_kill_force(fcgid_procnode *procnode,
+                             server_rec *main_server)
 {
     return apr_proc_kill(procnode->proc_id, SIGKILL);
 }
 
-apr_status_t
-proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
+apr_status_t proc_wait_process(server_rec *main_server,
+                               fcgid_procnode *procnode)
 {
     apr_status_t rv;
     int exitcode;
@@ -295,9 +303,8 @@ static apr_status_t ipc_handle_cleanup(void *thehandle)
     return APR_SUCCESS;
 }
 
-apr_status_t
-proc_connect_ipc(server_rec * main_server,
-                 fcgid_procnode * procnode, fcgid_ipc * ipc_handle)
+apr_status_t proc_connect_ipc(server_rec *main_server,
+                              fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
 {
     /* Prepare the ipc struct */
     fcgid_namedpipe_handle *handle_info;
@@ -312,10 +319,8 @@ proc_connect_ipc(server_rec * main_server,
     handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 
     /* Prepare OVERLAPPED struct for non-block I/O */
-    handle_info->overlap_read.hEvent =
-        CreateEvent(NULL, FALSE, FALSE, NULL);
-    handle_info->overlap_write.hEvent =
-        CreateEvent(NULL, FALSE, FALSE, NULL);
+    handle_info->overlap_read.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    handle_info->overlap_write.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     handle_info->handle_pipe = INVALID_HANDLE_VALUE;
 
     apr_pool_cleanup_register(ipc_handle->request->pool,
@@ -323,40 +328,41 @@ proc_connect_ipc(server_rec * main_server,
                               ipc_handle_cleanup, apr_pool_cleanup_null);
 
     if (handle_info->overlap_read.hEvent == NULL
-        || handle_info->overlap_write.hEvent == NULL)
+            || handle_info->overlap_write.hEvent == NULL)
         return APR_ENOMEM;
 
     /* Connect to name pipe */
-    handle_info->handle_pipe = CreateFile(procnode->socket_path, GENERIC_READ | GENERIC_WRITE, 0,   /* no sharing */
-                                          NULL, /* no security attributes */
-                                          OPEN_EXISTING,    /* opens existing pipe */
-                                          /*0 */ FILE_FLAG_OVERLAPPED,
-                                          NULL /* no template file */ );
+    handle_info->handle_pipe = CreateFile(procnode->socket_path,
+                                          GENERIC_READ | GENERIC_WRITE,
+                                          0, NULL, OPEN_EXISTING,
+                                          FILE_FLAG_OVERLAPPED, NULL);
 
     if (handle_info->handle_pipe == INVALID_HANDLE_VALUE
         && ipc_handle->connect_timeout != 0
-        && GetLastError() == ERROR_PIPE_BUSY) {
-        /* Wait a while and try again */
-        if (WaitNamedPipe
-            (procnode->socket_path, ipc_handle->connect_timeout)) {
-            handle_info->handle_pipe = CreateFile(procnode->socket_path, GENERIC_READ | GENERIC_WRITE, 0,   /* no sharing */
-                                                  NULL, /* no security attributes */
-                                                  OPEN_EXISTING,    /* opens existing pipe */
-                                                  0,    /* default attributes */
-                                                  NULL  /* no template file */
-                );
+        && GetLastError() == ERROR_PIPE_BUSY)
+    {
+        /* Wait for pipe to be ready for connect, and try again */
+        if (WaitNamedPipe(procnode->socket_path, ipc_handle->connect_timeout))
+        {
+            handle_info->handle_pipe = CreateFile(procnode->socket_path,
+                                                  GENERIC_READ | GENERIC_WRITE,
+                                                  0, NULL, OPEN_EXISTING,
+                                                  0, NULL);
         }
     }
 
-    if (handle_info->handle_pipe == INVALID_HANDLE_VALUE) {
+    if (handle_info->handle_pipe == INVALID_HANDLE_VALUE)
+    {
         if (GetLastError() == ERROR_FILE_NOT_FOUND) /* The process has exited */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
-                         "mod_fcgid: can't connect to named pipe, fastcgi server %d has been terminated",
+                         "mod_fcgid: can't connect to named pipe, fastcgi"
+                         " server %d has been terminated",
                          procnode->proc_id->pid);
         else
             ap_log_error(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(),
                          main_server,
-                         "mod_fcgid: can't connect to named pipe, fastcgi server pid: %d",
+                         "mod_fcgid: can't connect to named pipe, fastcgi"
+                         " server pid: %d",
                          procnode->proc_id->pid);
         return APR_ESPIPE;
     }
@@ -437,7 +443,8 @@ apr_status_t proc_write_ipc(server_rec * main_server,
 
     for (bucket_request = APR_BRIGADE_FIRST(birgade_send);
          bucket_request != APR_BRIGADE_SENTINEL(birgade_send);
-         bucket_request = APR_BUCKET_NEXT(bucket_request)) {
+         bucket_request = APR_BUCKET_NEXT(bucket_request))
+    {
         char *write_buf;
         apr_size_t write_buf_len;
         apr_size_t has_write;
@@ -448,9 +455,8 @@ apr_status_t proc_write_ipc(server_rec * main_server,
         if (APR_BUCKET_IS_FLUSH(bucket_request))
             continue;
 
-        if ((rv =
-             apr_bucket_read(bucket_request, &write_buf, &write_buf_len,
-                             APR_BLOCK_READ)) != APR_SUCCESS) {
+        if ((rv = apr_bucket_read(bucket_request, &write_buf, &write_buf_len,
+                                  APR_BLOCK_READ)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                          "mod_fcgid: can't read request from bucket");
             return rv;
@@ -476,17 +482,16 @@ apr_status_t proc_write_ipc(server_rec * main_server,
                 /* 
                    it's ERROR_IO_PENDING on write
                  */
-                DWORD dwWaitResult
-                    =
+                DWORD dwWaitResult =
                     WaitForSingleObject(handle_info->overlap_write.hEvent,
-                                        ipc_handle->communation_timeout *
-                                        1000);
+                                        ipc_handle->communation_timeout * 1000);
                 if (dwWaitResult == WAIT_OBJECT_0) {
                     if (!GetOverlappedResult(handle_info->handle_pipe,
                                              &handle_info->overlap_write,
                                              &transferred,
                                              FALSE /* don't wait */ )
-                        || transferred == 0) {
+                        || transferred == 0)
+                    {
                         ap_log_error(APLOG_MARK, APLOG_WARNING,
                                      apr_get_os_error(), main_server,
                                      "mod_fcgid: get overlap result error");
@@ -495,8 +500,7 @@ apr_status_t proc_write_ipc(server_rec * main_server,
                     has_write += transferred;
                     continue;
                 } else {
-                    ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-                                 main_server,
+                    ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
                                  "mod_fcgid: write timeout to pipe");
                     return APR_ESPIPE;
                 }
@@ -507,9 +511,8 @@ apr_status_t proc_write_ipc(server_rec * main_server,
     return APR_SUCCESS;
 }
 
-void
-proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
-                     apr_exit_why_e exitwhy, server_rec * main_server)
+void proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
+                          apr_exit_why_e exitwhy, server_rec * main_server)
 {
     char *cgipath = NULL;
     char *diewhy = NULL;
@@ -548,7 +551,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
         diewhy = "shutting down";
         break;
     default:
-        diewhy = "unknow";
+        diewhy = "unknown";
     }
 
     /* Print log now */
