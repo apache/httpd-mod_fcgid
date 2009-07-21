@@ -52,7 +52,7 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"Release/mod_fcgid.so" /base:@..\..\os\win32\BaseAddr.ref,mod_fcgid.so
+# ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"Release/mod_fcgid.so"
 # ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /libpath:"$(APACHE2_HOME)/lib" /out:"Release/mod_fcgid.so" /base:"0x46430000" /opt:ref
 
 !ELSEIF  "$(CFG)" == "mod_fcgid - Win32 Debug"
@@ -78,8 +78,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"Debug/mod_fcgid.so" /base:@..\..\os\win32\BaseAddr.ref,mod_fcgid.so
-# ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib User32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /libpath:"$(APACHE2_HOME)/lib" /base:"0x46430000"
+# ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"Debug/mod_fcgid.so"
+# ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /libpath:"$(APACHE2_HOME)/lib" /out:"Debug/mod_fcgid.so" /base:"0x46430000"
 
 !ENDIF 
 
