@@ -184,8 +184,8 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
            In this case I will do nothing and return, let the process manager 
            do the job   
          */
-        int dt =
-            apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time);
+        int dt = (int)
+            (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
         if (dt > g_busy_timeout) {
             /* Do nothing but print log */
             ap_log_error(APLOG_MARK, APLOG_INFO, 0,
