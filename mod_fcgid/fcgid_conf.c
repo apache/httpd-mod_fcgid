@@ -133,13 +133,16 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
 
     /* Merge pass headers */
     if (local->pass_headers != NULL || base->pass_headers != NULL) {
-        merged_config->pass_headers =
-            apr_array_make(p, 10, sizeof(const char *));
-        if (base->pass_headers != NULL)
-            apr_array_cat(merged_config->pass_headers, base->pass_headers);
-        if (local->pass_headers != NULL)
+        if (local->pass_headers == NULL)
+            merged_config->pass_headers = base->pass_headers;
+        else if (base->pass_headers == NULL)
+            merged_config->pass_headers = local->pass_headers;
+        else {
+            merged_config->pass_headers = 
+                apr_array_copy(p, base->pass_headers);
             apr_array_cat(merged_config->pass_headers,
                           local->pass_headers);
+        }
     }
     // Merge the other configurations
     merged_config->ipc_comm_timeout = base->ipc_comm_timeout;
