@@ -207,6 +207,17 @@ static int fcgid_handler(request_rec * r)
     ap_add_cgi_vars(r);
     fcgid_add_cgi_vars(r);
 
+    /* Remove hop-by-hop headers handled by http
+     */
+    apr_table_unset(r->subprocess_env, "HTTP_KEEP_ALIVE");
+    apr_table_unset(r->subprocess_env, "HTTP_TE");
+    apr_table_unset(r->subprocess_env, "HTTP_TRAILER");
+    apr_table_unset(r->subprocess_env, "HTTP_TRANSFER_ENCODING");
+    apr_table_unset(r->subprocess_env, "HTTP_UPGRADE");
+
+    /* Connection hop-by-hop header to prevent the CGI from hanging */
+    apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
+
     /* Insert output filter */
     ap_add_output_filter_handle(fcgid_filter_handle, NULL, r,
                                 r->connection);
@@ -260,12 +271,22 @@ static int mod_fcgid_authenticator(request_rec * r)
     apr_table_setn(r->subprocess_env, "REMOTE_PASSWD", password);
     apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE", "AUTHENTICATOR");
 
-    /* Remove some environment variables */
-    /* The Web server does not send CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED, and SCRIPT_NAME headers */
+    /* Drop the variables CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED,
+     * SCRIPT_NAME and most Hop-By-Hop headers - EXCEPT we will pass
+     * PROXY_AUTH to allow CGI to perform proxy auth for httpd
+     */
     apr_table_unset(r->subprocess_env, "CONTENT_LENGTH");
     apr_table_unset(r->subprocess_env, "PATH_INFO");
     apr_table_unset(r->subprocess_env, "PATH_TRANSLATED");
     apr_table_unset(r->subprocess_env, "SCRIPT_NAME");
+    apr_table_unset(r->subprocess_env, "HTTP_KEEP_ALIVE");
+    apr_table_unset(r->subprocess_env, "HTTP_TE");
+    apr_table_unset(r->subprocess_env, "HTTP_TRAILER");
+    apr_table_unset(r->subprocess_env, "HTTP_TRANSFER_ENCODING");
+    apr_table_unset(r->subprocess_env, "HTTP_UPGRADE");
+
+    /* Connection hop-by-hop header to prevent the CGI from hanging */
+    apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
 
     /* Handle the request */
     res =
@@ -340,12 +361,22 @@ static int mod_fcgid_authorizer(request_rec * r)
     fcgid_add_cgi_vars(r);
     apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE", "AUTHORIZER");
 
-    /* Remove some environment variables */
-    /* The Web server does not send CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED, and SCRIPT_NAME headers */
+    /* Drop the variables CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED,
+     * SCRIPT_NAME and most Hop-By-Hop headers - EXCEPT we will pass
+     * PROXY_AUTH to allow CGI to perform proxy auth for httpd
+     */
     apr_table_unset(r->subprocess_env, "CONTENT_LENGTH");
     apr_table_unset(r->subprocess_env, "PATH_INFO");
     apr_table_unset(r->subprocess_env, "PATH_TRANSLATED");
     apr_table_unset(r->subprocess_env, "SCRIPT_NAME");
+    apr_table_unset(r->subprocess_env, "HTTP_KEEP_ALIVE");
+    apr_table_unset(r->subprocess_env, "HTTP_TE");
+    apr_table_unset(r->subprocess_env, "HTTP_TRAILER");
+    apr_table_unset(r->subprocess_env, "HTTP_TRANSFER_ENCODING");
+    apr_table_unset(r->subprocess_env, "HTTP_UPGRADE");
+
+    /* Connection hop-by-hop header to prevent the CGI from hanging */
+    apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
 
     /* Handle the request */
     res =
@@ -421,12 +452,22 @@ static int mod_fcgid_check_access(request_rec * r)
     apr_table_setn(r->subprocess_env, "FCGI_APACHE_ROLE",
                    "ACCESS_CHECKER");
 
-    /* Remove some environment variables */
-    /* The Web server does not send CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED, and SCRIPT_NAME headers */
+    /* Drop the variables CONTENT_LENGTH, PATH_INFO, PATH_TRANSLATED,
+     * SCRIPT_NAME and most Hop-By-Hop headers - EXCEPT we will pass
+     * PROXY_AUTH to allow CGI to perform proxy auth for httpd
+     */
     apr_table_unset(r->subprocess_env, "CONTENT_LENGTH");
     apr_table_unset(r->subprocess_env, "PATH_INFO");
     apr_table_unset(r->subprocess_env, "PATH_TRANSLATED");
     apr_table_unset(r->subprocess_env, "SCRIPT_NAME");
+    apr_table_unset(r->subprocess_env, "HTTP_KEEP_ALIVE");
+    apr_table_unset(r->subprocess_env, "HTTP_TE");
+    apr_table_unset(r->subprocess_env, "HTTP_TRAILER");
+    apr_table_unset(r->subprocess_env, "HTTP_TRANSFER_ENCODING");
+    apr_table_unset(r->subprocess_env, "HTTP_UPGRADE");
+
+    /* Connection hop-by-hop header to prevent the CGI from hanging */
+    apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
 
     /* Handle the request */
     res =
