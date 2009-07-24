@@ -19,6 +19,7 @@
 #include "ap_mmn.h"
 #include "apr_strings.h"
 #include "apr_hash.h"
+#include "apr_lib.h"
 #include "apr_tables.h"
 #include "http_main.h"
 #include "httpd.h"
@@ -90,44 +91,25 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 
 void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
 {
-    int i;
     fcgid_server_conf *merged_config =
         (fcgid_server_conf *) apr_pcalloc(p, sizeof(fcgid_server_conf));
     fcgid_server_conf *base = (fcgid_server_conf *) basev;
     fcgid_server_conf *local = (fcgid_server_conf *) locv;
-    const apr_array_header_t *baseenv_array, *locenv_array;
 
     init_server_config(p, merged_config);
 
     /* Merge environment variables */
-    baseenv_array = apr_table_elts(base->default_init_env);
-    locenv_array = apr_table_elts(local->default_init_env);
-
-    if (baseenv_array != NULL || locenv_array != NULL) {
-        merged_config->default_init_env = apr_table_make(p, 20);
-
-        if (locenv_array != NULL) {
-            const apr_table_entry_t *locenv_entry =
-                (apr_table_entry_t *) locenv_array->elts;
-
-            for (i = 0; i < locenv_array->nelts; ++i) {
-                apr_table_set(merged_config->default_init_env,
-                              locenv_entry[i].key, locenv_entry[i].val);
-            }
-        }
-
-        if (baseenv_array != NULL) {
-            const apr_table_entry_t *baseenv_entry =
-                (apr_table_entry_t *) baseenv_array->elts;
-
-            for (i = 0; i < baseenv_array->nelts; ++i) {
-                if (apr_table_get
-                    (merged_config->default_init_env,
-                     baseenv_entry[i].key))
-                    continue;
-                apr_table_set(merged_config->default_init_env,
-                              baseenv_entry[i].key, baseenv_entry[i].val);
-            }
+    if (local->default_init_env != NULL || base->default_init_env != NULL) {
+        if (local->default_init_env == NULL)
+            merged_config->default_init_env = base->default_init_env;
+        else if (base->default_init_env == NULL)
+            merged_config->default_init_env = local->default_init_env;
+        else {
+            merged_config->default_init_env = 
+                apr_table_copy(p, base->default_init_env);
+            apr_table_overlap(merged_config->default_init_env, 
+                              local->default_init_env,
+                              APR_OVERLAP_TABLES_SET);
         }
     }
 
@@ -137,14 +119,13 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
             merged_config->pass_headers = base->pass_headers;
         else if (base->pass_headers == NULL)
             merged_config->pass_headers = local->pass_headers;
-        else {
-            merged_config->pass_headers = 
-                apr_array_copy(p, base->pass_headers);
-            apr_array_cat(merged_config->pass_headers,
-                          local->pass_headers);
-        }
+        else
+            merged_config->pass_headers = apr_array_append(p, 
+                                              base->pass_headers,
+                                              local->pass_headers);
     }
-    // Merge the other configurations
+
+    /* Merge the other configurations */
     merged_config->ipc_comm_timeout = base->ipc_comm_timeout;
     merged_config->ipc_comm_timeout = local->ipc_comm_timeout;
 
@@ -573,11 +554,17 @@ int get_ipc_comm_timeout(server_rec * s)
 const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
                                  const char *name, const char *value)
 {
+    char *pstr;
+
     fcgid_server_conf *config =
         ap_get_module_config(cmd->server->module_config, &fcgid_module);;
     if (config->default_init_env == NULL)
         config->default_init_env = apr_table_make(cmd->pool, 20);
-
+#if defined(WIN32) || defined(OS2) || defined(NETWARE)
+    /* Case insensitive environment platforms */
+    for (name = pstr = apr_pstrdup(cmd->pool, name); *pstr; ++pstr)
+        *pstr = apr_toupper(*pstr);
+#endif
     apr_table_set(config->default_init_env, name, value ? value : "");
     return NULL;
 }
