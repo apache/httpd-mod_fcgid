@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-#include "ap_config.h"
-#include "ap_mmn.h"
+#define CORE_PRIVATE
+
 #include "httpd.h"
-#include "http_core.h"
+#include "http_config.h"
 #include "http_request.h"
 #include "http_protocol.h"
+#include "ap_mmn.h"
 #include "apr_buckets.h"
 #include "apr_thread_proc.h"
 #include "mod_cgi.h"
@@ -97,6 +98,71 @@ default_build_command(const char **cmd, const char ***argv,
     (*argv)[idx] = NULL;
 
     return APR_SUCCESS;
+}
+
+
+/* This should be proposed as a stand-alone improvement to the httpd module,
+ * either in the arch/ platform-specific modules or util_script.c from whence
+ * it came.
+ */
+static void default_proc_env(apr_table_t *e)
+{
+    const char *env_temp;
+
+    if (!(env_temp = getenv("PATH"))) {
+        env_temp = DEFAULT_PATH;
+    }
+    apr_table_addn(e, "PATH", env_temp);
+
+#ifdef WIN32
+    if (env_temp = getenv("SYSTEMROOT")) {
+        apr_table_addn(e, "SYSTEMROOT", env_temp);
+    }
+    if (env_temp = getenv("COMSPEC")) {
+        apr_table_addn(e, "COMSPEC", env_temp);
+    }
+    if (env_temp = getenv("PATHEXT")) {
+        apr_table_addn(e, "PATHEXT", env_temp);
+    }
+    if (env_temp = getenv("WINDIR")) {
+        apr_table_addn(e, "WINDIR", env_temp);
+    }
+#elif defined(OS2)
+    if ((env_temp = getenv("COMSPEC")) != NULL) {
+        apr_table_addn(e, "COMSPEC", env_temp);
+    }
+    if ((env_temp = getenv("ETC")) != NULL) {
+        apr_table_addn(e, "ETC", env_temp);
+    }
+    if ((env_temp = getenv("DPATH")) != NULL) {
+        apr_table_addn(e, "DPATH", env_temp);
+    }
+    if ((env_temp = getenv("PERLLIB_PREFIX")) != NULL) {
+        apr_table_addn(e, "PERLLIB_PREFIX", env_temp);
+    }
+#elif defined(BEOS)
+    if ((env_temp = getenv("LIBRARY_PATH")) != NULL) {
+        apr_table_addn(e, "LIBRARY_PATH", env_temp);
+    }
+#elif defined (AIX)
+    if (env_temp = getenv("LIBPATH")) {
+        apr_table_addn(e, "LIBPATH", env_temp);
+    }
+#else
+/* DARWIN, HPUX vary depending on circumstance */
+#if defined (DARWIN)
+    if (env_temp = getenv("DYLD_LIBRARY_PATH")) {
+        apr_table_addn(e, "DYLD_LIBRARY_PATH", env_temp);
+    }
+#elif defined (HPUX11) || defined (HPUX10) || defined (HPUX)
+    if (env_temp = getenv("SHLIB_PATH")) {
+        apr_table_addn(e, "SHLIB_PATH", env_temp);
+    }
+#endif
+    if (env_temp = getenv("LD_LIBRARY_PATH")) {
+        apr_table_addn(e, "LD_LIBRARY_PATH", env_temp);
+    }
+#endif
 }
 
 /* End of stolen */
