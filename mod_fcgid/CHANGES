@@ -1,5 +1,12 @@
                                                          -*- coding: utf-8 -*-
-Changes with mod_fcgid 2.3
+Changes with mod_fcgid 2.3.1
+
+  *) Provide a default, manditory environment as with mod_cgi (with the
+     inclusion of LD_LIBRARY_PATH or similar variables on other platforms),
+     unless overridden by DefaultInitEnv.  [William Rowe]
+
+  *) Handle DefaultInitEnv for case-insensitive platforms by forcing the env
+     variable names to uppercase on Win32, OS2 and Netware.  [William Rowe]
 
   *) Don't try to set the ownership of the socket directory unless running
      as root and the directory was just created.  This allows the default
