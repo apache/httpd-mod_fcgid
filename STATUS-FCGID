@@ -51,6 +51,8 @@ REALLY NICE TO WRAP THESE UP:
   * For in-tree builds, extending config_vars.mk with our local
     [exp_]vars and installing that tree.
 
+  * Create a manual module page.
+
   * Create and install an conf/extra/httpd-fcgid.conf.
 
   * Win32 stderr is broken.  It's not possible to capture errors immediately
