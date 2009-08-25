@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O2 /I "$(APACHE2_HOME)/include" /I "../../include" /I "../../srclib/apr/include" /I "../../srclib/apr-util/include" /I "./" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Fd"Release\mod_fcgid_src" /FD /c
+# ADD CPP /nologo /MD /W3 /O2 /Oy- /Zi /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /I "../../include" /I "../../srclib/apr/include" /I "../../srclib/apr-util/include" /I "$(APACHE2_HOME)/include" /Fd"Release\mod_fcgid_src" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -53,7 +53,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /machine:I386 /out:"Release/mod_fcgid.so"
-# ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /libpath:"$(APACHE2_HOME)/lib" /out:"Release/mod_fcgid.so" /base:"0x46430000" /opt:ref
+# ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib /nologo /subsystem:windows /dll /debug /incremental:no /machine:I386 /out:"Release/mod_fcgid.so" /libpath:"..\..\Release" /libpath:"..\..\srclib\apr\Release" /libpath:"..\..\srclib\apr-util\Release" /libpath:"$(APACHE2_HOME)/lib" /base:"0x46430000" /opt:ref
+# Begin Special Build Tool
+TargetPath=.\Release\mod_fcgid.so
+SOURCE="$(InputPath)"
+PostBuild_Desc=Embed .manifest
+PostBuild_Cmds=if exist $(TargetPath).manifest mt.exe -manifest $(TargetPath).manifest -outputresource:$(TargetPath);2
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "mod_fcgid - Win32 Debug"
 
@@ -68,8 +74,8 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "$(APACHE2_HOME)/include" /I "../../include" /I "../../srclib/apr/include" /I "../../srclib/apr-util/include" /I "./" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_POSIX_" /Fd"Debug\mod_fcgid_src" /FD /c
+# ADD BASE CPP /nologo /MDd /W3 /GX /Od /Zi /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /Od /Zi /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /I "../../include" /I "../../srclib/apr/include" /I "../../srclib/apr-util/include" /I "$(APACHE2_HOME)/include" /Fd"Debug\mod_fcgid_src" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -79,7 +85,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"Debug/mod_fcgid.so"
-# ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /libpath:"$(APACHE2_HOME)/lib" /out:"Debug/mod_fcgid.so" /base:"0x46430000"
+# ADD LINK32 libhttpd.lib libaprutil-1.lib libapr-1.lib kernel32.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /libpath:"..\..\Debug" /libpath:"..\..\srclib\apr\Debug" /libpath:"..\..\srclib\apr-util\Debug" /libpath:"$(APACHE2_HOME)/lib" /out:"Debug/mod_fcgid.so" /base:"0x46430000"
+# Begin Special Build Tool
+TargetPath=.\Debug\mod_fcgid.so
+SOURCE="$(InputPath)"
+PostBuild_Desc=Embed .manifest
+PostBuild_Cmds=if exist $(TargetPath).manifest mt.exe -manifest $(TargetPath).manifest -outputresource:$(TargetPath);2
+# End Special Build Tool
 
 !ENDIF 
 
