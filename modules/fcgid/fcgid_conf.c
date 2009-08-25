@@ -560,8 +560,11 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
         config->default_init_env = apr_table_make(cmd->pool, 20);
 #if defined(WIN32) || defined(OS2) || defined(NETWARE)
     /* Case insensitive environment platforms */
-    for (char *pstr = name = apr_pstrdup(cmd->pool, name); *pstr; ++pstr)
-        *pstr = apr_toupper(*pstr);
+    {
+        char *pstr;
+        for (name = pstr = apr_pstrdup(cmd->pool, name); *pstr; ++pstr)
+            *pstr = apr_toupper(*pstr);
+    }
 #endif
     apr_table_set(config->default_init_env, name, value ? value : "");
     return NULL;
