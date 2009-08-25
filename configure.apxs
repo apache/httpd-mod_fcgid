@@ -99,6 +99,6 @@ echo ""
 #echo "The conf/extra/httpd-fcgid.conf will be installed as an example"
 #echo "for you to work from.  In your configuration file,"
 #echo "  `$APXS -q exp_sysconfdir`/`$APXS -q progname`.conf"
-#echo "uncomment the line '#Include conf/extra/ftpd.conf'"
-#echo "to activate this example mod_ftp configuration."
+#echo "uncomment the line '#Include conf/extra/httpd-fcgid.conf'"
+#echo "to activate this example mod_fcgid configuration."
 

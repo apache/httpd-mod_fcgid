@@ -1,7 +1,7 @@
 ##
-##  Makefile.apxs -- Build procedure for mod_ftp Apache module
+##  Makefile.apxs -- Build procedure for mod_fcgid Apache module
 ##
-##  Do not use this target; build from the mod_ftp dir root
+##  Do not use this target; build from the mod_fcgid dir root
 ##
  
 # top_builddir and top_srcdir are misnomers, because build/*.mk scripts
@@ -11,17 +11,19 @@ exp_installbuilddir=$(shell $(APXS) -q exp_installbuilddir)
 top_srcdir=$(installbuilddir)/..
 top_builddir=$(installbuilddir)/..
 
-ftp_builddir=.
-ftp_srcdir=.
+fcgid_builddir=.
+fcgid_srcdir=.
 builddir=.
 srcdir=.
 
-SUBDIRS = modules/ftp
+SUBDIRS = modules/fcgid
 CLEAN_SUBDIRS = 
 
 TARGETS         = 
-INSTALL_TARGETS = install-conf install-ftpdocs install-manual install-include
-DISTCLEAN_TARGETS  = config.apxs.log modules/ftp/ftp_config.h
+INSTALL_TARGETS = 
+## no such targets yet;    install-conf install-manual install-include
+DISTCLEAN_TARGETS  =
+## no psuedo-autoconf yet; config.apxs.log modules/fcgid/fcgid_config.h
 EXTRACLEAN_TARGETS = 
 
 include $(exp_installbuilddir)/rules.mk
@@ -32,25 +34,20 @@ rel_sysconfdir=`echo $(exp_sysconfdir) | sed -e "s#^$(prefix)/##;"`
 rel_logfiledir=`echo $(exp_logfiledir) | sed -e "s#^$(prefix)/##;"`
 httpd_conffile=$(exp_sysconfdir)/$(progname).conf
 
-exp_ftpdocsdir=$(exp_datadir)/ftpdocs
-FTPPORT=21
-
 install-conf:
 	@echo Installing configuration files
 	@$(MKINSTALLDIRS) $(exp_sysconfdir) $(exp_sysconfdir)/extra \
 		$(exp_sysconfdir)/original $(exp_sysconfdir)/original/extra
-	@cd $(ftp_srcdir)/docs/conf; \
-	for j in $(ftp_srcdir)/docs/conf; do \
+	@cd $(fcgid_srcdir)/docs/conf; \
+	for j in $(fcgid_srcdir)/docs/conf; do \
 	    cd $$j ; \
-	    for i in extra/ftpd*.conf; do \
+	    for i in extra/httpd-fcgid.conf; do \
 	    	if test -f $$i; then \
-	    	    sed -e 's#@exp_ftpdocsdir@#$(exp_ftpdocsdir)#;' \
-	    		-e 's#@exp_runtimedir@#$(exp_runtimedir)#;' \
+	    	    sed -e 's#@exp_runtimedir@#$(exp_runtimedir)#;' \
 	    		-e 's#@exp_sysconfdir@#$(exp_sysconfdir)#;' \
 	    		-e 's#@rel_sysconfdir@#$(rel_sysconfdir)#;' \
 	    		-e 's#@rel_logfiledir@#$(rel_logfiledir)#;' \
-	    		-e 's#\#@@LoadFtpModules@@##;' \
-	    		-e 's#@@FTPPort@@#$(FTPPORT)#;' \
+	    		-e 's#\#@@LoadFcgidModules@@##;' \
 	    		< $$i > $(exp_sysconfdir)/original/$$i; \
 	    	    chmod 0644 $(exp_sysconfdir)/original/$$i; \
 	    	    if test ! -f $(exp_sysconfdir)/$$i; then \
@@ -61,19 +58,19 @@ install-conf:
 	    	fi; \
 	    done ; \
 	done
-	@awk -f $(ftp_srcdir)/build/addloadexample.awk \
-		-v MODULE=ftp -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
-		-v EXAMPLECONF=$(rel_sysconfdir)/extra/ftpd.conf \
+	@awk -f $(fcgid_srcdir)/build/addloadexample.awk \
+		-v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
+		-v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf \
 		$(httpd_conffile) > $(httpd_conffile).new && \
 	  ( mv $(httpd_conffile) $(httpd_conffile).bak && \
 	    mv $(httpd_conffile).new $(httpd_conffile) );
 
 svnroot=http://svn.apache.org/repos/asf/httpd
-manualdir=$(ftp_srcdir)/docs/manual
+manualdir=$(fcgid_srcdir)/docs/manual
 
 # Note; by default,  make generate-docs  rebuilds the local pages
 # To regenerate the installed pages (after using make install to
-# drop in the ftp content), simply
+# drop in the fcgid content), simply
 #
 #   make manualdir=/path/to/manual generate-docs
 #
@@ -90,28 +87,8 @@ generate-docs:
 	  ./build.sh all
 
 generate-dox:
-	cd $(ftp_srcdir); \
-	  doxygen $(ftp_srcdir)/docs/doxygen-ftp.conf
-
-ftpdocs-srcdir = $(ftp_srcdir)/docs/ftproot
-
-install-ftpdocs:
-	@if test -d $(exp_ftpdocsdir); then \
-	  echo "Preserving existing FTP documents"; \
-	else \
-	  echo "Installing FTP documents"; \
-	  $(MKINSTALLDIRS) $(exp_ftpdocsdir) ; \
-	  if test -d $(ftpdocs-srcdir) && test "x$(RSYNC)" != "x" \
-	    && test -x "$(RSYNC)" ; then \
-		$(RSYNC) --exclude .svn -rlpt --numeric-ids $(ftpdocs-srcdir)/ \
-			$(exp_ftpdocsdir)/; \
-	  else \
-		test -d $(ftpdocs-srcdir) && (cd $(ftpdocs-srcdir) \
-		  && cp -rp * $(exp_ftpdocsdir)) ; \
-		cd $(exp_ftpdocsdir) && find . -name ".svn" -type d -print \
-		  | xargs rm -rf 2>/dev/null || true; \
-	  fi; \
-	fi
+	cd $(fcgid_srcdir); \
+	  doxygen $(fcgid_srcdir)/docs/doxygen-fcgid.conf
 
 install-manual:
 	@echo Installing online manual
@@ -119,9 +96,9 @@ install-manual:
           || $(MKINSTALLDIRS) $(exp_manualdir)
 	@if test "x$(RSYNC)" != "x" && test -x $(RSYNC) ; then \
 	  $(RSYNC) --exclude .svn -rlpt --numeric-ids \
-		$(ftp_srcdir)/docs/manual/ $(exp_manualdir)/; \
+		$(fcgid_srcdir)/docs/manual/ $(exp_manualdir)/; \
 	else \
-	  cp -rp $(ftp_srcdir)/docs/manual/* $(exp_manualdir)/ && \
+	  cp -rp $(fcgid_srcdir)/docs/manual/* $(exp_manualdir)/ && \
 	  find $(exp_manualdir) -name ".svn" -type d -print \
 	    | xargs rm -rf 2>/dev/null || true; \
 	fi
@@ -129,7 +106,7 @@ install-manual:
 install-include:
 	@echo Installing header files
 	@$(MKINSTALLDIRS) $(exp_includedir) && \
-	  cp $(ftp_srcdir)/include/mod_ftp.h $(exp_includedir)/ && \
-	  chmod 0644 $(exp_includedir)/mod_ftp.h
+	  cp $(fcgid_srcdir)/include/mod_fcgid.h $(exp_includedir)/ && \
+	  chmod 0644 $(exp_includedir)/mod_fcgid.h
 
 .PHONY: generate-dox generate-docs
