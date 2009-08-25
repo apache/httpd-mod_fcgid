@@ -1,3 +1,138 @@
+Unix Build Instructions
+-----------------------
+
+To build and install as a DSO outside of the httpd source
+build, from the fcgid source root directory, simply;
+
+    ./configure.apxs
+    make
+    make install
+
+If apxs is not in your path, or you are building to a different
+httpd installation, or your distribution has an alternate script
+name for apxs (e.g. apxs2), then either set the APXS environment
+variable, or use the syntax;
+
+    APXS=/path/to/bin/apxs ./configure.apxs
+
+so the desired configuration is used.
+
+To build static, or as a DSO but within the same build as httpd,
+copy the entire fcgid source directory tree on top of your existing 
+httpd source tree, and from the httpd source root directory
+
+    ./buildconf  (to pick up fcgid)
+    ./configure --enable-fcgid {your usual options}
+
+and proceed as usual.
+
+
+Win32 Build Instructions
+------------------------
+
+The windows packages prior to 2.2.7 (or 2.0.62) left out the file
+include\mod_log_config.h, just copy these from the source tree
+or you can export them from subversion, just change to your
+installed Apache 2.2 (or 2.0) include subdirectory and...
+
+  svn export http://svn.apache.org/repos/asf/httpd/httpd/branches/2.2.x/modules/loggers/mod_log_config.h
+
+(for your 2.0 installation, replace 2.2.x with 2.0.x in the
+command above).  You should be ready to compile the project.
+
+On windows, before building for httpd-2.0, you must adjust the
+two apr 1.x specific lines in modules\fcgid\mod_fcgid.dsp which begin
+
+    # ADD LINK32 libapr-1.lib libaprutil-1.lib ...
+
+to start with the apr 0.9 equivilants for httpd-2.0,
+
+    # ADD LINK32 libapr.lib libaprutil.lib ...
+
+To build on windows out-of-tree as a DSO, simply
+
+    set APACHE2_HOME=c:\path\to\Apache2.2
+
+and then, for Visual Studio 6.0 (98)...
+
+    msdev /useenv mod_fcgid.dsw
+
+or for Visual Studio .NET (2002) and later ...
+
+    devenv /useenv mod_fcgid.dsw
+
+The later command is needed on Visual Studio .NET/2002 and later, 
+and converts mod_fcgid.dsw to mod_fcgid.sln.  So after converting once,
+use the newly converted solution instead...
+
+    devenv /useenv mod_fcgid.sln
+
+On windows you can overlay mod_fcgid source files into the httpd source
+file tree, and make the following changes for an in-tree build;
+
+ * Manually add the project mod_fcgid.dsp to the Apache.dsw workspace.
+ * Ensure the BuildBin project includes the mod_fcgid project dependency.
+ * Add mod_fcgid project dependencies of libhttpd, libapr and libaprutil.
+ * Remove /D "FCGID_APXS_BUILD" from the # ADD CPP lines of
+   modules\fcgid\mod_fcgid.dsp.
+ * Replace /I "$(APACHE2_HOME)/include" with /I "../../modules/loggers" 
+   for both # ADD CPP lines of modules\fcgid\mod_fcgid.dsp.
+ * Remove the libraries libapr[-1].lib libaprutil[-1].lib libhttpd.lib 
+   and the /libpath:"$(APACHE2_HOME)\lib" flag from the # ADD LINK32 
+   lines of modules\fcgid\mod_fcgid.dsp.
+
+Note that mod_fcgid.so needs to be added to the module installation 
+lines in Makefile.win, or you must manually copy the .so module from 
+modules\fcgid\Release after compiling.
+
+
+Documentation Build
+-------------------
+
+To regenerate the html.en documentation, here again it's as simple
+as copying the content docs/ into an httpd/docs/ tree and regenerating
+httpd's documentation.  However, it's also possible you are generating
+a local copy for reference in mod_fcgid's tree, in that case you must
+have a copy of the httpd docs/manual/style.  For example;
+
+    cd docs/manual
+    svn co http://svn.apache.org/repos/asf/httpd/httpd/branches/2.2.x/docs/manual/style
+
+In either case;
+
+    cd docs/manual
+    svn co http://svn.apache.org/repos/asf/httpd/docs-build/trunk build
+    cd build
+
+and finally;
+
+    ./build.sh all
+
+or on windows...
+
+    build.bat all
+
+To make this simpler on unix, after invoking ./configure.apxs in the 
+top level directory, you can simply;
+
+    make generate-docs
+
+which will fetch up those style and build directories (for httpd-2.2)
+and generate the docs for you.  After using make and make install, you
+can even merge the directives for the installed manual using this target;  
+
+    make manualdir=/path/to/httpd/manual generate-docs
+
+The same rules about an installed, locatable JAVA_HOME apply to building
+mod_fcgid docs as apply to building the httpd manual.
+
+The advantage to building in-tree within httpd is that you gain the complete
+directive cross references applicable to all httpd and mod_fcgid directives,
+before installing the httpd\manual files.
+
+
+Acknowledgements
+----------------
 Portions of this software were originally developed by
 Ryan Pan (Pan Qingfeng) <pqf@mailtech.cn>.
 
