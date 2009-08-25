@@ -554,15 +554,13 @@ int get_ipc_comm_timeout(server_rec * s)
 const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
                                  const char *name, const char *value)
 {
-    char *pstr;
-
     fcgid_server_conf *config =
         ap_get_module_config(cmd->server->module_config, &fcgid_module);;
     if (config->default_init_env == NULL)
         config->default_init_env = apr_table_make(cmd->pool, 20);
 #if defined(WIN32) || defined(OS2) || defined(NETWARE)
     /* Case insensitive environment platforms */
-    for (name = pstr = apr_pstrdup(cmd->pool, name); *pstr; ++pstr)
+    for (char *pstr = name = apr_pstrdup(cmd->pool, name); *pstr; ++pstr)
         *pstr = apr_toupper(*pstr);
 #endif
     apr_table_set(config->default_init_env, name, value ? value : "");
