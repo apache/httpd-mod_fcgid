@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+#  configure.apxs --- build configuration script for creating mod_fcgid
+#  out of tree using the apxs utility and httpd build toolset
+#
+if test "$APXS" = ""; then
+  APXS=`which apxs 2>/dev/null`
+fi;
+
+if test "$APXS" = ""; then
+  echo $0 must be able to find apxs in your path,
+  echo or the environment variable APXS must provide the full path of APXS,
+  echo or you may specify it with:
+  echo
+  echo     APXS=/path/to/apxs $0
+  echo 
+  echo configuration failed
+  exit 1
+fi
+
+echo Configuring mod_fcgid for APXS in $APXS
+
+# top_builddir and top_srcdir are a misnomers, because build/*.mk
+# scripts expect them to be the parent of the build directory
+# they fail to use the $installbuilddir path.
+exp_installbuilddir=`$APXS -q exp_installbuilddir`
+top_installbuilddir=`cd $exp_installbuilddir/..; pwd`
+top_installbuilddir=`echo $exp_installbuilddir | sed -e "s#/[^/]*\\\$##;"`
+
+builddir=`pwd`
+srcdir=$builddir
+fcgid_builddir=$builddir
+fcgid_srcdir=$builddir
+
+# prefix is the default @@ServerRoot@@, where libexecdir/sysconfdir may
+# be relative (if it is not their prefix, the rel_ paths remain unchanged
+rel_fix_prefix=`$APXS -q prefix`
+rel_libexecdir=`$APXS -q exp_libexecdir | sed -e "s#^$rel_fix_prefix/##;"`
+rel_sysconfdir=`$APXS -q exp_sysconfdir | sed -e "s#^$rel_fix_prefix/##;"`
+rel_logfiledir=`$APXS -q exp_logfiledir | sed -e "s#^$rel_fix_prefix/##;"`
+httpd_conffile=`$APXS -q exp_sysconfdir`/`$APXS -q progname`.conf
+
+for i in Makefile build/Makefile modules/fcgid/Makefile modules/fcgid/modules.mk; do
+    l_r=`echo $i|sed -e "s#/*[^/]*\\\$##;s#^\(..*\)\\\$#/\1#"`
+    sed -e "s#^\(exp_installbuilddir\)=.*#\1=$exp_installbuilddir#;" \
+        -e "s#^\(include\) \$(exp_installbuilddir)#\1 $exp_installbuilddir#;" \
+        -e "s#^\(top_builddir\)=.*#\1=$top_installbuilddir#;" \
+        -e "s#^\(top_srcdir\)=.*#\1=$top_installbuilddir#;" \
+        -e "s#^\(fcgid_srcdir\)=.*#\1=$srcdir#;" \
+        -e "s#^\(fcgid_builddir\)=.*#\1=$builddir#;" \
+        -e "s#^\(srcdir\)=.*#\1=$srcdir$l_r#;" \
+        -e "s#^\(builddir\)=.*#\1=$builddir$l_r#;" \
+        -e "s#^\(rel_libexecdir\)=.*#\1=$rel_libexecdir#;" \
+        -e "s#^\(rel_sysconfdir\)=.*#\1=$rel_sysconfdir#;" \
+        -e "s#^\(rel_logfiledir\)=.*#\1=$rel_logfiledir#;" \
+        -e "s#^\(httpd_conffile\)=.*#\1=$httpd_conffile#;" \
+        < $i.apxs > $i
+done
+
+touch .deps
+touch build/.deps
+touch modules/fcgid/.deps
+
+if test -f modules/fcgid/fcgid_config.h.in; then
+
+cd build
+found_features=""
+echo "Detecting features"
+echo "Detecting features" > ../config.apxs.log
+
+#test invocations follow the pattern;
+#
+#if make local-clean conftest_fchmod >>../config.apxs.log 2>&1; then
+#  found_features="$found_features \
+#    -e \"s/^#undef \(HAVE_FCHMOD\)[ \t]*/#define \1/;\""
+#fi
+
+make local-distclean >>../config.apxs.log 2>&1
+cd ..
+
+if test "x$found_features" = "x"; then
+  cp modules/fcgid/fcgid_config.h.in modules/fcgid/fcgid_config.h
+else
+  found_features="`echo \"$found_features\" | sed -e '#s*/#*\\$/#g;'`"
+  eval sed $found_features < modules/fcgid/fcgid_config.h.in \
+                           > modules/fcgid/fcgid_config.h
+fi
+
+fi
+
+echo ""
+echo "Finished, run 'make' to compile mod_fcgid"
+echo ""
+echo "Run 'make install' to install mod_fcgid"
+echo ""
+#echo "The manual pages fcgid/index.html and mod/mod_fcgid.html"
+#echo "will be installed to help get you started."
+#echo
+#echo "The conf/extra/httpd-fcgid.conf will be installed as an example"
+#echo "for you to work from.  In your configuration file,"
+#echo "  `$APXS -q exp_sysconfdir`/`$APXS -q progname`.conf"
+#echo "uncomment the line '#Include conf/extra/ftpd.conf'"
+#echo "to activate this example mod_ftp configuration."
+

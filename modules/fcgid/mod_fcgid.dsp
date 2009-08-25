@@ -137,7 +137,7 @@ SOURCE=.\fcgid_pm_main.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\arch\win32\fcgid_pm_win.c
+SOURCE=.\fcgid_pm_win.c
 # End Source File
 # Begin Source File
 
@@ -145,7 +145,7 @@ SOURCE=.\fcgid_proc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\arch\win32\fcgid_proc_win.c
+SOURCE=.\fcgid_proc_win.c
 # End Source File
 # Begin Source File
 
@@ -153,7 +153,7 @@ SOURCE=.\fcgid_proctbl.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\arch\win32\fcgid_proctbl_win.c
+SOURCE=.\fcgid_proctbl_win.c
 # End Source File
 # Begin Source File
 

@@ -1,0 +1,37 @@
+##
+##  Makefile.apxs -- Feature test procedures for mod_fcgid Apache module
+##
+##  Do not use this target; ./configure.apxs from the mod_fcgid dir root
+##
+ 
+# top_builddir and top_srcdir are misnomers, because build/*.mk
+# scripts expect it them be the parent of the build directory,
+# and fail to trust the installbuilddir.
+exp_installbuilddir=$(shell $(APXS) -q exp_installbuilddir)
+top_srcdir=$(installbuilddir)/..
+top_builddir=$(installbuilddir)/..
+
+fcgid_builddir=..
+fcgid_srcdir=..
+builddir=.
+srcdir=.
+
+CLEAN_TARGETS = conftest_fchmod.c \
+		*.loT
+TARGETS       = conftest_fchmod \
+
+PROGRAM_LDADD        = 
+PROGRAM_DEPENDENCIES = 
+
+include $(exp_installbuilddir)/rules.mk
+
+# Tests follow this pattern; one to execute, one to create source;
+
+conftest_fchmod: conftest_fchmod.lo
+	$(LINK) conftest_fchmod.lo
+
+conftest_fchmod.c:
+	@echo "#include <sys/types.h>" > $@
+	@echo "#include <sys/stat.h>" >> $@
+	@echo "int main() { return fchmod(2, 0644); }" >> $@
+
