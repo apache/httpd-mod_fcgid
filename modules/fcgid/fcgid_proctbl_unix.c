@@ -296,23 +296,23 @@ void proctable_print_debug_info(server_rec * main_server)
          current_node != g_proc_array;
          current_node = &g_proc_array[current_node->next_index]) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-                     "mod_fcgid: idle node index: %d",
-                     current_node - g_proc_array);
+                     "mod_fcgid: idle node index: %ld",
+                     (long)(current_node - g_proc_array));
     }
 
     for (current_node = &g_proc_array[g_busy_list_header->next_index];
          current_node != g_proc_array;
          current_node = &g_proc_array[current_node->next_index]) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-                     "mod_fcgid: busy node index: %d",
-                     current_node - g_proc_array);
+                     "mod_fcgid: busy node index: %ld",
+                     (long)(current_node - g_proc_array));
     }
 
     for (current_node = &g_proc_array[g_error_list_header->next_index];
          current_node != g_proc_array;
          current_node = &g_proc_array[current_node->next_index]) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-                     "mod_fcgid: error node index: %d",
-                     current_node - g_proc_array);
+                     "mod_fcgid: error node index: %ld",
+                     (long)(current_node - g_proc_array));
     }
 }
