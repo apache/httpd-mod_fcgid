@@ -1,0 +1,61 @@
+MOD_FCGID STATUS:                                                   -*-text-*-
+Last modified at [$Date: 2009-08-17 13:26:46 -0500 (Mon, 17 Aug 2009) $]
+
+The current version of this file can be found at:
+
+  * http://svn.apache.org/repos/asf/httpd/mod_fcgid/trunk/STATUS
+
+Consult the following STATUS files for information on related projects:
+
+  * http://svn.apache.org/repos/asf/httpd/httpd/trunk/STATUS
+  * http://svn.apache.org/repos/asf/apr/apr/trunk/STATUS
+
+Release history:
+    [NOTE that x.{odd}.z versions are strictly Alpha/Beta releases,
+          while x.{even}.z versions are Stable/GA releases.]
+
+    2.3.0   : tagged, not released
+    2.2.x   : Final release branch external to the ASF
+
+Contributors looking for a mission:
+
+  * Just do an egrep on "TODO" or "XXX" in the source.
+
+  * Review the bug database at: http://issues.apache.org/bugzilla/
+
+  * Review the "PatchAvailable" bugs in the bug database:
+
+    https://issues.apache.org/bugzilla/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Apache+httpd-2&component=mod_fcgid&keywords=PatchAvailable
+
+    After testing, you can append a comment saying "Reviewed and tested".
+
+  * Open bugs in the bug database
+
+    https://issues.apache.org/bugzilla/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Apache+httpd-2&component=mod_fcgid
+
+
+RELEASE SHOWSTOPPERS:
+
+
+
+CURRENT RELEASE NOTES:
+
+
+
+CURRENT VOTES:
+
+
+
+REALLY NICE TO WRAP THESE UP:
+
+  * For in-tree builds, extending config_vars.mk with our local
+    [exp_]vars and installing that tree.
+
+  * Create and install an conf/extra/httpd-fcgid.conf.
+
+  * Win32 stderr is broken.  It's not possible to capture errors immediately
+    upon invocation; this is apparently a design failure in std handle passing.
+
+
+REFERENCES:
+
