@@ -115,16 +115,16 @@ static void default_proc_env(apr_table_t *e)
     apr_table_addn(e, "PATH", env_temp);
 
 #ifdef WIN32
-    if (env_temp = getenv("SYSTEMROOT")) {
+    if ((env_temp = getenv("SYSTEMROOT"))) {
         apr_table_addn(e, "SYSTEMROOT", env_temp);
     }
-    if (env_temp = getenv("COMSPEC")) {
+    if ((env_temp = getenv("COMSPEC"))) {
         apr_table_addn(e, "COMSPEC", env_temp);
     }
-    if (env_temp = getenv("PATHEXT")) {
+    if ((env_temp = getenv("PATHEXT"))) {
         apr_table_addn(e, "PATHEXT", env_temp);
     }
-    if (env_temp = getenv("WINDIR")) {
+    if ((env_temp = getenv("WINDIR"))) {
         apr_table_addn(e, "WINDIR", env_temp);
     }
 #elif defined(OS2)
@@ -145,21 +145,21 @@ static void default_proc_env(apr_table_t *e)
         apr_table_addn(e, "LIBRARY_PATH", env_temp);
     }
 #elif defined (AIX)
-    if (env_temp = getenv("LIBPATH")) {
+    if ((env_temp = getenv("LIBPATH"))) {
         apr_table_addn(e, "LIBPATH", env_temp);
     }
 #else
 /* DARWIN, HPUX vary depending on circumstance */
 #if defined (DARWIN)
-    if (env_temp = getenv("DYLD_LIBRARY_PATH")) {
+    if ((env_temp = getenv("DYLD_LIBRARY_PATH"))) {
         apr_table_addn(e, "DYLD_LIBRARY_PATH", env_temp);
     }
 #elif defined (HPUX11) || defined (HPUX10) || defined (HPUX)
-    if (env_temp = getenv("SHLIB_PATH")) {
+    if ((env_temp = getenv("SHLIB_PATH"))) {
         apr_table_addn(e, "SHLIB_PATH", env_temp);
     }
 #endif
-    if (env_temp = getenv("LD_LIBRARY_PATH")) {
+    if ((env_temp = getenv("LD_LIBRARY_PATH"))) {
         apr_table_addn(e, "LD_LIBRARY_PATH", env_temp);
     }
 #endif
