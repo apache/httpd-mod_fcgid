@@ -28,6 +28,8 @@
 #include "apr_portable.h"
 #include "apr_pools.h"
 #include "apr_network_io.h"
+#include "ap_mpm.h"
+#include "http_config.h"
 #include "mpm_common.h"
 #include "util_script.h"
 #include "unixd.h"
@@ -40,7 +42,15 @@
 #include "fcgid_conf.h"
 #include "fcgid_pm.h"
 #include "fcgid_spawn_ctl.h"
+
+#if MODULE_MAGIC_NUMBER_MAJOR < 20081201
+#define ap_unixd_config unixd_config
+// #define ap_unixd_setup_child unixd_setup_child
+// #define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
+#endif
+
 #define DEFAULT_FCGID_LISTENBACKLOG 5
+
 typedef struct {
     int handle_socket;
 } fcgid_namedpipe_handle;
@@ -65,7 +75,7 @@ static apr_status_t ap_unix_create_privileged_process(apr_proc_t * newproc,
     const char *execuser, *execgroup;
     const char *argv0;
 
-    if (!unixd_config.suexec_enabled) {
+    if (!ap_unixd_config.suexec_enabled) {
         return apr_proc_create(newproc, progname, args, env, attr, p);
     }
 
@@ -132,7 +142,7 @@ static apr_status_t fcgid_create_privileged_process(apr_proc_t * newproc,
 {
     ap_unix_identity_t ugid;
 
-    if (!unixd_config.suexec_enabled
+    if (!ap_unixd_config.suexec_enabled
         || (procinfo->uid == (uid_t) - 1
             && procinfo->gid == (gid_t) - 1)) {
         return apr_proc_create(newproc, progname, args, env, attr, p);
@@ -156,7 +166,7 @@ static apr_status_t socket_file_cleanup(void *theprocnode)
 static apr_status_t exec_setuid_cleanup(void *dummy)
 {
     seteuid(0);
-    setuid(unixd_config.user_id);
+    setuid(ap_unixd_config.user_id);
     return APR_SUCCESS;
 }
 
@@ -231,7 +241,7 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     }
 
     /* Unlink it when process exit */
-    if (unixd_config.suexec_enabled) {
+    if (ap_unixd_config.suexec_enabled) {
         apr_pool_cleanup_register(procnode->proc_pool,
                                   procnode, socket_file_cleanup,
                                   exec_setuid_cleanup);
@@ -264,7 +274,7 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 
     /* Correct the file owner */
     if (!geteuid()) {
-        if (chown(unix_addr.sun_path, unixd_config.user_id, -1) < 0) {
+        if (chown(unix_addr.sun_path, ap_unixd_config.user_id, -1) < 0) {
             ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
                          "mod_fcgid: couldn't change owner of unix domain socket %s",
                          unix_addr.sun_path);
@@ -408,14 +418,15 @@ proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
     /* su as root before sending kill signal, for suEXEC */
     apr_status_t rv;
 
-    if (unixd_config.suexec_enabled && seteuid(0) != 0) {
+    if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {
 
         /* It's fatal error */
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
     rv = apr_proc_kill(procnode->proc_id, SIGTERM);
-    if (unixd_config.suexec_enabled && seteuid(unixd_config.user_id) != 0) {
+    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0)
+    {
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
@@ -427,14 +438,15 @@ apr_status_t proc_kill_force(fcgid_procnode * procnode,
 {
     apr_status_t rv;
 
-    if (unixd_config.suexec_enabled && seteuid(0) != 0) {
+    if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {
 
         /* It's fatal error */
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
     rv = apr_proc_kill(procnode->proc_id, SIGKILL);
-    if (unixd_config.suexec_enabled && seteuid(unixd_config.user_id) != 0) {
+    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0)
+    {
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }

@@ -28,6 +28,17 @@
 #include "fcgid_proctbl.h"
 #include "fcgid_spawn_ctl.h"
 #include <unistd.h>
+
+#if MODULE_MAGIC_NUMBER_MAJOR >= 20090209
+#include "mod_unixd.h"
+#endif
+
+#if MODULE_MAGIC_NUMBER_MAJOR < 20081201
+#define ap_unixd_config unixd_config
+#define ap_unixd_setup_child unixd_setup_child
+#define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
+#endif
+
 static apr_status_t create_process_manager(server_rec * main_server,
                                            apr_pool_t * configpool);
 
@@ -142,6 +153,7 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
         break;
     }
 }
+
 static int set_group_privs(void)
 {
     if (!geteuid()) {
@@ -149,10 +161,10 @@ static int set_group_privs(void)
 
 
         /* Get username if passed as a uid */
-        if (unixd_config.user_name[0] == '#') {
+        if (ap_unixd_config.user_name[0] == '#') {
             struct passwd *ent;
 
-            uid_t uid = atoi(&unixd_config.user_name[1]);
+            uid_t uid = atoi(&ap_unixd_config.user_name[1]);
 
             if ((ent = getpwuid(uid)) == NULL) {
                 ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
@@ -165,7 +177,7 @@ static int set_group_privs(void)
         }
 
         else
-            name = unixd_config.user_name;
+            name = ap_unixd_config.user_name;
 
 #if !defined(OS2) && !defined(TPF)
         /* OS/2 and TPF don't support groups. */
@@ -174,19 +186,19 @@ static int set_group_privs(void)
          * Set the GID before initgroups(), since on some platforms
          * setgid() is known to zap the group list.
          */
-        if (setgid(unixd_config.group_id) == -1) {
+        if (setgid(ap_unixd_config.group_id) == -1) {
             ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
                          "setgid: unable to set group id to Group %u",
-                         (unsigned) unixd_config.group_id);
+                         (unsigned) ap_unixd_config.group_id);
             return -1;
         }
 
         /* Reset `groups' attributes. */
-        if (initgroups(name, unixd_config.group_id) == -1) {
+        if (initgroups(name, ap_unixd_config.group_id) == -1) {
             ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
                          "initgroups: unable to set groups for User %s "
                          "and Group %u", name,
-                         (unsigned) unixd_config.group_id);
+                         (unsigned) ap_unixd_config.group_id);
             return -1;
         }
 #endif                          /* !defined(OS2) && !defined(TPF) */
@@ -195,7 +207,7 @@ static int set_group_privs(void)
 }
 
 
-/* Base on unixd_setup_child() */
+/* Base on ap_unixd_setup_child() */
 static int suexec_setup_child(void)
 {
     if (set_group_privs()) {
@@ -203,10 +215,10 @@ static int suexec_setup_child(void)
     }
 
     /* Only try to switch if we're running as root */
-    if (!geteuid() && (seteuid(unixd_config.user_id) == -1)) {
+    if (!geteuid() && (seteuid(ap_unixd_config.user_id) == -1)) {
         ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
                      "setuid: unable to change to uid: %ld",
-                     (long) unixd_config.user_id);
+                     (long) ap_unixd_config.user_id);
         exit(-1);
     }
     return 0;
@@ -233,7 +245,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         }
 
         /* if running as root, switch to configured user */
-        if (unixd_config.suexec_enabled) {
+        if (ap_unixd_config.suexec_enabled) {
             if (getuid() != 0) {
                 ap_log_error(APLOG_MARK, LOG_EMERG, rv, main_server,
                              "mod_fcgid: current user is not root while suexec is enabled, exit now");
@@ -241,7 +253,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
             }
             suexec_setup_child();
         } else
-            unixd_setup_child();
+            ap_unixd_setup_child();
         apr_file_pipe_timeout_set(g_pm_read_pipe,
                                   apr_time_from_sec(g_wakeup_timeout));
         apr_file_close(g_ap_write_pipe);
@@ -330,7 +342,8 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
          */
 
         if (!geteuid()) {
-            if (chown(get_socketpath(main_server), unixd_config.user_id, -1) < 0) {
+            if (chown(get_socketpath(main_server),
+                      ap_unixd_config.user_id, -1) < 0) {
                 ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
                              "mod_fcgid: Can't set ownership of unix socket dir %s",
                              get_socketpath(main_server));
@@ -359,7 +372,7 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: Can't create global pipe mutex");
         exit(1);
     }
-    if ((rv = unixd_set_global_mutex_perms(g_pipelock)) != APR_SUCCESS) {
+    if ((rv = ap_unixd_set_global_mutex_perms(g_pipelock)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
                      "mod_fcgid: Can't set global pipe mutex perms");
         exit(1);

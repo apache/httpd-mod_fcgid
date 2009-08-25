@@ -24,6 +24,10 @@
 #include "unixd.h"
 #include <unistd.h>
 
+#if MODULE_MAGIC_NUMBER_MAJOR < 20081201
+#define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
+#endif
+
 static apr_shm_t *g_sharemem = NULL;
 static apr_global_mutex_t *g_sharelock = NULL;
 char g_sharelock_name[L_tmpnam];
@@ -159,7 +163,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: Can't create global mutex");
         exit(1);
     }
-    if ((rv = unixd_set_global_mutex_perms(g_sharelock)) != APR_SUCCESS) {
+    if ((rv = ap_unixd_set_global_mutex_perms(g_sharelock)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
                      "mod_fcgid: Can't set global mutex perms");
         exit(1);
