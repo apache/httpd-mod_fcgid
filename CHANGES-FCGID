@@ -1,6 +1,8 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.1
 
+  *) Complete the unix port to 2.3-dev trunk.  [William Rowe]
+
   *) Provide a default, mandatory environment as with mod_cgi (with the
      inclusion of LD_LIBRARY_PATH or similar variables on other platforms),
      unless overridden by DefaultInitEnv.  [William Rowe]
