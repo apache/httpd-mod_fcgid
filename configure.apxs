@@ -68,9 +68,9 @@ echo "Detecting features" > ../config.apxs.log
 
 #test invocations follow the pattern;
 #
-#if make local-clean conftest_fchmod >>../config.apxs.log 2>&1; then
+#if make local-clean conftest_foofn >>../config.apxs.log 2>&1; then
 #  found_features="$found_features \
-#    -e \"s/^#undef \(HAVE_FCHMOD\)[ \t]*/#define \1/;\""
+#    -e \"s/^#undef \(HAVE_FOOFN\)[ \t]*/#define \1/;\""
 #fi
 
 if make local-clean conftest_sys_file_h >>../config.apxs.log 2>&1; then

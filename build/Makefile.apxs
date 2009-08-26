@@ -35,7 +35,6 @@ include $(exp_installbuilddir)/rules.mk
 
 # Funtion checks follow this pattern; one to execute, one to create source
 # Header file checks simply validate that compilation into an .lo succeeds
-# Tests which check for a header file don't build an executable.
 # TODO When the first function test is added, hijack conftest_foofn
 
 conftest_foofn: conftest_foofn.lo
