@@ -22,6 +22,10 @@
 #include "http_core.h"
 #include "http_log.h"
 
+#ifdef FCGID_APXS_BUILD
+#include "fcgid_config.h"
+#endif
+
 #ifndef _POSIX_PATH_MAX
 #define _POSIX_PATH_MAX 255
 #endif

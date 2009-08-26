@@ -16,9 +16,17 @@ fcgid_srcdir=..
 builddir=.
 srcdir=.
 
-CLEAN_TARGETS = conftest_fchmod.c \
+CLEAN_TARGETS = conftest_foofn.c \
+                conftest_sys_file_h.c \
+                conftest_sys_mman_h.c \
+                conftest_sys_mutex_h.c \
+                conftest_sys_shm_h.c \
 		*.loT
-TARGETS       = conftest_fchmod \
+TARGETS       = conftest_foofn \
+                conftest_sys_file_h \
+                conftest_sys_mman_h \
+                conftest_sys_mutex_h \
+                conftest_sys_shm_h
 
 PROGRAM_LDADD        = 
 PROGRAM_DEPENDENCIES = 
@@ -26,12 +34,38 @@ PROGRAM_DEPENDENCIES =
 include $(exp_installbuilddir)/rules.mk
 
 # Tests follow this pattern; one to execute, one to create source;
+# Tests which check for a header file don't build an executable.
+# TODO When the first function test is added, hijack conftest_foofn
 
-conftest_fchmod: conftest_fchmod.lo
-	$(LINK) conftest_fchmod.lo
+conftest_foofn: conftest_foofn.lo
+	$(LINK) conftest_foofn.lo
 
-conftest_fchmod.c:
+conftest_sys_file_h: conftest_sys_mman_h.lo
+	@echo "success" > $@
+
+conftest_sys_mman_h: conftest_sys_mman_h.lo
+	@echo "success" > $@
+
+conftest_sys_mutex_h: conftest_sys_mman_h.lo
+	@echo "success" > $@
+
+conftest_sys_shm_h: conftest_sys_shm_h.lo
+	@echo "success" > $@
+
+conftest_foofn.c:
 	@echo "#include <sys/types.h>" > $@
 	@echo "#include <sys/stat.h>" >> $@
-	@echo "int main() { return fchmod(2, 0644); }" >> $@
+	@echo "int main() { return foofn(2, 0644); }" >> $@
+
+conftest_sys_file_h.c:
+	@echo "#include <sys/file.h>" >> $@
+
+conftest_sys_mman_h.c:
+	@echo "#include <sys/mman.h>" >> $@
+
+conftest_sys_mutex_h.c:
+	@echo "#include <sys/mutex.h>" >> $@
+
+conftest_sys_shm_h.c:
+	@echo "#include <sys/shm.h>" >> $@
 

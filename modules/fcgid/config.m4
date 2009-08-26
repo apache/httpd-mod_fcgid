@@ -31,7 +31,12 @@ fcgid_bucket.lo dnl
 fcgid_filter.lo dnl
 "
 
-APACHE_MODULE(fcgid, [FastCGI support (mod_fcgid)], $fcigd_objs, , no)
+APACHE_MODULE(fcgid, [FastCGI support (mod_fcgid)], $fcigd_objs, , no, [
+    AC_CHECK_HEADERS(sys/file.h)
+    AC_CHECK_HEADERS(sys/mman.h)
+    AC_CHECK_HEADERS(sys/mutex.h)
+    AC_CHECK_HEADERS(sys/shm.h)
+])
 
 dnl #  end of module specific part
 APACHE_MODPATH_FINISH

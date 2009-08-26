@@ -61,8 +61,6 @@ touch .deps
 touch build/.deps
 touch modules/fcgid/.deps
 
-if test -f modules/fcgid/fcgid_config.h.in; then
-
 cd build
 found_features=""
 echo "Detecting features"
@@ -75,6 +73,26 @@ echo "Detecting features" > ../config.apxs.log
 #    -e \"s/^#undef \(HAVE_FCHMOD\)[ \t]*/#define \1/;\""
 #fi
 
+if make local-clean conftest_sys_file_h >>../config.apxs.log 2>&1; then
+  found_features="$found_features \
+    -e \"s/^#undef \(HAVE_SYS_FILE_H\)[ \t]*/#define \1/;\""
+fi
+
+if make local-clean conftest_sys_mman_h >>../config.apxs.log 2>&1; then
+  found_features="$found_features \
+    -e \"s/^#undef \(HAVE_SYS_MMAN_H\)[ \t]*/#define \1/;\""
+fi
+
+if make local-clean conftest_sys_mutex_h >>../config.apxs.log 2>&1; then
+  found_features="$found_features \
+    -e \"s/^#undef \(HAVE_SYS_MUTEX_H\)[ \t]*/#define \1/;\""
+fi
+
+if make local-clean conftest_sys_shm_h >>../config.apxs.log 2>&1; then
+  found_features="$found_features \
+    -e \"s/^#undef \(HAVE_SYS_SHM_H\)[ \t]*/#define \1/;\""
+fi
+
 make local-distclean >>../config.apxs.log 2>&1
 cd ..
 
@@ -84,8 +102,6 @@ else
   found_features="`echo \"$found_features\" | sed -e '#s*/#*\\$/#g;'`"
   eval sed $found_features < modules/fcgid/fcgid_config.h.in \
                            > modules/fcgid/fcgid_config.h
-fi
-
 fi
 
 echo ""
