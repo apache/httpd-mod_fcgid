@@ -1,5 +1,5 @@
 Note: A log of changes released after moving to the ASF (releases after 2.2)
-is in the file CHANGES.
+is in the file CHANGES-FCGID.
 
 version 2.2
 1. Support configuration "PassHeader"
