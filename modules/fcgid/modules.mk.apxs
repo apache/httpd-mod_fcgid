@@ -17,7 +17,7 @@
 # this is used/needed by the APACHE2 build system
 #
 mod_fcgid.la: mod_fcgid.slo fcgid_bridge.slo fcgid_conf.slo fcgid_pm_main.slo fcgid_protocol.slo fcgid_spawn_ctl.slo  fcgid_proctbl_unix.slo fcgid_pm_unix.slo fcgid_proc_unix.slo fcgid_bucket.slo fcgid_filter.slo
-	$(SH_LINK) -rpath $(libexecdir) -module -avoid-version mod_fcgid.slo fcgid_bridge.slo fcgid_conf.slo fcgid_pm_main.slo fcgid_protocol.slo fcgid_spawn_ctl.slo  fcgid_proctbl_unix.slo fcgid_pm_unix.slo fcgid_proc_unix.slo fcgid_bucket.slo fcgid_filter.slo
+	$(SH_LINK) -rpath $(libexecdir) -module -avoid-version mod_fcgid.lo fcgid_bridge.lo fcgid_conf.lo fcgid_pm_main.lo fcgid_protocol.lo fcgid_spawn_ctl.lo  fcgid_proctbl_unix.lo fcgid_pm_unix.lo fcgid_proc_unix.lo fcgid_bucket.lo fcgid_filter.lo
 DISTCLEAN_TARGETS = modules.mk
 static =
 shared =  mod_fcgid.la
