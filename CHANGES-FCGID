@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.1
 
+  *) Suppress "need AuthType to note auth failure" error-level messages when a
+     FastCGIAccessChecker fails without any other kind of authentication 
+     (Basic, Digest) configured. [Eric Covener]
+  
   *) Complete the unix port to 2.3-dev trunk.  [William Rowe]
 
   *) Provide a default, mandatory environment as with mod_cgi (with the

@@ -505,7 +505,6 @@ static int mod_fcgid_check_access(request_rec * r)
         if (!authoritative)
             return DECLINED;
         else {
-            ap_note_basic_auth_failure(r);
             return (res == OK) ? HTTP_UNAUTHORIZED : res;
         }
     }
