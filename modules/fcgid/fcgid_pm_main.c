@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
+/* For DEFAULT_PATH */
+#define CORE_PRIVATE
+#include "httpd.h"
+#include "http_config.h"
+
 #include "fcgid_pm.h"
 #include "fcgid_pm_main.h"
 #include "fcgid_conf.h"
 #include "fcgid_proctbl.h"
 #include "fcgid_proc.h"
 #include "fcgid_spawn_ctl.h"
+
 #define HAS_GRACEFUL_KILL "Gracefulkill"
 
 static int g_idle_timeout;
