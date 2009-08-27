@@ -384,6 +384,71 @@ static void kill_all_subprocess(server_rec * main_server)
     }
 }
 
+/* This should be proposed as a stand-alone improvement to the httpd module,
+ * either in the arch/ platform-specific modules or util_script.c from whence
+ * it came.
+ */
+void default_proc_env(apr_table_t *e)
+{
+    const char *env_temp;
+
+    if (!(env_temp = getenv("PATH"))) {
+        env_temp = DEFAULT_PATH;
+    }
+    apr_table_addn(e, "PATH", env_temp);
+
+#ifdef WIN32
+    if ((env_temp = getenv("SYSTEMROOT"))) {
+        apr_table_addn(e, "SYSTEMROOT", env_temp);
+    }
+    if ((env_temp = getenv("COMSPEC"))) {
+        apr_table_addn(e, "COMSPEC", env_temp);
+    }
+    if ((env_temp = getenv("PATHEXT"))) {
+        apr_table_addn(e, "PATHEXT", env_temp);
+    }
+    if ((env_temp = getenv("WINDIR"))) {
+        apr_table_addn(e, "WINDIR", env_temp);
+    }
+#elif defined(OS2)
+    if ((env_temp = getenv("COMSPEC")) != NULL) {
+        apr_table_addn(e, "COMSPEC", env_temp);
+    }
+    if ((env_temp = getenv("ETC")) != NULL) {
+        apr_table_addn(e, "ETC", env_temp);
+    }
+    if ((env_temp = getenv("DPATH")) != NULL) {
+        apr_table_addn(e, "DPATH", env_temp);
+    }
+    if ((env_temp = getenv("PERLLIB_PREFIX")) != NULL) {
+        apr_table_addn(e, "PERLLIB_PREFIX", env_temp);
+    }
+#elif defined(BEOS)
+    if ((env_temp = getenv("LIBRARY_PATH")) != NULL) {
+        apr_table_addn(e, "LIBRARY_PATH", env_temp);
+    }
+#elif defined (AIX)
+    if ((env_temp = getenv("LIBPATH"))) {
+        apr_table_addn(e, "LIBPATH", env_temp);
+    }
+#else
+/* DARWIN, HPUX vary depending on circumstance */
+#if defined (DARWIN)
+    if ((env_temp = getenv("DYLD_LIBRARY_PATH"))) {
+        apr_table_addn(e, "DYLD_LIBRARY_PATH", env_temp);
+    }
+#elif defined (HPUX11) || defined (HPUX10) || defined (HPUX)
+    if ((env_temp = getenv("SHLIB_PATH"))) {
+        apr_table_addn(e, "SHLIB_PATH", env_temp);
+    }
+#endif
+    if ((env_temp = getenv("LD_LIBRARY_PATH"))) {
+        apr_table_addn(e, "LD_LIBRARY_PATH", env_temp);
+    }
+#endif
+}
+/* End of common to util_script.c */
+
 static void
 fastcgi_spawn(fcgid_command * command, server_rec * main_server,
               apr_pool_t * configpool)
@@ -442,6 +507,11 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
                      "mod_fcgid: can't create pool for process");
         return;
     }
+    /* Set up longer, system defaults before falling into parsing fixed-limit
+     * request-by-request variables, so if any are overriden, they preempt
+     * any system default assumptions
+     */
+    default_proc_env(procinfo.proc_environ);        
     for (i = 0; i < INITENV_CNT; i++) {
         if (command->initenv_key[i][0] == '\0')
             break;
