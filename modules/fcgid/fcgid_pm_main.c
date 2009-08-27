@@ -394,7 +394,7 @@ static void kill_all_subprocess(server_rec * main_server)
  * either in the arch/ platform-specific modules or util_script.c from whence
  * it came.
  */
-void default_proc_env(apr_table_t *e)
+static void default_proc_env(apr_table_t *e)
 {
     const char *env_temp;
 
