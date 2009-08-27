@@ -144,7 +144,7 @@ DS_POSTBUILD_DEP=$(INTDIR)\postbld.dep
 OutDir=.\Debug
 # End Custom Macros
 
-ALL : "$(OUTDIR)\mod_fcgid.so" "$(DS_POSTBUILD_DEP)"
+ALL : ".\fcgid_config.h" "$(OUTDIR)\mod_fcgid.so" "$(DS_POSTBUILD_DEP)"
 
 
 CLEAN :
@@ -166,6 +166,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\mod_fcgid.lib"
 	-@erase "$(OUTDIR)\mod_fcgid.pdb"
 	-@erase "$(OUTDIR)\mod_fcgid.so"
+	-@erase ".\fcgid_config.h"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -260,57 +261,83 @@ OutDir=.\Debug
 !IF "$(CFG)" == "mod_fcgid - Win32 Release" || "$(CFG)" == "mod_fcgid - Win32 Debug"
 SOURCE=.\fcgid_bridge.c
 
-"$(INTDIR)\fcgid_bridge.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_bridge.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_bucket.c
 
-"$(INTDIR)\fcgid_bucket.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_bucket.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_conf.c
 
-"$(INTDIR)\fcgid_conf.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_conf.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
+
+SOURCE=".\fcgid_config.h.in"
+
+!IF  "$(CFG)" == "mod_fcgid - Win32 Release"
+
+InputPath=".\fcgid_config.h.in"
+
+".\fcgid_config.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	<<tempfile.bat 
+	@echo off 
+	echo /* No configuration */ > .\fcgid_config.h
+<< 
+	
+
+!ELSEIF  "$(CFG)" == "mod_fcgid - Win32 Debug"
+
+InputPath=".\fcgid_config.h.in"
+
+".\fcgid_config.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	<<tempfile.bat 
+	@echo off 
+	echo /* No configuration */ > .\fcgid_config.h
+<< 
+	
+
+!ENDIF 
 
 SOURCE=.\fcgid_filter.c
 
-"$(INTDIR)\fcgid_filter.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_filter.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_pm_main.c
 
-"$(INTDIR)\fcgid_pm_main.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_pm_main.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_pm_win.c
 
-"$(INTDIR)\fcgid_pm_win.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_pm_win.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_proc_win.c
 
-"$(INTDIR)\fcgid_proc_win.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_proc_win.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_proctbl_win.c
 
-"$(INTDIR)\fcgid_proctbl_win.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_proctbl_win.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_protocol.c
 
-"$(INTDIR)\fcgid_protocol.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_protocol.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\fcgid_spawn_ctl.c
 
-"$(INTDIR)\fcgid_spawn_ctl.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\fcgid_spawn_ctl.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\mod_fcgid.c
 
-"$(INTDIR)\mod_fcgid.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\mod_fcgid.obj" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 
 
 SOURCE=.\mod_fcgid.rc

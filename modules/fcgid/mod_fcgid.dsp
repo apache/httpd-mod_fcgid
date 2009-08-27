@@ -187,5 +187,36 @@ SOURCE=.\mod_fcgid.c
 
 SOURCE=.\mod_fcgid.rc
 # End Source File
+# Begin Source File
+
+SOURCE=.\ftp_config.h
+# End Source File
+# Begin Source File
+
+SOURCE=".\fcgid_config.h.in"
+
+!IF  "$(CFG)" == "mod_fcgid - Win32 Release"
+
+# Begin Custom Build - Generating fcgid_config.h
+InputPath=".\fcgid_config.h.in"
+
+".\fcgid_config.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	echo /* No configuration */ > .\fcgid_config.h
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "mod_fcgid - Win32 Debug"
+
+# Begin Custom Build - Generating fcgid_config.h
+InputPath=".\fcgid_config.h.in"
+
+".\fcgid_config.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	echo /* No configuration */ > .\fcgid_config.h
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
 # End Target
 # End Project
