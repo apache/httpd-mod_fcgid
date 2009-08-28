@@ -43,11 +43,11 @@ install-conf:
 	    cd $$j ; \
 	    for i in extra/httpd-fcgid.conf; do \
 	    	if test -f $$i; then \
-	    	    sed -e 's#@exp_runtimedir@#$(exp_runtimedir)#;' \
+	    	    sed -e '/^\#@@LoadFcgidModules@@/d;' \
+			-e 's#@exp_runtimedir@#$(exp_runtimedir)#;' \
 	    		-e 's#@exp_sysconfdir@#$(exp_sysconfdir)#;' \
 	    		-e 's#@rel_sysconfdir@#$(rel_sysconfdir)#;' \
 	    		-e 's#@rel_logfiledir@#$(rel_logfiledir)#;' \
-	    		-e 's#\#@@LoadFcgidModules@@##;' \
 	    		< $$i > $(exp_sysconfdir)/original/$$i; \
 	    	    chmod 0644 $(exp_sysconfdir)/original/$$i; \
 	    	    if test ! -f $(exp_sysconfdir)/$$i; then \
