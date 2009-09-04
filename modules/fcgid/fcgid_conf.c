@@ -53,8 +53,11 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 
 static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 {
-    config->default_init_env = NULL;
-    config->pass_headers = NULL;
+    /* Redundant; pcalloc creates this structure;
+     * config->default_init_env = NULL;
+     * config->pass_headers = NULL;
+     * config->php_fix_pathinfo_enable = 0;
+     */
     config->sockname_prefix =
         ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
     config->shmname_path = ap_server_root_relative(p, DEFAULT_SHM_PATH);
@@ -75,7 +78,6 @@ static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
     config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
     config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
     config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
-    config->php_fix_pathinfo_enable = 0;
     config->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
     config->max_request_len = DEFAULT_MAX_REQUEST_LEN;
     config->max_mem_request_len = DEFAULT_MAX_MEM_REQUEST_LEN;
@@ -143,11 +145,11 @@ void *create_fcgid_dir_config(apr_pool_t * p, char *dummy)
     fcgid_dir_conf *config = apr_pcalloc(p, sizeof(fcgid_dir_conf));
 
     config->wrapper_info_hash = apr_hash_make(p);
-    config->authenticator_info = NULL;
+    /* config->authenticator_info = NULL; */
     config->authenticator_authoritative = 1;
-    config->authorizer_info = NULL;
+    /* config->authorizer_info = NULL; */
     config->authorizer_authoritative = 1;
-    config->access_info = NULL;
+    /* config->access_info = NULL; */
     config->access_authoritative = 1;
     return (void *) config;
 }
