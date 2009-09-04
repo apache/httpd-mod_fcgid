@@ -70,27 +70,27 @@ echo "Detecting features" > ../config.apxs.log
 #
 #if make local-clean conftest_foofn >>../config.apxs.log 2>&1; then
 #  found_features="$found_features \
-#    -e \"s/^#undef \(HAVE_FOOFN\)[ \t]*/#define 1\1/;\""
+#    -e \"s/^#undef \(HAVE_FOOFN\)[ \t]*/#define \1 1/;\""
 #fi
 
 if make local-clean conftest_sys_file_h >>../config.apxs.log 2>&1; then
   found_features="$found_features \
-    -e \"s/^#undef \(HAVE_SYS_FILE_H\)[ \t]*/#define 1\1/;\""
+    -e \"s/^#undef \(HAVE_SYS_FILE_H\)[ \t]*/#define \1 1/;\""
 fi
 
 if make local-clean conftest_sys_mman_h >>../config.apxs.log 2>&1; then
   found_features="$found_features \
-    -e \"s/^#undef \(HAVE_SYS_MMAN_H\)[ \t]*/#define 1\1/;\""
+    -e \"s/^#undef \(HAVE_SYS_MMAN_H\)[ \t]*/#define \1 1/;\""
 fi
 
 if make local-clean conftest_sys_mutex_h >>../config.apxs.log 2>&1; then
   found_features="$found_features \
-    -e \"s/^#undef \(HAVE_SYS_MUTEX_H\)[ \t]*/#define 1\1/;\""
+    -e \"s/^#undef \(HAVE_SYS_MUTEX_H\)[ \t]*/#define \1 1/;\""
 fi
 
 if make local-clean conftest_sys_shm_h >>../config.apxs.log 2>&1; then
   found_features="$found_features \
-    -e \"s/^#undef \(HAVE_SYS_SHM_H\)[ \t]*/#define 1\1/;\""
+    -e \"s/^#undef \(HAVE_SYS_SHM_H\)[ \t]*/#define \1 1/;\""
 fi
 
 make local-distclean >>../config.apxs.log 2>&1
