@@ -20,10 +20,9 @@ SUBDIRS = modules/fcgid
 CLEAN_SUBDIRS = 
 
 TARGETS         = 
-INSTALL_TARGETS = 
-## no such targets yet;    install-conf install-manual install-include
-DISTCLEAN_TARGETS  =
-## no psuedo-autoconf yet; config.apxs.log modules/fcgid/fcgid_config.h
+INSTALL_TARGETS = install-manual 
+## no such targets yet; install-conf install-include
+DISTCLEAN_TARGETS  = config.apxs.log modules/fcgid/fcgid_config.h
 EXTRACLEAN_TARGETS = 
 
 include $(exp_installbuilddir)/rules.mk

@@ -15,7 +15,7 @@
 #
 # For example;
 #
-#   nmake -f Makefile-fcgid.win PORT=80 INSTDIR="d:/Program Files/Apache" installr
+#   nmake -f Makefile-fcgid.win INSTDIR="d:/Program Files/Apache" installr
 #
 # Be aware that certain awk's will not accept backslashed names,
 # so the server root should be given in forward slashes (quoted),
@@ -167,8 +167,8 @@ _install:
 	copy modules\fcgid\$(LONG)\mod_fcgid_example.so  "$(INSTDIR)\modules" <.y
 	copy modules\fcgid\$(LONG)\mod_fcgid_example.pdb "$(INSTDIR)\modules" <.y
 !ENDIF
-!IFDEF COMPLETED
 	xcopy docs\manual      "$(INSTDIR)\manual" /s /d < .a
+!IFDEF COMPLETED
 	copy include\mod_fcgid.h "$(INSTDIR)\include" < .y > nul
 #awk -v BDIR=$(APACHE2_HOME) -f build\mkconfnw.awk
 #    docs\conf\extra\httpd-fcgid.conf >$(INSTALL)\$(BASEDIR)\conf\extra\httpd-fcgid.conf
