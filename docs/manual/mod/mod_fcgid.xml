@@ -1,0 +1,424 @@
+<?xml version="1.0"?>
+<!DOCTYPE modulesynopsis SYSTEM "../style/modulesynopsis.dtd">
+<?xml-stylesheet type="text/xsl" href="../style/manual.en.xsl"?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<modulesynopsis metafile="mod_fcgid.xml.meta">
+
+  <name>mod_fcgid</name>
+  <description>Provides for execution of fastcgi applications</description>
+  <status>External</status> <!-- For now... -->
+  <sourcefile>mod_fcgid.c</sourcefile>
+  <identifier>fcgid_module</identifier>
+  <compatibility>Apache 2.0 and higher</compatibility>
+ 
+  <summary>
+    <p>Any program assigned to the handler <code>fcgid-script</code> is processed
+    using the FastCGI protocol; <module>mod_fcgid</module> starts a sufficient
+    number instances of the program to handle concurrent requests, and these
+    programs remain running to handle further incoming requests.  This is
+    significantly faster than using the default <module>mod_cgi</module> or
+    <module>mod_cgid</module> modules to launch the program upon each request.
+    However, the programs invoked by <module>mod_fcgid</module> continue to
+    consume resources, so the administrator must weigh the impact of invoking
+    a particular program once per request against the resources required to
+    leave a sufficient number of instances running continuously.</p>
+
+    <p>The pool of fcgid-invoked programs is shared between all httpd workers.
+    Configuration directives below let the administrator tune the number of
+    instances of the program that will run concurrently.</p>
+
+    <p>Specific executables are assigned this handler either by having a name 
+    containing an extension defined by the 
+    <directive module="mod_mime">AddHandler</directive> directive, or with an
+    override using the <directive module="mod_mime">SetHandler</directive> 
+    directive (e.g., for all files in a specific directory such as cgi-bin).</p>
+
+    <p>For an introduction to using CGI scripts with Apache, see
+    the generic tutorial on <a href="../howto/cgi.html">Dynamic Content
+    With CGI</a>.</p>
+
+  </summary>
+
+  <!-- References to other documents or directives -->
+  <seealso><a href="../howto/cgi.html">Dynamic Content With CGI</a></seealso>
+  <seealso><module>mod_cgi</module></seealso>
+  <seealso><module>mod_cgid</module></seealso>
+ 
+  <directivesynopsis>
+    <name>IdleTimeout</name>
+    <description>An idle fastcgi application will be killed after IdleTimeout</description>
+    <syntax>IdleTimeout <em>seconds</em></syntax>
+    <default>IdleTimeout 300</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>IdleScanInterval</name>
+    <description>scan interval for idle timeout process</description>
+    <syntax>IdleScanInterval <em>seconds</em></syntax>
+    <default>IdleScanInterval 120</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>BusyTimeout</name>
+    <description>a fastcgi application will be killed after handling a request for BusyTimeout</description>
+    <syntax>BusyTimeout <em>seconds</em></syntax>
+    <default>BusyTimeout 300</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>BusyScanInterval</name>
+    <description>scan interval for busy timeout process</description>
+    <syntax>IdleScanInterval <em>seconds</em></syntax>
+    <default>IdleScanInterval 120</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>ErrorScanInterval</name>
+    <description>scan interval for exited process</description>
+    <syntax>ErrorScanInterval <em>seconds</em></syntax>
+    <default>ErrorScanInterval 3</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>ZombieScanInterval</name>
+    <description>scan interval for zombie process</description>
+    <syntax>ZombieScanInterval <em>seconds</em></syntax>
+    <default>ZombieScanInterval 3</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>ProcessLifeTime</name>
+    <description>fastcgi application lifetime</description>
+    <syntax>ProcessLifeTime <em>seconds</em></syntax>
+    <default>ProcessLifeTime 3600</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>SocketPath</name>
+    <description>fastcgi socket file path</description>
+    <syntax>SocketPath <em>pathname</em></syntax>
+    <default>SocketPath logs/fcgidsock</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>SharememPath</name>
+    <description>fastcgi share memory file path</description>
+    <syntax>SharememPath <em>pathname</em></syntax>
+    <default>SharememPath logs/fcgid_shm</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>SpawnScoreUpLimit</name>
+    <description>Spawn score up limit</description>
+    <syntax>SpawnScoreUpLimit <em>value</em></syntax>
+    <default>SpawnScoreUpLimit 10</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>SpawnScore</name>
+    <description>Score of spawn</description>
+    <syntax>SpawnScore <em>value</em></syntax>
+    <default>SpawnScore 1</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>TimeScore</name>
+    <description>Score of passage of time (in seconds)</description>
+    <syntax>TimeScore <em>seconds</em></syntax>
+    <default>TimeScore 1</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>TerminationScore</name>
+    <description>Score of termination</description>
+    <syntax>TerminationScore <em>value</em></syntax>
+    <default>TerminationScore 2</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>MaxProcessCount</name>
+    <description>Max total process count</description>
+    <syntax>MaxProcessCount <em>value</em></syntax>
+    <default>MaxProcessCount 1000</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>DefaultMaxClassProcessCount</name>
+    <description>Max process count of one class of fastcgi application</description>
+    <syntax>DefaultMaxClassProcessCount <em>value</em></syntax>
+    <default>DefaultMaxClassProcessCount 100</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>DefaultMinClassProcessCount</name>
+    <description>Min process count of one class of fastcgi application</description>
+    <syntax>DefaultMinClassProcessCount <em>value</em></syntax>
+    <default>DefaultMinClassProcessCount 3</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>OutputBufferSize</name>
+    <description>CGI output buffer size</description>
+    <syntax>OutputBufferSize <em>bytes</em></syntax>
+    <default>OutputBufferSize 65536</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>IPCConnectTimeout</name>
+    <description>Connect timeout to fastcgi server</description>
+    <syntax>IPCConnectTimeout <em>seconds</em></syntax>
+    <default>IPCConnectTimeout 3</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>IPCCommTimeout</name>
+    <description>Communication timeout to fastcgi server</description>
+    <syntax>IPCCommTimeout <em>seconds</em></syntax>
+    <default>IPCCommTimeout 40</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>MaxRequestLen</name>
+    <description>Max HTTP request length in bytes</description>
+    <syntax>MaxRequestLen <em>bytes</em></syntax>
+    <default>MaxRequestLen 1073741824</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>MaxRequestInMem</name>
+    <description>The part of HTTP request which greater than this limit will swap to disk</description>
+    <syntax>MaxRequestInMem <em>bytes</em></syntax>
+    <default>MaxRequestInMem 65536</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>MaxRequestsPerProcess</name>
+    <description>Max requests handled by each fastcgi application</description>
+    <syntax>MaxRequestsPerProcess <em>value</em></syntax>
+    <default>MaxRequestsPerProcess -1</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>DefaultInitEnv</name>
+    <description>an environment variable name and optional value to pass to FastCGI.</description>
+    <syntax>DefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>
+    <default><em>none</em></default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>PassHeader</name>
+    <description>Header name which will be passed to FastCGI as environment variable.</description>
+    <syntax>PassHeader <em>name</em></syntax>
+    <default><em>none</em></default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>PHP_Fix_Pathinfo_Enable</name>
+    <description>Set 1, if cgi.fix_pathinfo=1 in php.ini</description>
+    <syntax>PHP_Fix_Pathinfo_Enable 1</syntax>
+    <default>PHP_Fix_Pathinfo_Enable 0</default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIWrapper</name>
+    <description>The CGI wrapper setting</description>
+    <syntax>FCGIWrapper <em>command</em> [ <em>type</em> ]</syntax>
+    <default><em>none</em></default>
+    <contextlist>
+      <context>server config</context> <context>virtual host</context>
+      <context>directory</context> <context>.htaccess</context>
+    </contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FastCgiAuthenticator</name>
+    <description>a absolute authenticator file path</description>
+    <syntax>FastCgiAuthenticator <em>command</em></syntax>
+    <default><em>none</em></default>
+    <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FastCgiAuthenticatorAuthoritative</name>
+    <description>Set to 'off' to allow authentication to be passed along to lower modules upon failure</description>
+    <syntax>FastCgiAuthenticatorAuthoritative <em>On|Off</em></syntax>
+    <default>FastCgiAuthenticatorAuthoritative On</default>
+    <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FastCgiAuthorizer</name>
+    <description>a absolute authorizer file path</description>
+    <syntax>FastCgiAuthorizer <em>command</em></syntax>
+    <default><em>none</em></default>
+    <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FastCgiAuthorizerAuthoritative</name>
+    <description>Set to 'off' to allow authorization to be passed along to lower modules upon failure</description>
+    <syntax>FastCgiAuthorizerAuthoritative <em>On|Off</em></syntax>
+    <default>FastCgiAuthorizerAuthoritative On</default>
+    <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FastCgiAccessChecker</name>
+    <description>a absolute access checker file path</description>
+    <syntax>FastCgiAccessChecker <em>command</em></syntax>
+    <default><em>none</em></default>
+    <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FastCgiAccessCheckerAuthoritative</name>
+    <description>Set to 'off' to allow access control to be passed along to lower modules upon failure</description>
+    <syntax>FastCgiAccessCheckerAuthoritative <em>On|Off</em></syntax>
+    <default>FastCgiAccessCheckerAuthoritative On</default>
+    <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>TODO</p>
+    </usage>
+  </directivesynopsis>
+
+</modulesynopsis>
