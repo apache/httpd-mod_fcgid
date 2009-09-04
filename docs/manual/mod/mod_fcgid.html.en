@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><!--
+        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+              This file is generated from xml source: DO NOT EDIT
+        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      -->
+<title>mod_fcgid - Apache HTTP Server</title>
+<link href="../style/css/manual.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-loose-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<link href="../images/favicon.ico" rel="shortcut icon" /></head>
+<body>
+<div id="page-header">
+<p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="../faq/">FAQ</a> | <a href="../glossary.html">Glossary</a> | <a href="../sitemap.html">Sitemap</a></p>
+<p class="apache">Apache HTTP Server Version 2.3</p>
+<img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path">
+<a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">Documentation</a> &gt; <a href="../">Version 2.3</a> &gt; <a href="./">Modules</a></div>
+<div id="page-content">
+<div id="preamble"><h1>Apache Module mod_fcgid</h1>
+<div class="toplang">
+<p><span>Available Languages: </span><a href="../en/mod/mod_fcgid.html" title="English">&nbsp;en&nbsp;</a></p>
+</div>
+<table class="module"><tr><th><a href="module-dict.html#Description">Description:</a></th><td>Provides for execution of fastcgi applications</td></tr>
+<tr><th><a href="module-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">Module Identifier:</a></th><td>fcgid_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">Source File:</a></th><td>mod_fcgid.c</td></tr>
+<tr><th><a href="module-dict.html#Compatibility">Compatibility:</a></th><td>Apache 2.0 and higher</td></tr></table>
+<h3>Summary</h3>
+
+    <p>Any program assigned to the handler <code>fcgid-script</code> is processed
+    using the FastCGI protocol; <code class="module"><a href="../mod/mod_fcgid.html">mod_fcgid</a></code> starts a sufficient
+    number instances of the program to handle concurrent requests, and these
+    programs remain running to handle further incoming requests.  This is
+    significantly faster than using the default <code class="module"><a href="../mod/mod_cgi.html">mod_cgi</a></code> or
+    <code class="module"><a href="../mod/mod_cgid.html">mod_cgid</a></code> modules to launch the program upon each request.
+    However, the programs invoked by <code class="module"><a href="../mod/mod_fcgid.html">mod_fcgid</a></code> continue to
+    consume resources, so the administrator must weigh the impact of invoking
+    a particular program once per request against the resources required to
+    leave a sufficient number of instances running continuously.</p>
+
+    <p>The pool of fcgid-invoked programs is shared between all httpd workers.
+    Configuration directives below let the administrator tune the number of
+    instances of the program that will run concurrently.</p>
+
+    <p>Specific executables are assigned this handler either by having a name 
+    containing an extension defined by the 
+    <code class="directive"><a href="../mod/mod_mime.html#addhandler">AddHandler</a></code> directive, or with an
+    override using the <code class="directive"><a href="../mod/mod_mime.html#sethandler">SetHandler</a></code> 
+    directive (e.g., for all files in a specific directory such as cgi-bin).</p>
+
+    <p>For an introduction to using CGI scripts with Apache, see
+    the generic tutorial on <a href="../howto/cgi.html">Dynamic Content
+    With CGI</a>.</p>
+
+  </div>
+<div id="quickview"><h3 class="directives">Directives</h3>
+<ul id="toc">
+<li><img alt="" src="../images/down.gif" /> <a href="#busyscaninterval">BusyScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#busytimeout">BusyTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#defaultinitenv">DefaultInitEnv</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#defaultmaxclassprocesscount">DefaultMaxClassProcessCount</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#defaultminclassprocesscount">DefaultMinClassProcessCount</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#errorscaninterval">ErrorScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fastcgiaccesschecker">FastCgiAccessChecker</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fastcgiaccesscheckerauthoritative">FastCgiAccessCheckerAuthoritative</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fastcgiauthenticator">FastCgiAuthenticator</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fastcgiauthenticatorauthoritative">FastCgiAuthenticatorAuthoritative</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fastcgiauthorizer">FastCgiAuthorizer</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fastcgiauthorizerauthoritative">FastCgiAuthorizerAuthoritative</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgiwrapper">FCGIWrapper</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#idlescaninterval">IdleScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#idletimeout">IdleTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#ipccommtimeout">IPCCommTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#ipcconnecttimeout">IPCConnectTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#maxprocesscount">MaxProcessCount</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#maxrequestinmem">MaxRequestInMem</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#maxrequestlen">MaxRequestLen</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#maxrequestsperprocess">MaxRequestsPerProcess</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#outputbuffersize">OutputBufferSize</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#passheader">PassHeader</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#php_fix_pathinfo_enable">PHP_Fix_Pathinfo_Enable</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#processlifetime">ProcessLifeTime</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#sharemempath">SharememPath</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#socketpath">SocketPath</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#spawnscore">SpawnScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#spawnscoreuplimit">SpawnScoreUpLimit</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#terminationscore">TerminationScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#timescore">TimeScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#zombiescaninterval">ZombieScanInterval</a></li>
+</ul>
+<h3>See also</h3>
+<ul class="seealso">
+<li><a href="../howto/cgi.html">Dynamic Content With CGI</a></li>
+<li><code class="module"><a href="../mod/mod_cgi.html">mod_cgi</a></code></li>
+<li><code class="module"><a href="../mod/mod_cgid.html">mod_cgid</a></code></li>
+</ul></div>
+
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="BusyScanInterval" id="BusyScanInterval">BusyScanInterval</a> <a name="busyscaninterval" id="busyscaninterval">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for busy timeout process</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IdleScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IdleScanInterval 120</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="BusyTimeout" id="BusyTimeout">BusyTimeout</a> <a name="busytimeout" id="busytimeout">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a fastcgi application will be killed after handling a request for BusyTimeout</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>BusyTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>BusyTimeout 300</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DefaultInitEnv" id="DefaultInitEnv">DefaultInitEnv</a> <a name="defaultinitenv" id="defaultinitenv">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>an environment variable name and optional value to pass to FastCGI.</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>DefaultInitEnv <em>name</em> [ <em>value</em> ]</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DefaultMaxClassProcessCount" id="DefaultMaxClassProcessCount">DefaultMaxClassProcessCount</a> <a name="defaultmaxclassprocesscount" id="defaultmaxclassprocesscount">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max process count of one class of fastcgi application</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>DefaultMaxClassProcessCount <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>DefaultMaxClassProcessCount 100</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DefaultMinClassProcessCount" id="DefaultMinClassProcessCount">DefaultMinClassProcessCount</a> <a name="defaultminclassprocesscount" id="defaultminclassprocesscount">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Min process count of one class of fastcgi application</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>DefaultMinClassProcessCount <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>DefaultMinClassProcessCount 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="ErrorScanInterval" id="ErrorScanInterval">ErrorScanInterval</a> <a name="errorscaninterval" id="errorscaninterval">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for exited process</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>ErrorScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>ErrorScanInterval 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FastCgiAccessChecker" id="FastCgiAccessChecker">FastCgiAccessChecker</a> <a name="fastcgiaccesschecker" id="fastcgiaccesschecker">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a absolute access checker file path</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FastCgiAccessChecker <em>command</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FastCgiAccessCheckerAuthoritative" id="FastCgiAccessCheckerAuthoritative">FastCgiAccessCheckerAuthoritative</a> <a name="fastcgiaccesscheckerauthoritative" id="fastcgiaccesscheckerauthoritative">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set to 'off' to allow access control to be passed along to lower modules upon failure</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FastCgiAccessCheckerAuthoritative <em>On|Off</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FastCgiAccessCheckerAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FastCgiAuthenticator" id="FastCgiAuthenticator">FastCgiAuthenticator</a> <a name="fastcgiauthenticator" id="fastcgiauthenticator">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a absolute authenticator file path</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FastCgiAuthenticator <em>command</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FastCgiAuthenticatorAuthoritative" id="FastCgiAuthenticatorAuthoritative">FastCgiAuthenticatorAuthoritative</a> <a name="fastcgiauthenticatorauthoritative" id="fastcgiauthenticatorauthoritative">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set to 'off' to allow authentication to be passed along to lower modules upon failure</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FastCgiAuthenticatorAuthoritative <em>On|Off</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FastCgiAuthenticatorAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FastCgiAuthorizer" id="FastCgiAuthorizer">FastCgiAuthorizer</a> <a name="fastcgiauthorizer" id="fastcgiauthorizer">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a absolute authorizer file path</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FastCgiAuthorizer <em>command</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FastCgiAuthorizerAuthoritative" id="FastCgiAuthorizerAuthoritative">FastCgiAuthorizerAuthoritative</a> <a name="fastcgiauthorizerauthoritative" id="fastcgiauthorizerauthoritative">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set to 'off' to allow authorization to be passed along to lower modules upon failure</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FastCgiAuthorizerAuthoritative <em>On|Off</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FastCgiAuthorizerAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FCGIWrapper" id="FCGIWrapper">FCGIWrapper</a> <a name="fcgiwrapper" id="fcgiwrapper">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>The CGI wrapper setting</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIWrapper <em>command</em> [ <em>type</em> ]</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="IdleScanInterval" id="IdleScanInterval">IdleScanInterval</a> <a name="idlescaninterval" id="idlescaninterval">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for idle timeout process</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IdleScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IdleScanInterval 120</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="IdleTimeout" id="IdleTimeout">IdleTimeout</a> <a name="idletimeout" id="idletimeout">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>An idle fastcgi application will be killed after IdleTimeout</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IdleTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IdleTimeout 300</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="IPCCommTimeout" id="IPCCommTimeout">IPCCommTimeout</a> <a name="ipccommtimeout" id="ipccommtimeout">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Communication timeout to fastcgi server</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IPCCommTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IPCCommTimeout 40</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="IPCConnectTimeout" id="IPCConnectTimeout">IPCConnectTimeout</a> <a name="ipcconnecttimeout" id="ipcconnecttimeout">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Connect timeout to fastcgi server</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IPCConnectTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IPCConnectTimeout 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MaxProcessCount" id="MaxProcessCount">MaxProcessCount</a> <a name="maxprocesscount" id="maxprocesscount">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max total process count</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>MaxProcessCount <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>MaxProcessCount 1000</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MaxRequestInMem" id="MaxRequestInMem">MaxRequestInMem</a> <a name="maxrequestinmem" id="maxrequestinmem">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>The part of HTTP request which greater than this limit will swap to disk</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>MaxRequestInMem <em>bytes</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>MaxRequestInMem 65536</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MaxRequestLen" id="MaxRequestLen">MaxRequestLen</a> <a name="maxrequestlen" id="maxrequestlen">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max HTTP request length in bytes</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>MaxRequestLen <em>bytes</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>MaxRequestLen 1073741824</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MaxRequestsPerProcess" id="MaxRequestsPerProcess">MaxRequestsPerProcess</a> <a name="maxrequestsperprocess" id="maxrequestsperprocess">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max requests handled by each fastcgi application</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>MaxRequestsPerProcess <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>MaxRequestsPerProcess -1</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="OutputBufferSize" id="OutputBufferSize">OutputBufferSize</a> <a name="outputbuffersize" id="outputbuffersize">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>CGI output buffer size</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>OutputBufferSize <em>bytes</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>OutputBufferSize 65536</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="PassHeader" id="PassHeader">PassHeader</a> <a name="passheader" id="passheader">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Header name which will be passed to FastCGI as environment variable.</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>PassHeader <em>name</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="PHP_Fix_Pathinfo_Enable" id="PHP_Fix_Pathinfo_Enable">PHP_Fix_Pathinfo_Enable</a> <a name="php_fix_pathinfo_enable" id="php_fix_pathinfo_enable">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set 1, if cgi.fix_pathinfo=1 in php.ini</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>PHP_Fix_Pathinfo_Enable 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>PHP_Fix_Pathinfo_Enable 0</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="ProcessLifeTime" id="ProcessLifeTime">ProcessLifeTime</a> <a name="processlifetime" id="processlifetime">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>fastcgi application lifetime</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>ProcessLifeTime <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>ProcessLifeTime 3600</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="SharememPath" id="SharememPath">SharememPath</a> <a name="sharemempath" id="sharemempath">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>fastcgi share memory file path</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SharememPath <em>pathname</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SharememPath logs/fcgid_shm</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="SocketPath" id="SocketPath">SocketPath</a> <a name="socketpath" id="socketpath">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>fastcgi socket file path</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SocketPath <em>pathname</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SocketPath logs/fcgidsock</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="SpawnScore" id="SpawnScore">SpawnScore</a> <a name="spawnscore" id="spawnscore">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Score of spawn</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SpawnScore <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SpawnScore 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="SpawnScoreUpLimit" id="SpawnScoreUpLimit">SpawnScoreUpLimit</a> <a name="spawnscoreuplimit" id="spawnscoreuplimit">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Spawn score up limit</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SpawnScoreUpLimit <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SpawnScoreUpLimit 10</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="TerminationScore" id="TerminationScore">TerminationScore</a> <a name="terminationscore" id="terminationscore">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Score of termination</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>TerminationScore <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>TerminationScore 2</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="TimeScore" id="TimeScore">TimeScore</a> <a name="timescore" id="timescore">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Score of passage of time (in seconds)</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>TimeScore <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>TimeScore 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="ZombieScanInterval" id="ZombieScanInterval">ZombieScanInterval</a> <a name="zombiescaninterval" id="zombiescaninterval">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for zombie process</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>ZombieScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>ZombieScanInterval 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>TODO</p>
+    
+</div>
+</div>
+<div class="bottomlang">
+<p><span>Available Languages: </span><a href="../en/mod/mod_fcgid.html" title="English">&nbsp;en&nbsp;</a></p>
+</div><div id="footer">
+<p class="apache">Copyright 2009 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="../faq/">FAQ</a> | <a href="../glossary.html">Glossary</a> | <a href="../sitemap.html">Sitemap</a></p></div>
+</body></html>
