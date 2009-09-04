@@ -599,7 +599,7 @@ static const command_rec fcgid_cmds[] = {
                   "scan interval for exited process"),
     AP_INIT_TAKE1("ZombieScanInterval", set_zombie_scan_interval, NULL,
                   RSRC_CONF,
-                  "scan interval for zombiz process"),
+                  "scan interval for zombie process"),
     AP_INIT_TAKE1("ProcessLifeTime", set_proc_lifetime, NULL, RSRC_CONF,
                   "fastcgi application lifetime"),
     AP_INIT_TAKE1("SocketPath", set_socketpath, NULL, RSRC_CONF,
