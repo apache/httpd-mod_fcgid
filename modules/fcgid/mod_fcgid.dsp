@@ -189,7 +189,7 @@ SOURCE=.\mod_fcgid.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\ftp_config.h
+SOURCE=.\fcgid_config.h
 # End Source File
 # Begin Source File
 
