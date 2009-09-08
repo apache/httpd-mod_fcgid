@@ -538,6 +538,8 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     apr_status_t rv;
     void *dummy = NULL;
 
+    ap_add_version_component(config_pool, MODFCGID_PRODUCT);
+
     g_php_fix_pathinfo_enable = get_php_fix_pathinfo_enable(main_server);
 
     /* Initialize process manager only once */

@@ -1,6 +1,6 @@
+#define VERSION_ONLY
 
-#define ASF_COPYRIGHT "Copyright (c) 2009 The Apache Software " \
-                      "Foundation or its licensors, as applicable."
+#include "fcgid_conf.h"
 
 #define ASF_LICENSE \
   "Licensed to the Apache Software Foundation (ASF) under one or more " \
@@ -16,9 +16,14 @@
   "See the License for the specific language governing permissions and " \
   "limitations under the License."
 
+/* macro for Win32 .rc files using numeric csv representation */
+#define MODFCGID_REVISION_CSV  MODFCGID_VERSION_MAJOR ##, \
+                             ##MODFCGID_VERSION_MINOR ##, \
+                             ##MODFCGID_VERSION_SUBVER
+
 1 VERSIONINFO
- FILEVERSION 2,3,1,200
- PRODUCTVERSION 2,3,1,200
+ FILEVERSION MODFCGID_REVISION_CSV,200
+ PRODUCTVERSION MODFCGID_REVISION_CSV,200
  FILEFLAGSMASK 0x3fL
 #if defined(_DEBUG)
  FILEFLAGS 0x01L
@@ -36,12 +41,12 @@ BEGIN
       VALUE "Comments", ASF_LICENSE "\0"
       VALUE "CompanyName", "Apache Software Foundation\0"
       VALUE "FileDescription", "fcgid_module for Apache\0"
-      VALUE "FileVersion", "2.3.1\0"
+      VALUE "FileVersion", MODFCGID_REVISION "\0"
       VALUE "InternalName", "mod_fcgid.so\0"
-      VALUE "LegalCopyright", ASF_COPYRIGHT "\0"
+      VALUE "LegalCopyright", MODFCGID_COPYRIGHT "\0"
       VALUE "OriginalFilename", "mod_fcgid.so\0"
       VALUE "ProductName", "Apache HTTP Server Project\0"
-      VALUE "ProductVersion", "2.3.1\0"
+      VALUE "ProductVersion", MODFCGID_REVISION "\0"
     END
   END
   BLOCK "VarFileInfo"

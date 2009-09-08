@@ -17,6 +17,32 @@
 
 #ifndef FCGID_CONF_H
 #define FCGID_CONF_H
+
+#include "apr_general.h" /* stringify */
+
+#define MODFCGID_COPYRIGHT \
+  "Copyright 2009 The Apache Software Foundation."
+
+#define MODFCGID_VERSION_MAJOR  2
+#define MODFCGID_VERSION_MINOR  3
+#define MODFCGID_VERSION_SUBVER 1
+#define MODFCGID_VERSION_DEV    1
+
+#if MODFCGID_VERSION_DEV
+#define MODFCGID_VERSION_DEVSTR "-dev"
+#else
+#define MODFCGID_VERSION_DEVSTR ""
+#endif
+
+#define MODFCGID_REVISION      APR_STRINGIFY(MODFCGID_VERSION_MAJOR) \
+                           "." APR_STRINGIFY(MODFCGID_VERSION_MINOR) \
+                           "." APR_STRINGIFY(MODFCGID_VERSION_SUBVER)
+#define MODFCGID_VERSION       MODFCGID_REVISION MODFCGID_VERSION_DEVSTR
+
+#define MODFCGID_PRODUCT       "mod_fcgid/" MODFCGID_VERSION
+
+#ifndef VERSION_ONLY
+
 #include "apr_user.h"
 #include "fcgid_global.h"
 
@@ -202,5 +228,7 @@ int get_php_fix_pathinfo_enable(server_rec * s);
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
                                          const char *arg);
 int get_max_requests_per_process(server_rec * s);
+
+#endif
 
 #endif
