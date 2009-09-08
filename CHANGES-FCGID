@@ -1,4 +1,8 @@
                                                          -*- coding: utf-8 -*-
+Changes with mod_fcgid 2.3.2
+
+
+
 Changes with mod_fcgid 2.3.1
 
   *) Suppress "need AuthType to note auth failure" error-level messages when a
