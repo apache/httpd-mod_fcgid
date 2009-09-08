@@ -96,7 +96,7 @@ CPP_PROJ=/nologo /MD /W3 /Zi /O2 /Oy- /I "../../include" /I "../../srclib/apr/in
 MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\mod_fcgid.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\mod_fcgid.res" /i "../../srclib/apr/include" /i "$(APACHE2_HOME)/include" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\mod_fcgid.bsc" 
 BSC32_SBRS= \
@@ -207,7 +207,7 @@ CPP_PROJ=/nologo /MDd /W3 /GX /Zi /Od /I "../../include" /I "../../srclib/apr/in
 MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\mod_fcgid.res" /d "_DEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\mod_fcgid.res" /i "../../srclib/apr/include" /i "$(APACHE2_HOME)/include" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\mod_fcgid.bsc" 
 BSC32_SBRS= \
@@ -342,7 +342,7 @@ SOURCE=.\mod_fcgid.c
 
 SOURCE=.\mod_fcgid.rc
 
-"$(INTDIR)\mod_fcgid.res" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\mod_fcgid.res" : $(SOURCE) "$(INTDIR)" ".\fcgid_config.h"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 

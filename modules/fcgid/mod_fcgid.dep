@@ -110,3 +110,9 @@
 	".\fcgid_protocol.h"\
 	".\fcgid_spawn_ctl.h"\
 	
+
+.\mod_fcgid.rc : \
+	".\fcgid_conf.h"\
+	".\fcgid_config.h"\
+	".\fcgid_global.h"\
+	
