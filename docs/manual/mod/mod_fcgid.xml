@@ -62,8 +62,8 @@
   <directivesynopsis>
     <name>BusyScanInterval</name>
     <description>scan interval for busy timeout process</description>
-    <syntax>IdleScanInterval <em>seconds</em></syntax>
-    <default>IdleScanInterval 120</default>
+    <syntax>BusyScanInterval <em>seconds</em></syntax>
+    <default>BusyScanInterval 120</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>TODO</p>
