@@ -66,7 +66,8 @@
     <default>BusyScanInterval 120</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>The module performs the <directive>BusyTimeout</directive> check 
+      at this interval.</p>
     </usage>
   </directivesynopsis>
 
@@ -77,7 +78,15 @@
     <default>BusyTimeout 300</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This is the maximum time limit for request handling.  If a FastCGI
+      request does not complete within BusyTimeout seconds, it will be
+      subject to termination.  Because the check is performed at the
+      interval defined by <directive>BusyScanInterval</directive>, request 
+      handling may be allowed to proceed for a longer period of time.</p>
+
+      <p>The purpose of this directive is to terminate hung applications.
+      The default timeout may need to be increased for applications that
+      can take longer to process the request.</p>
     </usage>
   </directivesynopsis>
 
@@ -88,7 +97,8 @@
     <default><em>none</em></default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>Use DefaultInitEnv to define environment variables to pass to
+      the FastCGI application.  This directive can be used multiple times.</p>
     </usage>
   </directivesynopsis>
 
@@ -368,45 +378,63 @@
 
   <directivesynopsis>
     <name>SpawnScore</name>
-    <description>Score of spawn</description>
+    <description>Each spawn adds this value to the process activity score.</description>
     <syntax>SpawnScore <em>value</em></syntax>
     <default>SpawnScore 1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>Refer to the <directive>SpawnScoreUpLimit</directive> directive 
+      for more information.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>SpawnScoreUpLimit</name>
-    <description>Spawn score up limit</description>
+    <description>Maximum value of the process activity score which allows
+    a spawn to occur</description>
     <syntax>SpawnScoreUpLimit <em>value</em></syntax>
     <default>SpawnScoreUpLimit 10</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>The module maintains a process activity score for each FastCGI
+      application which represents process activity; it uses that score to 
+      determine if more instances of the FastCGI application can be spawned
+      (started).  If the current score is higher than the value of this 
+      directive, a new instance of the FastCGI application cannot yet be 
+      started.</p>
+
+      <p>The <directive>SpawnScore</directive> directive determines how much is
+      added to the score for every spawned application process.  The
+      <directive>TerminationScore</directive> directive determines how much is 
+      added to the score for every terminated application process.  The
+      <directive>TimeScore</directive> directive determines how much is subtracted
+      from the score every second.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>TerminationScore</name>
-    <description>Score of termination</description>
+    <description>Each terminated process adds this value to the process activity
+    score.</description>
     <syntax>TerminationScore <em>value</em></syntax>
     <default>TerminationScore 2</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>Refer to the <directive>SpawnScoreUpLimit</directive> directive 
+      for more information.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>TimeScore</name>
-    <description>Score of passage of time (in seconds)</description>
-    <syntax>TimeScore <em>seconds</em></syntax>
+    <description>Amount subtracted from process activity score each 
+    second</description>
+    <syntax>TimeScore <em>value</em></syntax>
     <default>TimeScore 1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>Refer to the <directive>SpawnScoreUpLimit</directive> directive 
+      for more information.</p>
     </usage>
   </directivesynopsis>
 
@@ -417,7 +445,9 @@
     <default>ZombieScanInterval 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>The module checks for exited FastCGI applications at this interval.
+      During this period of time, the application can exist in the process
+      table as a zombie (on Unix).</p>
     </usage>
   </directivesynopsis>
 
