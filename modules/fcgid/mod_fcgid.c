@@ -387,7 +387,7 @@ static int mod_fcgid_authorizer(request_rec * r)
     {
         /* Pass */
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
-                      "mod_fcgid: access granted");
+                      "mod_fcgid: access granted (authorization)");
 
         /* Modify headers: An Authorizer application's 200 response may include headers
            whose names are prefixed with Variable-.  */
@@ -399,15 +399,15 @@ static int mod_fcgid_authorizer(request_rec * r)
         /* Print error info first */
         if (res != OK)
             ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
-                          "mod_fcgid: user %s access check failed, respond %d, URI %s",
+                          "mod_fcgid: user %s authorization failed, respond %d, URI %s",
                           r->user, res, r->uri);
         else if (r->status != 200)
             ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
-                          "mod_fcgid: user %s access check failed, status %d, URI %s",
+                          "mod_fcgid: user %s authorization failed, status %d, URI %s",
                           r->user, r->status, r->uri);
         else
             ap_log_rerror(APLOG_MARK, APLOG_WARNING | APLOG_NOERRNO, 0, r,
-                          "mod_fcgid: user %s access check failed, redirected is not allowed",
+                          "mod_fcgid: user %s authorization failed, redirected is not allowed",
                           r->user);
 
         /* Handle error */
