@@ -20,7 +20,7 @@
 <modulesynopsis metafile="mod_fcgid.xml.meta">
 
   <name>mod_fcgid</name>
-  <description>Provides for execution of fastcgi applications</description>
+  <description>Provides for execution of FastCGI applications</description>
   <status>External</status> <!-- For now... -->
   <sourcefile>mod_fcgid.c</sourcefile>
   <identifier>fcgid_module</identifier>
@@ -73,7 +73,7 @@
 
   <directivesynopsis>
     <name>BusyTimeout</name>
-    <description>a fastcgi application will be killed after handling a request for BusyTimeout</description>
+    <description>a FastCGI application will be killed after handling a request for BusyTimeout</description>
     <syntax>BusyTimeout <em>seconds</em></syntax>
     <default>BusyTimeout 300</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -81,8 +81,8 @@
       <p>This is the maximum time limit for request handling.  If a FastCGI
       request does not complete within BusyTimeout seconds, it will be
       subject to termination.  Because the check is performed at the
-      interval defined by <directive>BusyScanInterval</directive>, request 
-      handling may be allowed to proceed for a longer period of time.</p>
+      interval defined by <directive module="mod_fcgid">BusyScanInterval</directive>,
+      request handling may be allowed to proceed for a longer period of time.</p>
 
       <p>The purpose of this directive is to terminate hung applications.
       The default timeout may need to be increased for applications that
@@ -97,14 +97,15 @@
     <default><em>none</em></default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Use DefaultInitEnv to define environment variables to pass to
-      the FastCGI application.  This directive can be used multiple times.</p>
+      <p>Use <directive>DefaultInitEnv</directive> to define environment 
+      variables to pass to the FastCGI application.  This directive can 
+      be used multiple times.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>DefaultMaxClassProcessCount</name>
-    <description>Max process count of one class of fastcgi application</description>
+    <description>Max process count of one class of FastCGI application</description>
     <syntax>DefaultMaxClassProcessCount <em>value</em></syntax>
     <default>DefaultMaxClassProcessCount 100</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -115,7 +116,7 @@
 
   <directivesynopsis>
     <name>DefaultMinClassProcessCount</name>
-    <description>Min process count of one class of fastcgi application</description>
+    <description>Min process count of one class of FastCGI application</description>
     <syntax>DefaultMinClassProcessCount <em>value</em></syntax>
     <default>DefaultMinClassProcessCount 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -235,7 +236,7 @@
 
   <directivesynopsis>
     <name>IdleTimeout</name>
-    <description>An idle fastcgi application will be killed after IdleTimeout</description>
+    <description>An idle FastCGI application will be killed after IdleTimeout</description>
     <syntax>IdleTimeout <em>seconds</em></syntax>
     <default>IdleTimeout 300</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -246,7 +247,7 @@
 
   <directivesynopsis>
     <name>IPCCommTimeout</name>
-    <description>Communication timeout to fastcgi server</description>
+    <description>Communication timeout to FastCGI server</description>
     <syntax>IPCCommTimeout <em>seconds</em></syntax>
     <default>IPCCommTimeout 40</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -257,7 +258,7 @@
 
   <directivesynopsis>
     <name>IPCConnectTimeout</name>
-    <description>Connect timeout to fastcgi server</description>
+    <description>Connect timeout to FastCGI server</description>
     <syntax>IPCConnectTimeout <em>seconds</em></syntax>
     <default>IPCConnectTimeout 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -301,7 +302,7 @@
 
   <directivesynopsis>
     <name>MaxRequestsPerProcess</name>
-    <description>Max requests handled by each fastcgi application</description>
+    <description>Max requests handled by each FastCGI application</description>
     <syntax>MaxRequestsPerProcess <em>value</em></syntax>
     <default>MaxRequestsPerProcess -1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -345,7 +346,7 @@
 
   <directivesynopsis>
     <name>ProcessLifeTime</name>
-    <description>fastcgi application lifetime</description>
+    <description>FastCGI application lifetime</description>
     <syntax>ProcessLifeTime <em>seconds</em></syntax>
     <default>ProcessLifeTime 3600</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -356,7 +357,7 @@
 
   <directivesynopsis>
     <name>SharememPath</name>
-    <description>fastcgi share memory file path</description>
+    <description>shared memory file path</description>
     <syntax>SharememPath <em>pathname</em></syntax>
     <default>SharememPath logs/fcgid_shm</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -367,7 +368,7 @@
 
   <directivesynopsis>
     <name>SocketPath</name>
-    <description>fastcgi socket file path</description>
+    <description>socket file path</description>
     <syntax>SocketPath <em>pathname</em></syntax>
     <default>SocketPath logs/fcgidsock</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
@@ -383,8 +384,8 @@
     <default>SpawnScore 1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Refer to the <directive>SpawnScoreUpLimit</directive> directive 
-      for more information.</p>
+      <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
+      directive for more information.</p>
     </usage>
   </directivesynopsis>
 
@@ -403,12 +404,12 @@
       directive, a new instance of the FastCGI application cannot yet be 
       started.</p>
 
-      <p>The <directive>SpawnScore</directive> directive determines how much is
-      added to the score for every spawned application process.  The
-      <directive>TerminationScore</directive> directive determines how much is 
-      added to the score for every terminated application process.  The
-      <directive>TimeScore</directive> directive determines how much is subtracted
-      from the score every second.</p>
+      <p>The <directive module="mod_fcgid">SpawnScore</directive> directive 
+      determines how much is added to the score for every spawned application
+      process.  The <directive module="mod_fcgid">TerminationScore</directive>
+      directive determines how much is added to the score for every terminated
+      application process.  The <directive module="mod_fcgid">TimeScore</directive>
+      directive determines how much is subtracted from the score every second.</p>
     </usage>
   </directivesynopsis>
 
@@ -420,8 +421,8 @@
     <default>TerminationScore 2</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Refer to the <directive>SpawnScoreUpLimit</directive> directive 
-      for more information.</p>
+      <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
+      directive for more information.</p>
     </usage>
   </directivesynopsis>
 
@@ -433,8 +434,8 @@
     <default>TimeScore 1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Refer to the <directive>SpawnScoreUpLimit</directive> directive 
-      for more information.</p>
+      <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
+      directive for more information.</p>
     </usage>
   </directivesynopsis>
 
@@ -446,7 +447,7 @@
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>The module checks for exited FastCGI applications at this interval.
-      During this period of time, the application can exist in the process
+      During this period of time, the application may exist in the process
       table as a zombie (on Unix).</p>
     </usage>
   </directivesynopsis>
