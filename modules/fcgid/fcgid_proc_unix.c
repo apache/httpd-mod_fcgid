@@ -204,17 +204,24 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
 
     /* Initialize the variables */
     if (!g_inode_cginame_map) {
-        apr_pool_create(&g_inode_cginame_map,
-                        procinfo->main_server->process->pconf);
+        rv = apr_pool_create(&g_inode_cginame_map,
+                             procinfo->main_server->process->pconf);
+        if (rv != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
+                         procinfo->main_server,
+                         "mod_fcgid: can't cgi name map table");
+            return APR_ENOMEM;
+        }
     }
 
-    if (!g_socket_dir)
+    if (!g_socket_dir) {
         g_socket_dir = get_socketpath(procinfo->main_server);
-    if (!g_inode_cginame_map || !g_socket_dir) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     procinfo->main_server,
-                     "mod_fcgid: can't cgi name map table");
-        return APR_ENOMEM;
+        if (!g_socket_dir) {
+            ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
+                         procinfo->main_server,
+                         "mod_fcgid: can't get socket path");
+            return APR_ENOMEM;
+        }
     }
 
     /* 

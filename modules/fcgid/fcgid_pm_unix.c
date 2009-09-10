@@ -239,7 +239,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: Process manager %d started", getpid());
 
         if ((rv = init_signal(main_server)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, LOG_EMERG, rv, main_server,
+            ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
                          "mod_fcgid: can't intall signal handler, exit now");
             exit(1);
         }
@@ -247,7 +247,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         /* if running as root, switch to configured user */
         if (ap_unixd_config.suexec_enabled) {
             if (getuid() != 0) {
-                ap_log_error(APLOG_MARK, LOG_EMERG, rv, main_server,
+                ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
                              "mod_fcgid: current user is not root while suexec is enabled, exit now");
                 exit(1);
             }
@@ -268,7 +268,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: Process manager %d stopped", getpid());
         exit(0);
     } else if (rv != APR_INPARENT) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, errno, main_server,
+        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
                      "mod_fcgid: Create process manager error");
         exit(1);
     }

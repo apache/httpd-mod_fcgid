@@ -219,7 +219,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
         }
 
         /* Release the lock now */
-        if (apr_thread_mutex_unlock(g_reqlock) != APR_SUCCESS) {
+        if ((rv = apr_thread_mutex_unlock(g_reqlock)) != APR_SUCCESS) {
             /* It's a fatal error */
             ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
                          "mod_fcgid: can't release request lock");

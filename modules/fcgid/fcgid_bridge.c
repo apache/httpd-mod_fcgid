@@ -402,7 +402,7 @@ handle_request(request_rec * r, int role, const char *argv0,
     brigade_stdout =
         apr_brigade_create(request_pool, r->connection->bucket_alloc);
     if (!brigade_stdout) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), r->server,
                      "mod_fcgid: apr_brigade_create failed in handle_request function");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -562,7 +562,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
             request_size += len;
             if (request_size > max_request_len) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
+                ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
                              main_server,
                              "mod_fcgid: http request length %" APR_SIZE_T_FMT " > %" APR_SIZE_T_FMT,
                              request_size, max_request_len);
@@ -586,8 +586,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
                     rv = apr_temp_dir_get(&tempdir, r->pool);
                     if (rv != APR_SUCCESS) {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING,
-                                     apr_get_os_error(), main_server,
+                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                                      "mod_fcigd: can't get tmp dir");
                         return HTTP_INTERNAL_SERVER_ERROR;
                     }
@@ -598,8 +597,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                     rv = apr_file_mktemp(&fd, template, 0,
                                          r->connection->pool);
                     if (rv != APR_SUCCESS) {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING,
-                                     apr_get_os_error(), main_server,
+                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                                      "mod_fcgid: can't open tmp file fot stdin request");
                         return HTTP_INTERNAL_SERVER_ERROR;
                     }
@@ -617,7 +615,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                          &wrote_len)) != APR_SUCCESS
                     || len != wrote_len) {
                     ap_log_error(APLOG_MARK, APLOG_WARNING,
-                                 apr_get_os_error(), main_server,
+                                 rv, main_server,
                                  "mod_fcgid: can't write tmp file for stdin request");
                     return HTTP_INTERNAL_SERVER_ERROR;
                 }

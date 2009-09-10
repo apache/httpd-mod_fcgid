@@ -93,14 +93,15 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
     memset(&SecurityAttributes, 0, sizeof(SecurityAttributes));
 
     /* Create the pool if necessary */
-    if (!g_inode_cginame_map)
-        apr_pool_create(&g_inode_cginame_map,
-                        procinfo->main_server->process->pconf);
     if (!g_inode_cginame_map) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     procinfo->main_server,
-                     "mod_fcgid: can't cgi name map table");
-        return APR_ENOMEM;
+        rv = apr_pool_create(&g_inode_cginame_map,
+                             procinfo->main_server->process->pconf);
+        if (rv != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
+                         procinfo->main_server,
+                         "mod_fcgid: can't cgi name map table");
+            return APR_ENOMEM;
+        }
     }
 
     /* Prepare finish event */

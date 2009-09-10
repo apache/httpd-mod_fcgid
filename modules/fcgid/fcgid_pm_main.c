@@ -500,7 +500,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     procinfo.uid = command->uid;
     procinfo.gid = command->gid;
     procinfo.userdir = command->userdir;
-    if (apr_pool_create(&procnode->proc_pool, configpool) != APR_SUCCESS
+    if ((rv = apr_pool_create(&procnode->proc_pool, configpool)) != APR_SUCCESS
         || (procinfo.proc_environ =
             apr_table_make(procnode->proc_pool, INITENV_CNT)) == NULL) {
         /* Link the node back to free list in this case */
@@ -509,7 +509,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
         link_node_to_list(main_server, free_list_header, procnode,
                           proctable_array);
 
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: can't create pool for process");
         return;
     }
