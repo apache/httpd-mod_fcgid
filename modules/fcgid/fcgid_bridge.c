@@ -314,12 +314,6 @@ handle_request(request_rec * r, int role, const char *argv0,
     }
 
     bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
-    if (!bucket_ctx) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     r->server,
-                     "mod_fcgid: apr_calloc bucket_ctx failed in handle_request function");
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
     bucket_ctx->ipc.connect_timeout = g_connect_timeout;
     bucket_ctx->ipc.communation_timeout = g_comm_timeout;
     bucket_ctx->ipc.request = r;
@@ -401,11 +395,6 @@ handle_request(request_rec * r, int role, const char *argv0,
     /* Create brigade */
     brigade_stdout =
         apr_brigade_create(request_pool, r->connection->bucket_alloc);
-    if (!brigade_stdout) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), r->server,
-                     "mod_fcgid: apr_brigade_create failed in handle_request function");
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
     APR_BRIGADE_INSERT_TAIL(brigade_stdout,
                             ap_bucket_fcgid_header_create(r->connection->
                                                           bucket_alloc,
@@ -478,12 +467,6 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     /* Create brigade for the request to fastcgi server */
     output_brigade =
         apr_brigade_create(request_pool, r->connection->bucket_alloc);
-    if (!output_brigade) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
-                     "mod_fcgid: can't alloc memory for output brigade");
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
 
     /* Build the begin request and environ request, append them to output_brigade */
     if (!build_begin_block
@@ -510,17 +493,15 @@ int bridge_request(request_rec * r, int role, const char *argv0,
             apr_brigade_create(request_pool,
                                r->connection->bucket_alloc);
 
-        if (!input_brigade
-            || (rv = ap_get_brigade(r->input_filters, input_brigade,
-                                    AP_MODE_READBYTES,
-                                    APR_BLOCK_READ,
-                                    HUGE_STRING_LEN)) != APR_SUCCESS) {
+        if ((rv = ap_get_brigade(r->input_filters, input_brigade,
+                                 AP_MODE_READBYTES,
+                                 APR_BLOCK_READ,
+                                 HUGE_STRING_LEN)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
                          main_server,
                          "mod_fcgid: can't get data from http client");
             apr_brigade_destroy(output_brigade);
-            if (input_brigade)
-                apr_brigade_destroy(input_brigade);
+            apr_brigade_destroy(input_brigade);
             return HTTP_INTERNAL_SERVER_ERROR;
         }
 

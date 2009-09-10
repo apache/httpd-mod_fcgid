@@ -106,12 +106,6 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
 
     /* Prepare finish event */
     finish_event = apr_palloc(procnode->proc_pool, sizeof(HANDLE));
-    if (!finish_event) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     procinfo->main_server,
-                     "mod_fcgid: can't allocate finish event");
-        return APR_ENOMEM;
-    }
     *finish_event = CreateEvent(NULL, TRUE, FALSE, NULL);
     if (*finish_event == NULL
         || !SetHandleInformation(*finish_event, HANDLE_FLAG_INHERIT, TRUE))
@@ -165,9 +159,9 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
     }
 
     /* Create process now */
-    if (!(procnode->proc_id = apr_pcalloc(procnode->proc_pool,
-                                          sizeof(apr_proc_t)))
-        || (rv = apr_procattr_create(&proc_attr, procnode->proc_pool))
+    procnode->proc_id = apr_pcalloc(procnode->proc_pool,
+                                    sizeof(apr_proc_t))
+    if ((rv = apr_procattr_create(&proc_attr, procnode->proc_pool))
                != APR_SUCCESS
         || (rv = apr_procattr_dir_set(proc_attr,
                      ap_make_dirstr_parent(procnode->proc_pool,
@@ -314,9 +308,6 @@ apr_status_t proc_connect_ipc(server_rec *main_server,
         (fcgid_namedpipe_handle *) apr_pcalloc(ipc_handle->request->pool,
                                                sizeof
                                                (fcgid_namedpipe_handle));
-    if (!ipc_handle->ipc_handle_info)
-        return APR_ENOMEM;
-
     handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 
     /* Prepare OVERLAPPED struct for non-block I/O */

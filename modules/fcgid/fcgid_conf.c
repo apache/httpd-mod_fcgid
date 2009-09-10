@@ -621,8 +621,6 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     dirconfig->authenticator_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authenticator_info));
-    if (!dirconfig->authenticator_info)
-        return "Can't alloc memory for authenticator_info";
     apr_cpystrn(dirconfig->authenticator_info->path, authenticator,
                 _POSIX_PATH_MAX);
     dirconfig->authenticator_info->inode = finfo.inode;
@@ -672,8 +670,6 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     dirconfig->authorizer_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authorizer_info));
-    if (!dirconfig->authorizer_info)
-        return "Can't alloc memory for authorizer";
     apr_cpystrn(dirconfig->authorizer_info->path, authorizer,
                 _POSIX_PATH_MAX);
     dirconfig->authorizer_info->inode = finfo.inode;
@@ -723,8 +719,6 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     dirconfig->access_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->access_info));
-    if (!dirconfig->access_info)
-        return "Can't alloc memory for access";
     apr_cpystrn(dirconfig->access_info->path, access, _POSIX_PATH_MAX);
     dirconfig->access_info->inode = finfo.inode;
     dirconfig->access_info->deviceid = finfo.device;
@@ -806,8 +800,6 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     }
 
     wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
-    if (!wrapper)
-        return "Can't alloc memory for wrapper";
 
     /* Get wrapper path */
     tmp = wrapperpath;

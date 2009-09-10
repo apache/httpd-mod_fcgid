@@ -49,16 +49,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * pconf)
     }
 
     /* There is only one process in WinNT mpm, share memory is not necessary */
-    if ((_global_memory = ((fcgid_share *) apr_pcalloc(pconf,
-                                                       shmem_size))) ==
-        NULL) {
-        /* Fatal error */
-        ap_log_error(APLOG_MARK, APLOG_EMERG, apr_get_os_error(),
-                     main_server,
-                     "mod_fcgid: can't alloc memory for size %ld",
-                     shmem_size);
-        exit(1);
-    }
+    _global_memory = (fcgid_share *) apr_pcalloc(pconf, shmem_size);
 
     g_proc_array = _global_memory->procnode_array;
     g_global_share = &_global_memory->global;

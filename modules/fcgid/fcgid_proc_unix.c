@@ -323,10 +323,10 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     }
 
     /* Prepare the fork */
-    if (!
-        (procnode->proc_id =
-         apr_pcalloc(procnode->proc_pool, sizeof(apr_proc_t)))
-|| (rv =
+    procnode->proc_id = apr_pcalloc(procnode->proc_pool, 
+                                    sizeof(apr_proc_t));
+    if (
+   (rv =
     apr_procattr_create(&procattr, procnode->proc_pool)) != APR_SUCCESS
 || (rv =
     apr_procattr_child_err_set(procattr,
@@ -540,8 +540,6 @@ proc_connect_ipc(server_rec * main_server,
         = (fcgid_namedpipe_handle *) apr_pcalloc(ipc_handle->request->pool,
                                                  sizeof
                                                  (fcgid_namedpipe_handle));
-    if (!ipc_handle->ipc_handle_info)
-        return APR_ENOMEM;
     handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
     handle_info->handle_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     apr_pool_cleanup_register(ipc_handle->request->pool,

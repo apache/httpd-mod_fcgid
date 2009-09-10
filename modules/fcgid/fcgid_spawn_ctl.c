@@ -95,8 +95,6 @@ register_life_death(server_rec * main_server,
     } else {
         /* I can't find it, create one */
         current_node = apr_pcalloc(g_stat_pool, sizeof(*current_node));
-        if (!current_node)
-            return;
         current_node->deviceid = procnode->deviceid;
         current_node->inode = procnode->inode;
         current_node->share_grp_id = procnode->share_grp_id;
