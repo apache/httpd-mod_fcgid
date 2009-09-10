@@ -695,8 +695,8 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
         }
     } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
 
-    if (retcode == 0) {
-        ap_log_error(APLOG_MARK, APLOG_INFO, 0,
+    if (retcode == -1) {
+        ap_log_error(APLOG_MARK, APLOG_INFO, apr_get_os_error(),
                      ipc_handle->request->server,
                      "mod_fcgid: Write data error, fastcgi server has close connection");
         return APR_EPIPE;
