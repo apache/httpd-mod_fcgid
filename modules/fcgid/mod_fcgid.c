@@ -516,7 +516,7 @@ static void initialize_child(apr_pool_t * pchild, server_rec * main_server)
 
     if ((rv = proctable_child_init(main_server, pchild)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't initialize share memory or mutex in child");
+                     "mod_fcgid: Can't initialize shared memory or mutex in child");
         return;
     }
 
@@ -562,7 +562,7 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     if ((rv =
          proctable_post_config(main_server, config_pool)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't initialize share memory or mutex");
+                     "mod_fcgid: Can't initialize shared memory or mutex");
         return rv;
     }
 

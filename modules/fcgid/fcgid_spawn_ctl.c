@@ -215,7 +215,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
         /* I need max class proccess count */
         if (current_node->process_counter >= g_max_class_process) {
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
-                         "mod_fcgid: too much %s process(current:%d, max:%d), skip the spawn request",
+                         "mod_fcgid: too many %s processes (current:%d, max:%d), skip the spawn request",
                          command->cgipath, current_node->process_counter,
                          g_max_class_process);
             return 0;

@@ -99,7 +99,7 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
         if (rv != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
                          procinfo->main_server,
-                         "mod_fcgid: can't cgi name map table");
+                         "mod_fcgid: can't create CGI name map table");
             return APR_ENOMEM;
         }
     }
@@ -184,7 +184,7 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
                != APR_SUCCESS)
     {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, procinfo->main_server,
-                     "mod_fcgid: can't create fastcgi process attribute");
+                     "mod_fcgid: can't create FastCGI process attribute");
         CloseHandle(listen_handle);
         return APR_ENOPROC;
     }
@@ -358,14 +358,14 @@ apr_status_t proc_connect_ipc(server_rec *main_server,
     {
         if (GetLastError() == ERROR_FILE_NOT_FOUND) /* The process has exited */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
-                         "mod_fcgid: can't connect to named pipe, fastcgi"
-                         " server %d has been terminated",
+                         "mod_fcgid: can't connect to named pipe, FastCGI"
+                         " server %" APR_PID_T_FMT " has been terminated",
                          procnode->proc_id->pid);
         else
             ap_log_error(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(),
                          main_server,
-                         "mod_fcgid: can't connect to named pipe, fastcgi"
-                         " server pid: %d",
+                         "mod_fcgid: can't connect to named pipe, FastCGI"
+                         " server pid %" APR_PID_T_FMT,
                          procnode->proc_id->pid);
         return APR_ESPIPE;
     }
@@ -560,10 +560,10 @@ void proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     /* Print log now */
     if (cgipath)
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
-                     "mod_fcgid: process %s(%d) exit(%s), return code %d",
+                     "mod_fcgid: process %s(%" APR_PID_T_FMT ") exit(%s), return code %d",
                      cgipath, procnode->proc_id->pid, diewhy, exitcode);
     else
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-                     "mod_fcgid: can't get cgi name while exiting, exitcode: %d",
+                     "mod_fcgid: can't get CGI name while exiting, exitcode: %d",
                      exitcode);
 }

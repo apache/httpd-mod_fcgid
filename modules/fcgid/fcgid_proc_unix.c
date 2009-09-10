@@ -209,7 +209,7 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
         if (rv != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
                          procinfo->main_server,
-                         "mod_fcgid: can't cgi name map table");
+                         "mod_fcgid: can't create CGI name map table");
             return APR_ENOMEM;
         }
     }
@@ -574,7 +574,7 @@ proc_connect_ipc(server_rec * main_server,
     if ((rv =
          set_socket_nonblock(handle_info->handle_socket)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, rv, main_server,
-                     "mod_fcgid: can't set nonblock unix domain socket");
+                     "mod_fcgid: can't make unix domain socket nonblocking");
         return rv;
     }
 
@@ -613,7 +613,7 @@ apr_status_t proc_read_ipc(server_rec * main_server,
     if (retcode == -1 && !APR_STATUS_IS_EAGAIN(errno)) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
                      main_server,
-                     "mod_fcgid: read data from fastcgi server error");
+                     "mod_fcgid: error reading data from FastCGI server");
         return errno;
     }
 
@@ -627,7 +627,7 @@ apr_status_t proc_read_ipc(server_rec * main_server,
     if (retcode == -1) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
                      main_server,
-                     "mod_fcgid: poll unix domain socket error");
+                     "mod_fcgid: error polling unix domain socket");
         return errno;
     } else if (retcode == 0) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
@@ -647,13 +647,13 @@ apr_status_t proc_read_ipc(server_rec * main_server,
     if (retcode == 0) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
                      main_server,
-                     "mod_fcgid: Read data error, fastcgi server has close connection");
+                     "mod_fcgid: error reading data, FastCGI server closed connection");
         return APR_EPIPE;
     }
 
     ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
                  main_server,
-                 "mod_fcgid: read data from fastcgi server error.");
+                 "mod_fcgid: error reading data from FastCGI server");
     return errno;
 }
 
@@ -698,7 +698,7 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
     if (retcode == -1) {
         ap_log_error(APLOG_MARK, APLOG_INFO, apr_get_os_error(),
                      ipc_handle->request->server,
-                     "mod_fcgid: Write data error, fastcgi server has close connection");
+                     "mod_fcgid: error writing data, FastCGI server closed connection");
         return APR_EPIPE;
     }
 
@@ -872,6 +872,6 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
                      cgipath, procnode->proc_id->pid, diewhy, signal_info);
     else
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
-                     "mod_fcgid: can't get cgi name while exiting, exitcode: %d",
+                     "mod_fcgid: can't get CGI name while exiting, exitcode: %d",
                      exitcode);
 }

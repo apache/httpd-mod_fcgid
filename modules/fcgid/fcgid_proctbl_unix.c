@@ -149,7 +149,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
     if ((_global_memory = apr_shm_baseaddr_get(g_sharemem)) == NULL) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, apr_get_os_error(),
                      main_server,
-                     "mod_fcgid: Can't get base address of share memory");
+                     "mod_fcgid: Can't get base address of shared memory");
         exit(1);
     }
 
@@ -257,7 +257,8 @@ void safe_lock(server_rec * main_server)
 
     if (g_global_share->must_exit) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
-                     "mod_fcgid: server is restarted, %d must exit",
+                     "mod_fcgid: server is restarted, pid %" APR_PID_T_FMT
+                     " must exit",
                      getpid());
         kill(getpid(), SIGTERM);
     }
@@ -265,7 +266,8 @@ void safe_lock(server_rec * main_server)
     /* Lock error is a fatal error */
     if ((rv = proctable_lock_table()) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: can't get lock, pid: %d", getpid());
+                     "mod_fcgid: can't get lock in pid %" APR_PID_T_FMT,
+                     getpid());
         exit(1);
     }
 }
@@ -277,7 +279,8 @@ void safe_unlock(server_rec * main_server)
 
     if ((rv = proctable_unlock_table()) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: can't unlock, pid: %d", getpid());
+                     "mod_fcgid: can't unlock in pid %" APR_PID_T_FMT, 
+                     getpid());
         exit(1);
     }
 }

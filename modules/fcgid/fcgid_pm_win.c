@@ -140,8 +140,12 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         initenv_arr = apr_table_elts(initenv);
         initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
         if (initenv_arr->nelts > INITENV_CNT)
-            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-                         "mod_fcgid: too much environment variables, Please increase INITENV_CNT in fcgid_pm.h and recompile module mod_fcgid");
+            ap_log_error(APLOG_MARK, LOG_WARNING, 0, main_server,
+                         "mod_fcgid: %d environment variables dropped; increase "
+                         "INITENV_CNT in fcgid_pm.h from %d to at least %d",
+                         initenv_arr->nelts - INITENV_CNT,
+                         INITENV_CNT,
+                         initenv_arr->nelts);
         for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
             if (initenv_entry[i].key == NULL
                 || initenv_entry[i].key[0] == '\0')

@@ -819,7 +819,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     if ((rv = apr_stat(&finfo, path, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return apr_psprintf(cmd->pool,
-                            "can't get fastcgi file info: %s(%s), errno: %d",
+                            "can't get FastCGI file info: %s(%s), errno: %d",
                             wrapperpath, path, apr_get_os_error());
     }
 

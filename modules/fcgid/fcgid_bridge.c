@@ -190,7 +190,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             /* Do nothing but print log */
             ap_log_error(APLOG_MARK, APLOG_INFO, 0,
                          main_server,
-                         "mod_fcgid: process busy timeout, take %d seconds for this request",
+                         "mod_fcgid: process busy timeout, took %d seconds for this request",
                          dt);
         } else if (ctx->has_error) {
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
@@ -393,7 +393,7 @@ handle_request(request_rec * r, int role, const char *argv0,
          proc_write_ipc(main_server, &bucket_ctx->ipc,
                         output_brigade)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-                     "mod_fcgid: write data to fastcgi server error");
+                     "mod_fcgid: error writing data to FastCGI server");
         bucket_ctx->has_error = 1;
         return HTTP_INTERNAL_SERVER_ERROR;
     }

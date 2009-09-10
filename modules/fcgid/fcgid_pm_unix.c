@@ -129,7 +129,7 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
             if (kill(getpid(), SIGHUP) < 0) {
                 ap_log_error(APLOG_MARK, APLOG_EMERG,
                              apr_get_os_error(), NULL,
-                             "mod_fcgid: can' kill myself a signal SIGHUP");
+                             "mod_fcgid: can't send SIGHUP to self");
                 exit(0);
             }
         }
@@ -143,7 +143,7 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
         if (kill(getpid(), SIGHUP) < 0) {
             ap_log_error(APLOG_MARK, APLOG_EMERG,
                          apr_get_os_error(), NULL,
-                         "mod_fcgid: can' kill myself a signal SIGHUP");
+                         "mod_fcgid: can't send SIGHUP to self");
             exit(0);
         }
         break;
@@ -240,7 +240,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
 
         if ((rv = init_signal(main_server)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
-                         "mod_fcgid: can't intall signal handler, exit now");
+                         "mod_fcgid: can't install signal handler, exiting now");
             exit(1);
         }
 
@@ -248,7 +248,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         if (ap_unixd_config.suexec_enabled) {
             if (getuid() != 0) {
                 ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
-                             "mod_fcgid: current user is not root while suexec is enabled, exit now");
+                             "mod_fcgid: current user is not root while suexec is enabled, exiting now");
                 exit(1);
             }
             suexec_setup_child();
@@ -414,7 +414,11 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
         if (initenv_arr->nelts > INITENV_CNT)
             ap_log_error(APLOG_MARK, LOG_WARNING, 0, main_server,
-                         "mod_fcgid: too much environment variables, Please increase INITENV_CNT in fcgid_pm.h and recompile module mod_fcgid");
+                         "mod_fcgid: %d environment variables dropped; increase "
+                         "INITENV_CNT in fcgid_pm.h from %d to at least %d",
+                         initenv_arr->nelts - INITENV_CNT,
+                         INITENV_CNT,
+                         initenv_arr->nelts);
 
         for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
             if (initenv_entry[i].key == NULL
@@ -521,7 +525,7 @@ apr_status_t procmgr_peek_cmd(fcgid_command * command,
     /* Log any unexpect result */
     if (rv != APR_SUCCESS && !APR_STATUS_IS_TIMEUP(rv)) {
         ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
-                     "mod_fcgid: wait io error while getting message from pipe");
+                     "mod_fcgid: error while waiting for message from pipe");
         return rv;
     }
 
