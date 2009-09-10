@@ -269,34 +269,40 @@
 
   <directivesynopsis>
     <name>MaxProcessCount</name>
-    <description>Max total process count</description>
+    <description>maximum number of FastCGI application processes</description>
     <syntax>MaxProcessCount <em>value</em></syntax>
     <default>MaxProcessCount 1000</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This directive sets the maximum number of FastCGI application
+      processes which can be active at one time.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>MaxRequestInMem</name>
-    <description>The part of HTTP request which greater than this limit will swap to disk</description>
+    <description>maximum size of a request which will be held in memory</description>
     <syntax>MaxRequestInMem <em>bytes</em></syntax>
     <default>MaxRequestInMem 65536</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This module reads the request body from the client before
+      sending to the application.  Normally the request body will
+      be stored in memory.  If the body exceeds 
+      <directive>MaxRequestInMem</directive> bytes, the body will
+      be stored in a temporary file.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>MaxRequestLen</name>
-    <description>Max HTTP request length in bytes</description>
+    <description>maximum HTTP request length</description>
     <syntax>MaxRequestLen <em>bytes</em></syntax>
     <default>MaxRequestLen 1073741824</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>If the size of the request exceeds this amount, the
+      request will fail with <code>500 Server Error</code>.</p>
     </usage>
   </directivesynopsis>
 
@@ -307,7 +313,8 @@
     <default>MaxRequestsPerProcess -1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>If set, FastCGI application processes will be terminated after
+      handling this many requests.</p>
     </usage>
   </directivesynopsis>
 
@@ -329,29 +336,37 @@
     <default><em>none</em></default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This directive specifies the name of a request header which
+      will be passed to the FastCGI application as an environment
+      variable.  The directive can be used multiple times.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>PHP_Fix_Pathinfo_Enable</name>
-    <description>Set 1, if cgi.fix_pathinfo=1 in php.ini</description>
+    <description>Mirror the PHP <code>cgi.fix_pathinfo</code>
+    setting</description>
     <syntax>PHP_Fix_Pathinfo_Enable 1</syntax>
     <default>PHP_Fix_Pathinfo_Enable 0</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This directive enables special <code>SCRIPT_NAME</code> 
+      processing which allows PHP to provide additional path information.
+      The setting of <directive>PHP_Fix_Pathinfo_Enable</directive>
+      should mirror the <code>cgi.fix_pathinfo</code> setting in 
+      <code>php.ini</code>.  (That is not a recommended PHP setting.)</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>ProcessLifeTime</name>
-    <description>FastCGI application lifetime</description>
+    <description>maximum FastCGI application process lifetime</description>
     <syntax>ProcessLifeTime <em>seconds</em></syntax>
     <default>ProcessLifeTime 3600</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>Idle application processes which have existed for greater
+      than this time will be terminated.</p>
     </usage>
   </directivesynopsis>
 
@@ -362,18 +377,23 @@
     <default>SharememPath logs/fcgid_shm</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This module uses shared memory on Unix to maintain state which
+      is shared between httpd processes.  This directive specifies the
+      name of the shared memory file.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
     <name>SocketPath</name>
-    <description>socket file path</description>
+    <description>directory for AF_UNIX sockets (Unix) or pipes (Windows)</description>
     <syntax>SocketPath <em>pathname</em></syntax>
     <default>SocketPath logs/fcgidsock</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This module uses AF_UNIX sockets or named pipes, depending on the
+      platform, to communicate with FastCGI applications.  This directive
+      specifies the directory where those sockets or named pipes will be
+      created.</p>
     </usage>
   </directivesynopsis>
 
