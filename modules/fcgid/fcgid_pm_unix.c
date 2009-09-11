@@ -236,7 +236,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         /* I am the child */
         g_pm_pid = getpid();
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
-                     "mod_fcgid: Process manager %d started", getpid());
+                     "mod_fcgid: Process manager %" APR_PID_T_FMT  " started", getpid());
 
         if ((rv = init_signal(main_server)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
@@ -265,7 +265,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         pm_main(main_server, configpool);
 
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
-                     "mod_fcgid: Process manager %d stopped", getpid());
+                     "mod_fcgid: Process manager %" APR_PID_T_FMT " stopped", getpid());
         exit(0);
     } else if (rv != APR_INPARENT) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,

@@ -233,7 +233,7 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     memset(&unix_addr, 0, sizeof(unix_addr));
     unix_addr.sun_family = AF_UNIX;
     apr_snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path) - 1,
-                 "%s/%d.%d", g_socket_dir, getpid(), g_process_counter++);
+                 "%s/%" APR_PID_T_FMT ".%d", g_socket_dir, getpid(), g_process_counter++);
     strncpy(procnode->socket_path, unix_addr.sun_path,
             sizeof(procnode->socket_path) - 1);
 
@@ -866,7 +866,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     /* Print log now */
     if (cgipath)
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
-                     "mod_fcgid: process %s(%d) exit(%s), %s",
+                     "mod_fcgid: process %s(%" APR_PID_T_FMT ") exit(%s), %s",
                      cgipath, procnode->proc_id->pid, diewhy, signal_info);
     else
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
