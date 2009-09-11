@@ -147,12 +147,6 @@ static int fcgid_handler(request_rec * r)
     if (!(ap_allow_options(r) & OPT_EXECCGI) && !is_scriptaliased(r))
         return HTTP_FORBIDDEN;
 
-    if (r->finfo.filetype == 0)
-        return HTTP_NOT_FOUND;
-
-    if (r->finfo.filetype == APR_DIR)
-        return HTTP_FORBIDDEN;
-
     if ((r->used_path_info == AP_REQ_REJECT_PATH_INFO) &&
         r->path_info && *r->path_info)
         return HTTP_NOT_FOUND;
@@ -179,13 +173,20 @@ static int fcgid_handler(request_rec * r)
                           r->filename);
             return HTTP_INTERNAL_SERVER_ERROR;
         }
-    } else if ((rv =
-                cgi_build_command(&command, &argv, r, p,
-                                  &e_info)) != APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
-                      "mod_fcgid: don't know how to spawn child process: %s",
-                      r->filename);
-        return HTTP_INTERNAL_SERVER_ERROR;
+    } else {
+        if (r->finfo.filetype == 0)
+            return HTTP_NOT_FOUND;
+
+        if (r->finfo.filetype == APR_DIR)
+            return HTTP_FORBIDDEN;
+
+        if ((rv = cgi_build_command(&command, &argv, r, p,
+                                    &e_info)) != APR_SUCCESS) {
+            ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
+                          "mod_fcgid: don't know how to spawn child process: %s",
+                          r->filename);
+            return HTTP_INTERNAL_SERVER_ERROR;
+        }
     }
 
     /* Check request like "http://localhost/cgi-bin/a.exe/defghi" */
