@@ -38,7 +38,7 @@ static ap_filter_rec_t *fcgid_filter_handle;
 static int g_php_fix_pathinfo_enable = 0;
 
 /* Stolen from mod_cgi.c */
-/* KLUDGE --- for back-combatibility, we don't have to check ExecCGI
+/* KLUDGE --- for back-compatibility, we don't have to check ExecCGI
  * in ScriptAliased directories, which means we need to know if this
  * request came through ScriptAlias or not... so the Alias module
  * leaves a note for us.
@@ -648,7 +648,7 @@ static const command_rec fcgid_cmds[] = {
                   "Header name which will be passed to FastCGI as environment variable."),
     AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL,
                    RSRC_CONF | ACCESS_CONF | OR_FILEINFO,
-                   "The CGI wrapper setting"),
+                   "The CGI wrapper file and an optional URL suffix"),
     AP_INIT_TAKE1("PHP_Fix_Pathinfo_Enable",
                   set_php_fix_pathinfo_enable,
                   NULL, RSRC_CONF,
