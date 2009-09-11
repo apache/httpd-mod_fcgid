@@ -350,7 +350,7 @@
 <div class="directive-section"><h2><a name="FCGIWrapper" id="FCGIWrapper">FCGIWrapper</a> <a name="fcgiwrapper" id="fcgiwrapper">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>The CGI wrapper setting</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIWrapper <em>command</em> [ <em>suffix</em> ]</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
@@ -358,13 +358,17 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>The given command is used to spawn FCGI server processes. If this directive
-      is not used, the file pointed to by the request URL will be used instead.</p>
-      <p>Options for the command can be included using quotation marks surrounding
-      the command and options. The optional <code>suffix</code> argument restricts
-      the use of this FCGI server to all URLs with the given exact path suffix.
-      A suffix needs to start with '<code>.</code>'.</p>
+      is not used, the file pointed to by the request URL will be used instead.
+      Options for the command can be included using quotation marks surrounding
+      the command and options.</p>
+      <p>The optional <code>suffix</code> argument restricts the use of this FCGI
+      server to all URLs with the given exact path suffix. A suffix needs to start
+      with '<code>.</code>'.</p>
+      <p>The <code>virtual</code> flag signals, that there will be no check,
+      whether the request URL actually points to an existing file. The only
+      file which needs to exist is the wrapper itself.</p>
       <p>The directive can be used multiply times. A wrapper defined without a suffix
-      is used as a default, in case no suffix matches.</p>
+      is used as a default in case no suffix matches.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>

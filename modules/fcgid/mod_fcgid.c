@@ -163,8 +163,19 @@ static int fcgid_handler(request_rec * r)
     e_info.next = NULL;
     p = r->main ? r->main->pool : r->pool;
 
+    wrapper_conf = get_wrapper_info(r->filename, r);
+
+    /* Check for existence of requested file, unless we use a virtual wrapper. */
+    if (wrapper_conf == NULL || !wrapper_conf->virtual) {
+        if (r->finfo.filetype == 0)
+            return HTTP_NOT_FOUND;
+
+        if (r->finfo.filetype == APR_DIR)
+            return HTTP_FORBIDDEN;
+    }
+
     /* Build the command line */
-    if ((wrapper_conf = get_wrapper_info(r->filename, r))) {
+    if (wrapper_conf) {
         if ((rv =
              default_build_command(&command, &argv, r, p,
                                    &e_info)) != APR_SUCCESS) {
@@ -174,12 +185,6 @@ static int fcgid_handler(request_rec * r)
             return HTTP_INTERNAL_SERVER_ERROR;
         }
     } else {
-        if (r->finfo.filetype == 0)
-            return HTTP_NOT_FOUND;
-
-        if (r->finfo.filetype == APR_DIR)
-            return HTTP_FORBIDDEN;
-
         if ((rv = cgi_build_command(&command, &argv, r, p,
                                     &e_info)) != APR_SUCCESS) {
             ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
@@ -647,9 +652,9 @@ static const command_rec fcgid_cmds[] = {
                    "an environment variable name and optional value to pass to FastCGI."),
     AP_INIT_TAKE1("PassHeader", add_pass_headers, NULL, RSRC_CONF,
                   "Header name which will be passed to FastCGI as environment variable."),
-    AP_INIT_TAKE12("FCGIWrapper", set_wrapper_config, NULL,
+    AP_INIT_TAKE123("FCGIWrapper", set_wrapper_config, NULL,
                    RSRC_CONF | ACCESS_CONF | OR_FILEINFO,
-                   "The CGI wrapper file and an optional URL suffix"),
+                   "The CGI wrapper file an optional URL suffix and an optional flag"),
     AP_INIT_TAKE1("PHP_Fix_Pathinfo_Enable",
                   set_php_fix_pathinfo_enable,
                   NULL, RSRC_CONF,

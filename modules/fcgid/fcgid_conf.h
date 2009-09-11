@@ -58,6 +58,7 @@ typedef struct {
     apr_ino_t inode;
     apr_dev_t deviceid;
     apr_size_t share_group_id;
+    int virtual;
 } fcgid_wrapper_conf;
 
 typedef struct {
@@ -200,7 +201,7 @@ const char *add_pass_headers(cmd_parms * cmd, void *sconf,
 apr_array_header_t *get_pass_headers(request_rec * r);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
-                               const char *wrapper, const char *extension);
+                               const char *wrapper, const char *extension, const char* virtual);
 fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r);
 
 const char *set_authenticator_info(cmd_parms * cmd, void *config,

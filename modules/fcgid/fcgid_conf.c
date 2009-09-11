@@ -51,6 +51,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_MAX_REQUEST_LEN (1024*1024*1024)    /* 1G */
 #define DEFAULT_MAX_MEM_REQUEST_LEN (1024*64)   /* 64k */
 #define DEFAULT_WRAPPER_KEY "ALL"
+#define WRAPPER_FLAG_VIRTUAL "virtual"
 
 static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 {
@@ -756,7 +757,8 @@ typedef struct {
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                                const char *wrapperpath,
-                               const char *extension)
+                               const char *extension,
+                               const char *virtual)
 {
     const char *path, *tmp;
     apr_status_t rv;
@@ -771,6 +773,15 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 
     if (wrapperpath == NULL)
         return "Invalid wrapper file";
+
+    if (virtual == NULL && extension != NULL && !strcmp(extension, WRAPPER_FLAG_VIRTUAL)) {
+        virtual = "virtual";
+        extension = NULL;
+    }
+
+    if (virtual != NULL && strcmp(virtual, WRAPPER_FLAG_VIRTUAL)) {
+        return "Invalid wrapper flag";
+    }
 
     if (extension != NULL
         && (*extension != '.' || *(extension + 1) == '\0'
@@ -825,6 +836,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
     wrapper->share_group_id = *wrapper_id;
+    wrapper->virtual = (virtual != NULL && !strcmp(virtual, WRAPPER_FLAG_VIRTUAL));
     (*wrapper_id)++;
 
     if (extension == NULL)

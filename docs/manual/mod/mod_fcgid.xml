@@ -286,7 +286,7 @@
   <directivesynopsis>
     <name>FCGIWrapper</name>
     <description>The CGI wrapper setting</description>
-    <syntax>FCGIWrapper <em>command</em> [ <em>suffix</em> ]</syntax>
+    <syntax>FCGIWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
     <default><em>none</em></default>
     <contextlist>
       <context>server config</context> <context>virtual host</context>
@@ -295,13 +295,17 @@
     <override>FileInfo</override>
     <usage>
       <p>The given command is used to spawn FCGI server processes. If this directive
-      is not used, the file pointed to by the request URL will be used instead.</p>
-      <p>Options for the command can be included using quotation marks surrounding
-      the command and options. The optional <code>suffix</code> argument restricts
-      the use of this FCGI server to all URLs with the given exact path suffix.
-      A suffix needs to start with '<code>.</code>'.</p>
+      is not used, the file pointed to by the request URL will be used instead.
+      Options for the command can be included using quotation marks surrounding
+      the command and options.</p>
+      <p>The optional <code>suffix</code> argument restricts the use of this FCGI
+      server to all URLs with the given exact path suffix. A suffix needs to start
+      with '<code>.</code>'.</p>
+      <p>The <code>virtual</code> flag signals, that there will be no check,
+      whether the request URL actually points to an existing file. The only
+      file which needs to exist is the wrapper itself.</p>
       <p>The directive can be used multiply times. A wrapper defined without a suffix
-      is used as a default, in case no suffix matches.</p>
+      is used as a default in case no suffix matches.</p>
     </usage>
   </directivesynopsis>
 
