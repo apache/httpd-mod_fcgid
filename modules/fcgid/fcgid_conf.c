@@ -50,6 +50,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_MAX_REQUESTS_PER_PROCESS -1
 #define DEFAULT_MAX_REQUEST_LEN (1024*1024*1024)    /* 1G */
 #define DEFAULT_MAX_MEM_REQUEST_LEN (1024*64)   /* 64k */
+#define DEFAULT_WRAPPER_KEY "ALL"
 
 static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
 {
@@ -766,20 +767,24 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     fcgid_wrapper_conf *wrapper = NULL;
     fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
 
-    /* Sanity check */
-    if (wrapperpath == NULL || extension == NULL
-        || *extension != '.' || *(extension + 1) == '\0'
-        || ap_strchr_c(extension, '/') || ap_strchr_c(extension, '\\'))
+    /* Sanity checks */
+
+    if (wrapperpath == NULL)
+        return "Invalid wrapper file";
+
+    if (extension != NULL
+        && (*extension != '.' || *(extension + 1) == '\0'
+            || ap_strchr_c(extension, '/') || ap_strchr_c(extension, '\\')))
         return "Invalid wrapper file extension";
 
-    /* Get wrapper_id base on wrapperpath */
+    /* Get wrapper_id hash from user data */
     {
         void *id_info_vp;
         apr_pool_userdata_get(&id_info_vp, userdata_key,
                               cmd->server->process->pool);
         id_info = id_info_vp;
     }
-    
+
     if (!id_info) {
         id_info =
             apr_pcalloc(cmd->server->process->pool, sizeof(*id_info));
@@ -789,6 +794,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                               apr_pool_cleanup_null,
                               cmd->server->process->pool);
     }
+    /* Get wrapper_id for wrapperpath */
     if ((wrapper_id =
          apr_hash_get(id_info->wrapper_id_hash, wrapperpath,
                       strlen(wrapperpath))) == NULL) {
@@ -807,11 +813,11 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     if (path == NULL || *path == '\0')
         return "Invalid wrapper config";
 
-    /* Is the wrapper exist? */
+    /* Does the wrapper exist? */
     if ((rv = apr_stat(&finfo, path, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return apr_psprintf(cmd->pool,
-                            "can't get FastCGI file info: %s(%s), errno: %d",
+                            "can't get FastCGI file info: '%s' (%s), errno: %d",
                             wrapperpath, path, apr_get_os_error());
     }
 
@@ -821,7 +827,11 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     wrapper->share_group_id = *wrapper_id;
     (*wrapper_id)++;
 
+    if (extension == NULL)
+        extension = DEFAULT_WRAPPER_KEY;
+
     /* Add the node now */
+    /* If an extension is configured multiple times, the last directive wins. */
     apr_hash_set(config->wrapper_info_hash, extension, strlen(extension),
                  wrapper);
 
@@ -837,15 +847,19 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
 
     /* Get file name extension */
     extension = ap_strrchr_c(cgipath, '.');
+
     if (extension == NULL)
-        return NULL;
+        extension = DEFAULT_WRAPPER_KEY;
 
     /* Search file name extension in per_dir_config */
-    if (config
-        && (wrapper =
-            apr_hash_get(config->wrapper_info_hash, extension,
-                         strlen(extension))))
+    if (config) {
+        wrapper = apr_hash_get(config->wrapper_info_hash, extension,
+                               strlen(extension));
+        if (wrapper == NULL)
+            wrapper = apr_hash_get(config->wrapper_info_hash, DEFAULT_WRAPPER_KEY,
+                                   strlen(DEFAULT_WRAPPER_KEY));
         return wrapper;
+    }
 
     return NULL;
 }
