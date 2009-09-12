@@ -774,12 +774,12 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     if (wrapperpath == NULL)
         return "Invalid wrapper file";
 
-    if (virtual == NULL && extension != NULL && !strcmp(extension, WRAPPER_FLAG_VIRTUAL)) {
-        virtual = "virtual";
+    if (virtual == NULL && extension != NULL && !strcasecmp(extension, WRAPPER_FLAG_VIRTUAL)) {
+        virtual = WRAPPER_FLAG_VIRTUAL;
         extension = NULL;
     }
 
-    if (virtual != NULL && strcmp(virtual, WRAPPER_FLAG_VIRTUAL)) {
+    if (virtual != NULL && strcasecmp(virtual, WRAPPER_FLAG_VIRTUAL)) {
         return "Invalid wrapper flag";
     }
 
@@ -836,7 +836,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
     wrapper->share_group_id = *wrapper_id;
-    wrapper->virtual = (virtual != NULL && !strcmp(virtual, WRAPPER_FLAG_VIRTUAL));
+    wrapper->virtual = (virtual != NULL && !strcasecmp(virtual, WRAPPER_FLAG_VIRTUAL));
     (*wrapper_id)++;
 
     if (extension == NULL)
