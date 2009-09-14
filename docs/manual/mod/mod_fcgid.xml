@@ -66,8 +66,9 @@
     <default>BusyScanInterval 120</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>The module performs the <directive>BusyTimeout</directive> check 
-      at this interval.</p>
+      <p>The module performs the 
+      <directive module="mod_fcgid">BusyTimeout</directive> check at this 
+      interval.</p>
     </usage>
   </directivesynopsis>
 
@@ -142,7 +143,11 @@
     <default>ErrorScanInterval 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This is the interval at which the module will handle
+      pending process termination.  Termination is pending for
+      any processes which have exceeded 
+      <directive module="mod_fcgid">IdleScanInterval</directive> or
+      <directive module="mod_fcgid">ProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
 
@@ -344,7 +349,10 @@
     <default>IdleScanInterval 120</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This is the interval at which the module will search for
+      processes which have exceeded 
+      <directive module="mod_fcgid">IdleScanInterval</directive> or
+      <directive module="mod_fcgid">ProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
 
@@ -355,7 +363,8 @@
     <default>IdleTimeout 300</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>Application processes which have not handled a request
+      for this period of time will be terminated.</p>
     </usage>
   </directivesynopsis>
 
@@ -366,7 +375,14 @@
     <default>IPCCommTimeout 40</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This is the maximum period of time the module will wait
+      while trying to read from or write to a FastCGI application.</p>
+
+      <note type="warning"><title>Warning</title>
+      <p>The FastCGI application must begin generating the response within
+      this period of time.  Increase this directive as necessary to handle
+      applications which take a relatively long period of time to respond.</p>
+      </note>
     </usage>
   </directivesynopsis>
 
@@ -377,7 +393,10 @@
     <default>IPCConnectTimeout 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This is the maximum period of time the module will wait
+      while trying to connect to a FastCGI application on Windows.
+      (This directive is not respected on Unix, where AF_UNIX defaults
+      will apply.)</p>
     </usage>
   </directivesynopsis>
 
@@ -439,7 +458,8 @@
     <default>OutputBufferSize 65536</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>This is the maximum amount of response data the module will read
+      from the FastCGI application before flushing the data to the client.</p>
     </usage>
   </directivesynopsis>
 
