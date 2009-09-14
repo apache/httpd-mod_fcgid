@@ -110,7 +110,12 @@
     <default>DefaultMaxClassProcessCount 100</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the maximum number of processes in a class that
+      can be started.</p>
     </usage>
   </directivesynopsis>
 
@@ -121,7 +126,12 @@
     <default>DefaultMinClassProcessCount 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>TODO</p>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the minimum number of processes in a class that
+      will be retained after finishing requests.</p>
     </usage>
   </directivesynopsis>
 
@@ -177,7 +187,13 @@
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
-      <p>TODO</p>
+      <p>This directive controls whether or not other access checkers
+      are allowed to run when this module has an access checker configured 
+      and it fails a request.  If this directive is <code>On</code> (default)
+      and a FastCGI access checker returns a failure status, a failure is
+      returned to the client without giving other access checkers a chance to
+      allow access.  If this directive is <code>Off</code>, other access
+      checkers will be called.</p>
     </usage>
   </directivesynopsis>
 
@@ -229,7 +245,13 @@
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
-      <p>TODO</p>
+      <p>This directive controls whether or not other authenticators
+      are allowed to run when this module has an authenticator configured 
+      and it fails a request.  If this directive is <code>On</code> (default)
+      and a FastCGI authenticator returns a failure status, a failure is
+      returned to the client without giving other authenticators a chance to
+      validate the client identity.  If this directive is <code>Off</code>, 
+      other authenticators will be called.</p>
     </usage>
   </directivesynopsis>
 
@@ -279,7 +301,13 @@
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
-      <p>TODO</p>
+      <p>This directive controls whether or not other authorizers
+      are allowed to run when this module has an authorizer configured 
+      and it fails a request.  If this directive is <code>On</code> (default)
+      and a FastCGI authorizer returns a failure status, a failure is
+      returned to the client without giving other authorizer a chance to
+      access the resource.  If this directive is <code>Off</code>, other
+      authorizers will be called.</p>
     </usage>
   </directivesynopsis>
 
