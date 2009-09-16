@@ -131,6 +131,19 @@ directive cross references applicable to all httpd and mod_fcgid directives,
 before installing the httpd\manual files.
 
 
+Incompatible configuration changes
+----------------------------------
+Some changes have been made in the ASF release of mod_fcgid which can affect
+existing configurations:
+
+i. Some directives which could be placed inside <VirtualHost > but were
+   ignored before now result in configuration errors.  As before, these 
+   directives must be set at global scope to have the desired effect.
+   These include IdleTimeout, MaxProcessCount, PHP_Fix_Pathinfo_Enable,
+   ProcessLifetime, and others.  (Consult CHANGES_FCGID for the complete
+   list.)
+
+
 Acknowledgements
 ----------------
 Portions of this software were originally developed by

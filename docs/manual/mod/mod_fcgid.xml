@@ -64,7 +64,7 @@
     <description>scan interval for busy timeout process</description>
     <syntax>BusyScanInterval <em>seconds</em></syntax>
     <default>BusyScanInterval 120</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>The module performs the 
       <directive module="mod_fcgid">BusyTimeout</directive> check at this 
@@ -109,7 +109,7 @@
     <description>Max process count of one class of FastCGI application</description>
     <syntax>DefaultMaxClassProcessCount <em>value</em></syntax>
     <default>DefaultMaxClassProcessCount 100</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
       command, and share certain other characteristics such as virtual host and
@@ -125,7 +125,7 @@
     <description>Min process count of one class of FastCGI application</description>
     <syntax>DefaultMinClassProcessCount <em>value</em></syntax>
     <default>DefaultMinClassProcessCount 3</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
       command, and share certain other characteristics such as virtual host and
@@ -141,7 +141,7 @@
     <description>scan interval for exited process</description>
     <syntax>ErrorScanInterval <em>seconds</em></syntax>
     <default>ErrorScanInterval 3</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the interval at which the module will handle
       pending process termination.  Termination is pending for
@@ -347,7 +347,7 @@
     <description>scan interval for idle timeout process</description>
     <syntax>IdleScanInterval <em>seconds</em></syntax>
     <default>IdleScanInterval 120</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the interval at which the module will search for
       processes which have exceeded 
@@ -361,7 +361,7 @@
     <description>An idle FastCGI application will be killed after IdleTimeout</description>
     <syntax>IdleTimeout <em>seconds</em></syntax>
     <default>IdleTimeout 300</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Application processes which have not handled a request
       for this period of time will be terminated.</p>
@@ -405,7 +405,7 @@
     <description>maximum number of FastCGI application processes</description>
     <syntax>MaxProcessCount <em>value</em></syntax>
     <default>MaxProcessCount 1000</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This directive sets the maximum number of FastCGI application
       processes which can be active at one time.</p>
@@ -482,7 +482,7 @@
     setting</description>
     <syntax>PHP_Fix_Pathinfo_Enable 1</syntax>
     <default>PHP_Fix_Pathinfo_Enable 0</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This directive enables special <code>SCRIPT_NAME</code> 
       processing which allows PHP to provide additional path information.
@@ -497,7 +497,7 @@
     <description>maximum FastCGI application process lifetime</description>
     <syntax>ProcessLifeTime <em>seconds</em></syntax>
     <default>ProcessLifeTime 3600</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Idle application processes which have existed for greater
       than this time will be terminated.</p>
@@ -509,7 +509,7 @@
     <description>shared memory file path</description>
     <syntax>SharememPath <em>pathname</em></syntax>
     <default>SharememPath logs/fcgid_shm</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This module uses shared memory on Unix to maintain state which
       is shared between httpd processes.  This directive specifies the
@@ -522,7 +522,7 @@
     <description>directory for AF_UNIX sockets (Unix) or pipes (Windows)</description>
     <syntax>SocketPath <em>pathname</em></syntax>
     <default>SocketPath logs/fcgidsock</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This module uses AF_UNIX sockets or named pipes, depending on the
       platform, to communicate with FastCGI applications.  This directive
@@ -536,7 +536,7 @@
     <description>Each spawn adds this value to the process activity score.</description>
     <syntax>SpawnScore <em>value</em></syntax>
     <default>SpawnScore 1</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
       directive for more information.</p>
@@ -549,7 +549,7 @@
     a spawn to occur</description>
     <syntax>SpawnScoreUpLimit <em>value</em></syntax>
     <default>SpawnScoreUpLimit 10</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>The module maintains a process activity score for each FastCGI
       application which represents process activity; it uses that score to 
@@ -573,7 +573,7 @@
     score.</description>
     <syntax>TerminationScore <em>value</em></syntax>
     <default>TerminationScore 2</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
       directive for more information.</p>
@@ -586,7 +586,7 @@
     second</description>
     <syntax>TimeScore <em>value</em></syntax>
     <default>TimeScore 1</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
       directive for more information.</p>
@@ -598,7 +598,7 @@
     <description>scan interval for zombie process</description>
     <syntax>ZombieScanInterval <em>seconds</em></syntax>
     <default>ZombieScanInterval 3</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>The module checks for exited FastCGI applications at this interval.
       During this period of time, the application may exist in the process

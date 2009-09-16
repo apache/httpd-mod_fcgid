@@ -161,6 +161,12 @@ const char *set_idle_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->idle_timeout = atol(arg);
     return NULL;
 }
@@ -178,6 +184,12 @@ const char *set_idle_scan_interval(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->idle_scan_interval = atol(arg);
     return NULL;
 }
@@ -211,6 +223,12 @@ const char *set_busy_scan_interval(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->busy_scan_interval = atol(arg);
     return NULL;
 }
@@ -229,6 +247,12 @@ const char *set_proc_lifetime(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->proc_lifetime = atol(arg);
     return NULL;
 }
@@ -246,6 +270,12 @@ const char *set_error_scan_interval(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->error_scan_interval = atol(arg);
     return NULL;
 }
@@ -264,6 +294,12 @@ const char *set_zombie_scan_interval(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->zombie_scan_interval = atol(arg);
     return NULL;
 }
@@ -281,6 +317,12 @@ const char *set_socketpath(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->sockname_prefix = ap_server_root_relative(cmd->pool, arg);
     if (!config->sockname_prefix)
         return "Invalid socket path";
@@ -300,6 +342,12 @@ const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->shmname_path = ap_server_root_relative(cmd->pool, arg);
     if (!config->shmname_path)
         return "Invalid shmname path";
@@ -320,6 +368,12 @@ const char *set_spawnscore_uplimit(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->spawnscore_uplimit = atol(arg);
     return NULL;
 }
@@ -372,6 +426,12 @@ const char *set_spawn_score(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->spawn_score = atol(arg);
     return NULL;
 }
@@ -388,6 +448,12 @@ const char *set_time_score(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->time_score = atol(arg);
     return NULL;
 }
@@ -405,6 +471,12 @@ const char *set_termination_score(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->termination_score = atol(arg);
     return NULL;
 }
@@ -421,6 +493,12 @@ const char *set_max_process(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->max_process_count = atol(arg);
     return NULL;
 }
@@ -455,6 +533,12 @@ const char *set_max_class_process(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->max_class_process_count = atol(arg);
     return NULL;
 }
@@ -473,6 +557,12 @@ const char *set_min_class_process(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->min_class_process_count = atol(arg);
     return NULL;
 }
@@ -491,6 +581,12 @@ const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->php_fix_pathinfo_enable = atol(arg);
     return NULL;
 }

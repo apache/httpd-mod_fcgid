@@ -1,7 +1,14 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
-
+  *) The following directives are no longer allowed in a virtual host
+     context: BusyScanInterval, DefaultMaxClassProcessCount, 
+     DefaultMinProcessCount, ErrorScanInterval, IdleScanInterval, 
+     IdleTimeout, MaxProcessCount, PHP_Fix_Pathinfo_Enable, 
+     ProcessLifetime, SharedmemPath, SocketPath, SpawnScore,
+     SpawnScoreUpLimit, TerminationScore, TimeScore, and 
+     ZombieScanInterval.  They were allowed but ignored in previous
+     releases.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.1
 
