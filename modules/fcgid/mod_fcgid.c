@@ -636,6 +636,8 @@ static const command_rec fcgid_cmds[] = {
     AP_INIT_TAKE1("IdleScanInterval", set_idle_scan_interval, NULL,
                   RSRC_CONF,
                   "scan interval for idle timeout process"),
+    AP_INIT_TAKE1("IdleTimeout", set_idle_timeout, NULL, RSRC_CONF,
+                  "an idle fastcgi application will be killed after IdleTimeout"),
     AP_INIT_TAKE1("IPCCommTimeout", set_ipc_comm_timeout, NULL, RSRC_CONF,
                   "Communication timeout to fastcgi server"),
     AP_INIT_TAKE1("IPCConnectTimeout", set_ipc_connect_timeout, NULL,
