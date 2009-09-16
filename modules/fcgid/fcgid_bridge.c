@@ -616,12 +616,9 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                 }
             }
 
-            if (!stdin_request_header || !bucket_header || !bucket_stdin
-                || !init_header(FCGI_STDIN, 1, len, 0,
-                                stdin_request_header)) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                             s,
-                             "mod_fcgid: can't alloc memory for stdin request");
+            if (!init_header(FCGI_STDIN, 1, len, 0, stdin_request_header)) {
+                ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+                             "mod_fcgid: header overflow");
                 apr_brigade_destroy(input_brigade);
                 apr_brigade_destroy(output_brigade);
                 return HTTP_INTERNAL_SERVER_ERROR;
@@ -642,21 +639,15 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                sizeof(*stdin_request_header),
                                apr_bucket_free,
                                r->connection->bucket_alloc);
-    if (!stdin_request_header || !bucket_header
-        || !init_header(FCGI_STDIN, 1, 0, 0, stdin_request_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
-                     "mod_fcgid: can't alloc memory for stdin request");
+    if (!init_header(FCGI_STDIN, 1, 0, 0, stdin_request_header)) {
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+                     "mod_fcgid: header overflow");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
     APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_header);
 
     /* The eos bucket now */
     bucket_eos = apr_bucket_eos_create(r->connection->bucket_alloc);
-    if (!bucket_eos) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
-                     "mod_fcgid: can't alloc memory for eos bucket");
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
     APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_eos);
 
     /* Bridge the request */

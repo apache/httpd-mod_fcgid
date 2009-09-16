@@ -135,18 +135,10 @@ build_begin_block(int role, server_rec * s,
                                apr_bucket_free,
                                alloc);
 
-    /* Sanity check */
-    if (!begin_request_header || !begin_request_body
-        || !bucket_header || !bucket_body) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
-                     "mod_fcgid: can't alloc memeory for begin request");
-        return 0;
-    }
-
     /* Initialize begin request header and body */
     if (!init_header(FCGI_BEGIN_REQUEST, 1, sizeof(FCGI_BeginRequestBody),
                      0, begin_request_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                      "mod_fcgid: can't init begin request header");
         return 0;
     }
@@ -189,17 +181,10 @@ build_env_block(server_rec * s, char **envp,
                                                              apr_bucket_free,
                                                              alloc);
 
-    if (!env_request_header || !buf || !env_empty_header || !bucket_header
-        || !bucket_body || !bucket_empty_header) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
-                     "mod_fcgid: can't alloc memory for envion");
-        return 0;
-    }
-
     /* Initialize header and body */
     if (!init_header(FCGI_PARAMS, 1, bufsize, 0, env_request_header)
         || !init_header(FCGI_PARAMS, 1, 0, 0, env_empty_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                      "mod_fcgid: can't init env request header");
         return 0;
     }

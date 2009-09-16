@@ -29,8 +29,6 @@ static apr_status_t fcgid_feed_data(fcgid_bucket_ctx * ctx,
 
     if (!ctx->buffer) {
         *buffer = apr_bucket_alloc(FCGID_FEED_LEN, bucketalloc);
-        if (!buffer)
-            return APR_ENOMEM;
 
         *bufferlen = FCGID_FEED_LEN;
         if ((rv =
@@ -117,8 +115,6 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
         char *logbuf = apr_bucket_alloc(APR_BUCKET_BUFF_SIZE, b->list);
         char *line;
 
-        if (!logbuf)
-            return APR_ENOMEM;
         memset(logbuf, 0, APR_BUCKET_BUFF_SIZE);
 
         hasread = 0;
@@ -244,8 +240,6 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
     if (header.type != FCGI_END_REQUEST) {
         apr_bucket *headerbucket =
             ap_bucket_fcgid_header_create(b->list, ctx);
-        if (!headerbucket)
-            return APR_ENOMEM;
         APR_BUCKET_INSERT_AFTER(curbucket, headerbucket);
     } else {
         /* Release the process ASAP */
