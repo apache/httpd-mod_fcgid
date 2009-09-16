@@ -62,31 +62,35 @@ typedef struct {
 } fcgid_wrapper_conf;
 
 typedef struct {
-    int idle_timeout;
-    int idle_scan_interval;
+    /* global only */
     int busy_scan_interval;
-    int proc_lifetime;
-    int error_scan_interval;
-    int zombie_scan_interval;
-    char *sockname_prefix;
-    char *shmname_path;
-    int spawnscore_uplimit;
-    int spawn_score;
-    int termination_score;
-    int time_score;
-    int max_process_count;
     int max_class_process_count;
     int min_class_process_count;
-    int max_request_len;
-    int max_mem_request_len;
-    int output_buffersize;
-    int max_requests_per_process;
-    apr_table_t *default_init_env;
-    apr_array_header_t *pass_headers;
-    int ipc_connect_timeout;
-    int ipc_comm_timeout;
-    int busy_timeout;
+    int error_scan_interval;
+    int idle_scan_interval;
+    int idle_timeout;
+    int max_process_count;
     int php_fix_pathinfo_enable;
+    int proc_lifetime;
+    char *shmname_path;
+    char *sockname_prefix;
+    int spawn_score;
+    int spawnscore_uplimit;
+    int termination_score;
+    int time_score;
+    int zombie_scan_interval;
+    /* global or vhost */
+    int busy_timeout; /* TODO: Does setting this in a vhost work as expected?
+                       * Look at use in PM vs. handler.
+                       */
+    apr_table_t *default_init_env;
+    int ipc_comm_timeout;
+    int ipc_connect_timeout;
+    int max_mem_request_len;
+    int max_request_len;
+    int max_requests_per_process;
+    int output_buffersize;
+    apr_array_header_t *pass_headers;
 } fcgid_server_conf;
 
 typedef struct {
