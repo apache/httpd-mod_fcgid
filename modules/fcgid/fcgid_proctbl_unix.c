@@ -146,12 +146,7 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
                      shmem_size);
         exit(1);
     }
-    if ((_global_memory = apr_shm_baseaddr_get(g_sharemem)) == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, apr_get_os_error(),
-                     main_server,
-                     "mod_fcgid: Can't get base address of shared memory");
-        exit(1);
-    }
+    _global_memory = apr_shm_baseaddr_get(g_sharemem);
 
     /* Create global mutex */
     if ((rv =
