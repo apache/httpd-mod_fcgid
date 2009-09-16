@@ -641,6 +641,9 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->ipc_comm_timeout = atol(arg);
+    if (config->ipc_comm_timeout < 0) {
+        return "IPCCommTimeout must be greater than 0";
+    }
     return NULL;
 }
 

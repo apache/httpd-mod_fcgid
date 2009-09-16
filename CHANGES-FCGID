@@ -1,6 +1,11 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
+  *) Use the virtual host settings for the request being processed instead
+     of those of the first FastCGI request handled by this httpd child process.
+     Affected directives: BusyTimeout, IPCCommTimeout, IPCConnectTimeout,
+     MaxRequestsPerProcess, and OutputBufferSize.  [Jeff Trawick]
+
   *) The following directives are no longer allowed in a virtual host
      context: BusyScanInterval, DefaultMaxClassProcessCount, 
      DefaultMinProcessCount, ErrorScanInterval, IdleScanInterval, 

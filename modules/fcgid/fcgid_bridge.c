@@ -33,12 +33,6 @@
 #define FCGID_APPLY_TRY_COUNT 2
 #define FCGID_REQUEST_COUNT 32
 
-static int g_variables_inited = 0;
-static int g_busy_timeout;
-static int g_connect_timeout;
-static int g_comm_timeout;
-static int g_max_requests_per_process;
-
 static fcgid_procnode *apply_free_procnode(server_rec * s,
                                            fcgid_command * command)
 {
@@ -166,6 +160,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
      */
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) thectx;
     server_rec *s = ctx->ipc.request->server;
+    int max_requests_per_process = get_max_requests_per_process(s);
 
     /* Free bucket buffer */
     if (ctx->buffer) {
@@ -186,7 +181,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
          */
         int dt = (int)
             (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
-        if (dt > g_busy_timeout) {
+        if (dt > get_busy_timeout(s)) {
             /* Do nothing but print log */
             ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
                          "mod_fcgid: process busy timeout, took %d seconds for this request",
@@ -195,9 +190,9 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
             return_procnode(s, ctx->procnode,
                             1 /* communication error */ );
-        } else if (g_max_requests_per_process != -1
+        } else if (max_requests_per_process != -1
                    && ++ctx->procnode->requests_handled >=
-                   g_max_requests_per_process) {
+                   max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
             return_procnode(s, ctx->procnode,
                             1 /* handled all requests */ );
@@ -301,20 +296,10 @@ handle_request(request_rec * r, int role, const char *argv0,
     char sbuf[MAX_STRING_LEN];
     const char *location;
 
-    if (!g_variables_inited) {
-        g_connect_timeout = get_ipc_connect_timeout(r->server);
-        g_comm_timeout = get_ipc_comm_timeout(r->server);
-        g_busy_timeout = get_busy_timeout(r->server);
-        g_max_requests_per_process =
-            get_max_requests_per_process(r->server);
-        if (g_comm_timeout == 0)
-            g_comm_timeout = 1;
-        g_variables_inited = 1;
-    }
-
     bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
-    bucket_ctx->ipc.connect_timeout = g_connect_timeout;
-    bucket_ctx->ipc.communation_timeout = g_comm_timeout;
+    bucket_ctx->ipc.connect_timeout = get_ipc_connect_timeout(r->server);
+    bucket_ctx->ipc.communation_timeout = get_ipc_comm_timeout(r->server);
+
     bucket_ctx->ipc.request = r;
     apr_pool_cleanup_register(request_pool, bucket_ctx,
                               bucket_ctx_cleanup, apr_pool_cleanup_null);

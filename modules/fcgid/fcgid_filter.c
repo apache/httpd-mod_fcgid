@@ -21,8 +21,6 @@
 #include "fcgid_filter.h"
 #include "fcgid_bucket.h"
 #include "fcgid_conf.h"
-static int g_hasinit = 0;
-static int g_buffsize = 0;
 
 apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 {
@@ -31,11 +29,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
     int save_size = 0;
     conn_rec *c = f->c;
     server_rec *s = f->r->server;
-
-    if (!g_hasinit) {
-        g_buffsize = get_output_buffersize(s);
-        g_hasinit = 1;
-    }
+    int buffsize = get_output_buffersize(s);
 
     tmp_brigade =
         apr_brigade_create(f->r->pool, f->r->connection->bucket_alloc);
@@ -74,7 +68,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
         APR_BRIGADE_INSERT_TAIL(tmp_brigade, e);
 
         /* I will pass tmp_brigade to next filter if I have got too much buckets */
-        if (save_size > g_buffsize) {
+        if (save_size > buffsize) {
             APR_BRIGADE_INSERT_TAIL(tmp_brigade,
                                     apr_bucket_flush_create(f->r->
                                                             connection->
