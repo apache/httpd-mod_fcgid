@@ -1,6 +1,12 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
+  *) Merge mod_fcgid server config/virtual host directives so that they can
+     be inherited or overridden within a virtual host as expected.  Affected
+     directives: BusyTimeout, IPCCommTimeout, IPCConnectTimeout, 
+     MaxRequestInMem, MaxRequestLen, MaxRequestsPerProcess, OutputBufferSize.
+     [Jeff Trawick]
+
   *) Use the virtual host settings for the request being processed instead
      of those of the first FastCGI request handled by this httpd child process.
      Affected directives: BusyTimeout, IPCCommTimeout, IPCConnectTimeout,

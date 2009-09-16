@@ -79,17 +79,26 @@ typedef struct {
     int termination_score;
     int time_score;
     int zombie_scan_interval;
-    /* global or vhost */
+    /* global or vhost
+     * scalar values have corresponding _set field to aid merging
+     */
     int busy_timeout; /* TODO: Does setting this in a vhost work as expected?
                        * Look at use in PM vs. handler.
                        */
+    int busy_timeout_set;
     apr_table_t *default_init_env;
     int ipc_comm_timeout;
+    int ipc_comm_timeout_set;
     int ipc_connect_timeout;
+    int ipc_connect_timeout_set;
     int max_mem_request_len;
+    int max_mem_request_len_set;
     int max_request_len;
+    int max_request_len_set;
     int max_requests_per_process;
+    int max_requests_per_process_set;
     int output_buffersize;
+    int output_buffersize_set;
     apr_array_header_t *pass_headers;
 } fcgid_server_conf;
 

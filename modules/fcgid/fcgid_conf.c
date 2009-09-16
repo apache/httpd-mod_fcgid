@@ -53,93 +53,97 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_WRAPPER_KEY "ALL"
 #define WRAPPER_FLAG_VIRTUAL "virtual"
 
-static void init_server_config(apr_pool_t * p, fcgid_server_conf * config)
-{
-    /* Redundant; pcalloc creates this structure;
-     * config->default_init_env = NULL;
-     * config->pass_headers = NULL;
-     * config->php_fix_pathinfo_enable = 0;
-     */
-    config->sockname_prefix =
-        ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
-    config->shmname_path = ap_server_root_relative(p, DEFAULT_SHM_PATH);
-    config->idle_timeout = DEFAULT_IDLE_TIMEOUT;
-    config->idle_scan_interval = DEFAULT_IDLE_SCAN_INTERVAL;
-    config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;
-    config->proc_lifetime = DEFAULT_PROC_LIFETIME;
-    config->error_scan_interval = DEFAULT_ERROR_SCAN_INTERVAL;
-    config->zombie_scan_interval = DEFAULT_ZOMBIE_SCAN_INTERVAL;
-    config->spawn_score = DEFAULT_SPAWN_SCORE;
-    config->spawnscore_uplimit = DEFAULT_SPAWNSOCRE_UPLIMIT;
-    config->termination_score = DEFAULT_TERMINATION_SCORE;
-    config->time_score = DEFAULT_TIME_SCORE;
-    config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
-    config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
-    config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
-    config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
-    config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
-    config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
-    config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
-    config->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
-    config->max_request_len = DEFAULT_MAX_REQUEST_LEN;
-    config->max_mem_request_len = DEFAULT_MAX_MEM_REQUEST_LEN;
-}
-
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 {
     fcgid_server_conf *config = apr_pcalloc(p, sizeof(*config));
 
-    init_server_config(p, config);
+    if (!s->is_virtual) {
+        config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;
+        config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
+        config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
+        config->error_scan_interval = DEFAULT_ERROR_SCAN_INTERVAL;
+        config->idle_scan_interval = DEFAULT_IDLE_SCAN_INTERVAL;
+        config->idle_timeout = DEFAULT_IDLE_TIMEOUT;
+        config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
+        config->proc_lifetime = DEFAULT_PROC_LIFETIME;
+        config->shmname_path = ap_server_root_relative(p, DEFAULT_SHM_PATH);
+        config->sockname_prefix =
+          ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
+        config->spawn_score = DEFAULT_SPAWN_SCORE;
+        config->spawnscore_uplimit = DEFAULT_SPAWNSOCRE_UPLIMIT;
+        config->termination_score = DEFAULT_TERMINATION_SCORE;
+        config->time_score = DEFAULT_TIME_SCORE;
+        config->zombie_scan_interval = DEFAULT_ZOMBIE_SCAN_INTERVAL;
+    }
+    /* Redundant; pcalloc creates this structure;
+     * config->default_init_env = NULL;
+     * config->pass_headers = NULL;
+     * config->php_fix_pathinfo_enable = 0;
+     * config->*_set = 0;
+     */
+    config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
+    config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
+    config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
+    config->max_mem_request_len = DEFAULT_MAX_MEM_REQUEST_LEN;
+    config->max_request_len = DEFAULT_MAX_REQUEST_LEN;
+    config->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
+    config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
+
     return config;
 }
 
+#define MERGE_SCALAR(base, local, merged, field) \
+  if (!(local)->field##_set) { \
+      merged->field = base->field; \
+  }
+
 void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
 {
-    fcgid_server_conf *merged_config =
-        (fcgid_server_conf *) apr_pcalloc(p, sizeof(fcgid_server_conf));
     fcgid_server_conf *base = (fcgid_server_conf *) basev;
     fcgid_server_conf *local = (fcgid_server_conf *) locv;
-
-    init_server_config(p, merged_config);
+    fcgid_server_conf *merged =
+      (fcgid_server_conf *) apr_pmemdup(p, local, sizeof(fcgid_server_conf));
 
     /* Merge environment variables */
-    if (local->default_init_env != NULL || base->default_init_env != NULL) {
-        if (local->default_init_env == NULL)
-            merged_config->default_init_env = base->default_init_env;
-        else if (base->default_init_env == NULL)
-            merged_config->default_init_env = local->default_init_env;
-        else {
-            merged_config->default_init_env = 
-                apr_table_copy(p, base->default_init_env);
-            apr_table_overlap(merged_config->default_init_env, 
-                              local->default_init_env,
-                              APR_OVERLAP_TABLES_SET);
-        }
+    if (base->default_init_env == NULL) {
+        /* merged already set to local */
+    }
+    else if (local->default_init_env == NULL) {
+        merged->default_init_env = base->default_init_env;
+    }
+    else {
+        merged->default_init_env = 
+          apr_table_copy(p, base->default_init_env);
+        apr_table_overlap(merged->default_init_env, 
+                          local->default_init_env,
+                          APR_OVERLAP_TABLES_SET);
     }
 
     /* Merge pass headers */
-    if (local->pass_headers != NULL || base->pass_headers != NULL) {
-        if (local->pass_headers == NULL)
-            merged_config->pass_headers = base->pass_headers;
-        else if (base->pass_headers == NULL)
-            merged_config->pass_headers = local->pass_headers;
-        else
-            merged_config->pass_headers = apr_array_append(p, 
-                                              base->pass_headers,
-                                              local->pass_headers);
+    if (base->pass_headers == NULL) {
+        /* merged already set to local */
+    }
+    else if (local->pass_headers == NULL) {
+        merged->pass_headers = base->pass_headers;
+    }
+    else {
+        merged->pass_headers = 
+          apr_array_append(p, 
+                           base->pass_headers,
+                           local->pass_headers);
     }
 
-    /* Merge the other configurations */
-    merged_config->ipc_comm_timeout = base->ipc_comm_timeout;
-    merged_config->ipc_comm_timeout = local->ipc_comm_timeout;
+    /* Merge the scalar settings */
 
-    merged_config->ipc_connect_timeout = base->ipc_connect_timeout;
-    merged_config->ipc_connect_timeout = local->ipc_connect_timeout;
+    MERGE_SCALAR(base, local, merged, busy_timeout);
+    MERGE_SCALAR(base, local, merged, ipc_comm_timeout);
+    MERGE_SCALAR(base, local, merged, ipc_connect_timeout);
+    MERGE_SCALAR(base, local, merged, max_mem_request_len);
+    MERGE_SCALAR(base, local, merged, max_request_len);
+    MERGE_SCALAR(base, local, merged, max_requests_per_process);
+    MERGE_SCALAR(base, local, merged, output_buffersize);
 
-    merged_config->busy_timeout = base->busy_timeout;
-    merged_config->busy_timeout = local->busy_timeout;
-
-    return merged_config;
+    return merged;
 }
 
 void *create_fcgid_dir_config(apr_pool_t * p, char *dummy)
@@ -207,6 +211,7 @@ const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->busy_timeout = atol(arg);
+    config->busy_timeout_set = 1;
     return NULL;
 }
 
@@ -393,6 +398,7 @@ const char *set_max_request_len(cmd_parms * cmd, void *dummy,
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->max_request_len = atol(arg);
+    config->max_request_len_set = 1;
     return NULL;
 }
 
@@ -410,6 +416,7 @@ const char *set_max_mem_request_len(cmd_parms * cmd, void *dummy,
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->max_mem_request_len = atol(arg);
+    config->max_mem_request_len_set = 1;
     return NULL;
 }
 
@@ -517,6 +524,7 @@ const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->output_buffersize = atol(arg);
+    config->output_buffersize_set = 1;
     return NULL;
 }
 
@@ -598,6 +606,7 @@ const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->max_requests_per_process = atol(arg);
+    config->max_requests_per_process_set = 1;
     return NULL;
 }
 
@@ -623,6 +632,7 @@ const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
     config->ipc_connect_timeout = atol(arg);
+    config->ipc_connect_timeout_set = 1;
     return NULL;
 }
 
@@ -644,6 +654,7 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
     if (config->ipc_comm_timeout < 0) {
         return "IPCCommTimeout must be greater than 0";
     }
+    config->ipc_comm_timeout_set = 1;
     return NULL;
 }
 
