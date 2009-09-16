@@ -24,7 +24,7 @@ static apr_status_t fcgid_feed_data(fcgid_bucket_ctx * ctx,
                                     apr_bucket_alloc_t * bucketalloc,
                                     char **buffer, apr_size_t * bufferlen)
 {
-    server_rec *main_server = ctx->ipc.request->server;
+    server_rec *s = ctx->ipc.request->server;
     apr_status_t rv;
 
     if (!ctx->buffer) {
@@ -34,7 +34,7 @@ static apr_status_t fcgid_feed_data(fcgid_bucket_ctx * ctx,
 
         *bufferlen = FCGID_FEED_LEN;
         if ((rv =
-             proc_read_ipc(main_server, &ctx->ipc, *buffer,
+             proc_read_ipc(s, &ctx->ipc, *buffer,
                            bufferlen)) != APR_SUCCESS) {
             ctx->has_error = 1;
             apr_bucket_free(*buffer);
@@ -80,7 +80,7 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
                                              apr_read_type_e block)
 {
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) b->data;
-    server_rec *main_server = ctx->ipc.request->server;
+    server_rec *s = ctx->ipc.request->server;
     apr_status_t rv;
     apr_size_t hasread, bodysize;
     FCGI_Header header;
@@ -152,7 +152,7 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
             if (end != NULL) {
                 *end = '\0';
             }
-            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
+            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                          "mod_fcgid: stderr: %s", line);
             if (end == NULL) {
                 break;

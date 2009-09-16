@@ -103,11 +103,11 @@ typedef struct {
 int init_header(int type, int requestId, apr_size_t contentLength,
                 apr_size_t paddingLength, FCGI_Header * header);
 
-int build_begin_block(int role, server_rec * main_server,
+int build_begin_block(int role, server_rec * s,
                       apr_bucket_alloc_t * alloc,
                       apr_bucket_brigade * request_brigade);
 
-int build_env_block(server_rec * main_server, char **envp,
+int build_env_block(server_rec * s, char **envp,
                     apr_bucket_alloc_t * alloc,
                     apr_bucket_brigade * request_brigade);
 #endif

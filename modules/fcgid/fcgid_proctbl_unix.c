@@ -251,12 +251,12 @@ size_t proctable_get_table_size(void)
     return g_table_size;
 }
 
-void safe_lock(server_rec * main_server)
+void safe_lock(server_rec * s)
 {
     apr_status_t rv;
 
     if (g_global_share->must_exit) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
+        ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,
                      "mod_fcgid: server is restarted, pid %" APR_PID_T_FMT
                      " must exit",
                      getpid());
@@ -265,20 +265,20 @@ void safe_lock(server_rec * main_server)
 
     /* Lock error is a fatal error */
     if ((rv = proctable_lock_table()) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
                      "mod_fcgid: can't get lock in pid %" APR_PID_T_FMT,
                      getpid());
         exit(1);
     }
 }
 
-void safe_unlock(server_rec * main_server)
+void safe_unlock(server_rec * s)
 {
     /* Lock error is a fatal error */
     apr_status_t rv;
 
     if ((rv = proctable_unlock_table()) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
                      "mod_fcgid: can't unlock in pid %" APR_PID_T_FMT, 
                      getpid());
         exit(1);

@@ -121,25 +121,25 @@ size_t proctable_get_table_size()
     return g_table_size;
 }
 
-void safe_lock(server_rec * main_server)
+void safe_lock(server_rec * s)
 {
     /* Lock error is a fatal error */
     apr_status_t rv;
 
     if ((rv = proctable_lock_table()) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
                      "mod_fcgid: can't get lock");
         exit(1);
     }
 }
 
-void safe_unlock(server_rec * main_server)
+void safe_unlock(server_rec * s)
 {
     /* Lock error is a fatal error */
     apr_status_t rv;
 
     if ((rv = proctable_unlock_table()) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
+        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
                      "mod_fcgid: can't unlock");
         exit(1);
     }

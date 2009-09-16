@@ -39,7 +39,7 @@ static int g_connect_timeout;
 static int g_comm_timeout;
 static int g_max_requests_per_process;
 
-static fcgid_procnode *apply_free_procnode(server_rec * main_server,
+static fcgid_procnode *apply_free_procnode(server_rec * s,
                                            fcgid_command * command)
 {
     /* Scan idle list, find a node match inode, deviceid and groupid
@@ -57,7 +57,7 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
     previous_node = proctable_get_idle_list();
     busy_list_header = proctable_get_busy_list();
 
-    safe_lock(main_server);
+    safe_lock(s);
     current_node = &proc_table[previous_node->next_index];
     while (current_node != proc_table) {
         next_node = &proc_table[current_node->next_index];
@@ -74,21 +74,21 @@ static fcgid_procnode *apply_free_procnode(server_rec * main_server,
             current_node->next_index = busy_list_header->next_index;
             busy_list_header->next_index = current_node - proc_table;
 
-            safe_unlock(main_server);
+            safe_unlock(s);
             return current_node;
         } else
             previous_node = current_node;
 
         current_node = next_node;
     }
-    safe_unlock(main_server);
+    safe_unlock(s);
 
     /* Found nothing */
     return NULL;
 }
 
 static void
-return_procnode(server_rec * main_server,
+return_procnode(server_rec * s,
                 fcgid_procnode * procnode, int communicate_error)
 {
     fcgid_procnode *previous_node, *current_node, *next_node;
@@ -97,7 +97,7 @@ return_procnode(server_rec * main_server,
     fcgid_procnode *idle_list_header = proctable_get_idle_list();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
 
-    safe_lock(main_server);
+    safe_lock(s);
 
     /* Unlink the node from busy list first */
     previous_node = busy_list_header;
@@ -124,18 +124,18 @@ return_procnode(server_rec * main_server,
         idle_list_header->next_index = procnode - proc_table;
     }
 
-    safe_unlock(main_server);
+    safe_unlock(s);
 }
 
 static int
-count_busy_processes(server_rec * main_server, fcgid_command * command)
+count_busy_processes(server_rec * s, fcgid_command * command)
 {
     int result = 0;
     fcgid_procnode *previous_node, *current_node, *next_node;
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
 
-    safe_lock(main_server);
+    safe_lock(s);
 
     previous_node = busy_list_header;
     current_node = &proc_table[previous_node->next_index];
@@ -152,7 +152,7 @@ count_busy_processes(server_rec * main_server, fcgid_command * command)
         current_node = next_node;
     }
 
-    safe_unlock(main_server);
+    safe_unlock(s);
 
     return result;
 }
@@ -165,7 +165,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
        NOTE: ipc will be clean when request pool cleanup, so I don't need to close it here
      */
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) thectx;
-    server_rec *main_server = ctx->ipc.request->server;
+    server_rec *s = ctx->ipc.request->server;
 
     /* Free bucket buffer */
     if (ctx->buffer) {
@@ -173,7 +173,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
         ctx->buffer = NULL;
     }
 
-    proc_close_ipc(main_server, &ctx->ipc);
+    proc_close_ipc(s, &ctx->ipc);
 
     if (ctx->procnode) {
         /* Return procnode
@@ -188,22 +188,21 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
         if (dt > g_busy_timeout) {
             /* Do nothing but print log */
-            ap_log_error(APLOG_MARK, APLOG_INFO, 0,
-                         main_server,
+            ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
                          "mod_fcgid: process busy timeout, took %d seconds for this request",
                          dt);
         } else if (ctx->has_error) {
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
-            return_procnode(main_server, ctx->procnode,
+            return_procnode(s, ctx->procnode,
                             1 /* communication error */ );
         } else if (g_max_requests_per_process != -1
                    && ++ctx->procnode->requests_handled >=
                    g_max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
-            return_procnode(main_server, ctx->procnode,
+            return_procnode(s, ctx->procnode,
                             1 /* handled all requests */ );
         } else
-            return_procnode(main_server, ctx->procnode,
+            return_procnode(s, ctx->procnode,
                             0 /* communication ok */ );
 
         ctx->procnode = NULL;
@@ -293,7 +292,7 @@ handle_request(request_rec * r, int role, const char *argv0,
                apr_bucket_brigade * output_brigade)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
-    server_rec *main_server = r->server;
+    server_rec *s = r->server;
     fcgid_command fcgi_request;
     fcgid_bucket_ctx *bucket_ctx;
     int i, j, cond_status;
@@ -384,7 +383,7 @@ handle_request(request_rec * r, int role, const char *argv0,
 
     /* Write output_brigade to fastcgi server */
     if ((rv =
-         proc_write_ipc(main_server, &bucket_ctx->ipc,
+         proc_write_ipc(s, &bucket_ctx->ipc,
                         output_brigade)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
                      "mod_fcgid: error writing data to FastCGI server");
@@ -449,7 +448,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                    fcgid_wrapper_conf * wrapper_conf)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
-    server_rec *main_server = r->server;
+    server_rec *s = r->server;
     apr_status_t rv = APR_SUCCESS;
     int seen_eos;
     size_t request_size = 0;
@@ -459,8 +458,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     FCGI_Header *stdin_request_header;
     apr_bucket_brigade *output_brigade;
     apr_bucket *bucket_input, *bucket_header, *bucket_eos;
-    size_t max_request_len = get_max_request_len(main_server);
-    size_t max_mem_request_len = get_max_mem_request_len(main_server);
+    size_t max_request_len = get_max_request_len(s);
+    size_t max_mem_request_len = get_max_mem_request_len(s);
     char **envp = ap_create_environment(request_pool,
                                         r->subprocess_env);
 
@@ -473,8 +472,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
         (role, r->server, r->connection->bucket_alloc, output_brigade)
         || !build_env_block(r->server, envp, r->connection->bucket_alloc,
                             output_brigade)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                      "mod_fcgid: can't build begin or env request");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -497,8 +495,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                  AP_MODE_READBYTES,
                                  APR_BLOCK_READ,
                                  HUGE_STRING_LEN)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-                         main_server,
+            ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
                          "mod_fcgid: can't get data from http client");
             apr_brigade_destroy(output_brigade);
             apr_brigade_destroy(input_brigade);
@@ -523,8 +520,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
             if ((rv = apr_bucket_read(bucket_input, &data, &len,
                                       APR_BLOCK_READ)) != APR_SUCCESS) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-                             main_server,
+                ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
                              "mod_fcgid: can't read request from HTTP client");
                 apr_brigade_destroy(input_brigade);
                 apr_brigade_destroy(output_brigade);
@@ -543,8 +539,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
             request_size += len;
             if (request_size > max_request_len) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-                             main_server,
+                ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                              "mod_fcgid: http request length %" APR_SIZE_T_FMT " > %" APR_SIZE_T_FMT,
                              request_size, max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;
@@ -567,7 +562,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
                     rv = apr_temp_dir_get(&tempdir, r->pool);
                     if (rv != APR_SUCCESS) {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
+                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
                                      "mod_fcigd: can't get tmp dir");
                         return HTTP_INTERNAL_SERVER_ERROR;
                     }
@@ -578,7 +573,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                     rv = apr_file_mktemp(&fd, template, 0,
                                          r->connection->pool);
                     if (rv != APR_SUCCESS) {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
+                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
                                      "mod_fcgid: can't open tmp file fot stdin request");
                         return HTTP_INTERNAL_SERVER_ERROR;
                     }
@@ -596,7 +591,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                          &wrote_len)) != APR_SUCCESS
                     || len != wrote_len) {
                     ap_log_error(APLOG_MARK, APLOG_WARNING,
-                                 rv, main_server,
+                                 rv, s,
                                  "mod_fcgid: can't write tmp file for stdin request");
                     return HTTP_INTERNAL_SERVER_ERROR;
                 }
@@ -625,7 +620,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                 || !init_header(FCGI_STDIN, 1, len, 0,
                                 stdin_request_header)) {
                 ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                             main_server,
+                             s,
                              "mod_fcgid: can't alloc memory for stdin request");
                 apr_brigade_destroy(input_brigade);
                 apr_brigade_destroy(output_brigade);
@@ -649,8 +644,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                r->connection->bucket_alloc);
     if (!stdin_request_header || !bucket_header
         || !init_header(FCGI_STDIN, 1, 0, 0, stdin_request_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
                      "mod_fcgid: can't alloc memory for stdin request");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -659,8 +653,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     /* The eos bucket now */
     bucket_eos = apr_bucket_eos_create(r->connection->bucket_alloc);
     if (!bucket_eos) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
                      "mod_fcgid: can't alloc memory for eos bucket");
         return HTTP_INTERNAL_SERVER_ERROR;
     }

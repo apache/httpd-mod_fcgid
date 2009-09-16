@@ -30,10 +30,10 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
     apr_bucket_brigade *tmp_brigade;
     int save_size = 0;
     conn_rec *c = f->c;
-    server_rec *main_server = f->r->server;
+    server_rec *s = f->r->server;
 
     if (!g_hasinit) {
-        g_buffsize = get_output_buffersize(main_server);
+        g_buffsize = get_output_buffersize(s);
         g_hasinit = 1;
     }
 
@@ -56,8 +56,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
         /* Read the bucket now */
         if ((rv = apr_bucket_read(e, &buffer, &readlen,
                                   APR_BLOCK_READ)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_INFO, rv,
-                         main_server,
+            ap_log_error(APLOG_MARK, APLOG_INFO, rv, s,
                          "mod_fcgid: can't read data from fcgid handler");
             return rv;
         }

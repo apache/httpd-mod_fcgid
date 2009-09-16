@@ -115,7 +115,7 @@ init_header(int type, int requestId, apr_size_t contentLength,
 }
 
 int
-build_begin_block(int role, server_rec * main_server,
+build_begin_block(int role, server_rec * s,
                   apr_bucket_alloc_t * alloc,
                   apr_bucket_brigade * request_brigade)
 {
@@ -138,8 +138,7 @@ build_begin_block(int role, server_rec * main_server,
     /* Sanity check */
     if (!begin_request_header || !begin_request_body
         || !bucket_header || !bucket_body) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
                      "mod_fcgid: can't alloc memeory for begin request");
         return 0;
     }
@@ -147,8 +146,7 @@ build_begin_block(int role, server_rec * main_server,
     /* Initialize begin request header and body */
     if (!init_header(FCGI_BEGIN_REQUEST, 1, sizeof(FCGI_BeginRequestBody),
                      0, begin_request_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
                      "mod_fcgid: can't init begin request header");
         return 0;
     }
@@ -162,7 +160,7 @@ build_begin_block(int role, server_rec * main_server,
 }
 
 int
-build_env_block(server_rec * main_server, char **envp,
+build_env_block(server_rec * s, char **envp,
                 apr_bucket_alloc_t * alloc,
                 apr_bucket_brigade * request_brigade)
 {
@@ -193,8 +191,7 @@ build_env_block(server_rec * main_server, char **envp,
 
     if (!env_request_header || !buf || !env_empty_header || !bucket_header
         || !bucket_body || !bucket_empty_header) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
                      "mod_fcgid: can't alloc memory for envion");
         return 0;
     }
@@ -202,8 +199,7 @@ build_env_block(server_rec * main_server, char **envp,
     /* Initialize header and body */
     if (!init_header(FCGI_PARAMS, 1, bufsize, 0, env_request_header)
         || !init_header(FCGI_PARAMS, 1, 0, 0, env_empty_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                     main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(), s,
                      "mod_fcgid: can't init env request header");
         return 0;
     }

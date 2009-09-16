@@ -86,8 +86,8 @@ fcgid_procnode *proctable_get_table_array(void);
 size_t proctable_get_table_size(void);
 fcgid_global_share *proctable_get_globalshare(void);
 
-void safe_lock(server_rec * main_server);
-void safe_unlock(server_rec * main_server);
+void safe_lock(server_rec * s);
+void safe_unlock(server_rec * s);
 
 /* Just for debug */
 void proctable_print_debug_info(server_rec * main_server);
