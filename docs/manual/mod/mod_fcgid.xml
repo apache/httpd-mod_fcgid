@@ -101,6 +101,15 @@
       <p>Use <directive>DefaultInitEnv</directive> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
+
+      <note type="hint"><title>Note</title>
+      <p>These settings are associated with the FastCGI process and are 
+      not reset on every request based on the current virtual host
+      settings.  The FastCGI process will run with the environment
+      settings of the virtual host of the request that caused the FastCGI
+      process to be started; these are not necessarily the same as those
+      of the virtual hosts of subsequent requests.</p>
+      </note>
     </usage>
   </directivesynopsis>
 
