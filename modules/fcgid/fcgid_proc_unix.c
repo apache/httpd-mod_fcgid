@@ -396,13 +396,14 @@ APR_SUCCESS
 
     /* Set the (deviceid, inode) -> fastcgi path map for log */
     apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-                 procnode->inode, (unsigned long) procnode->deviceid);
+                 (unsigned long) procnode->inode,
+                 (unsigned long) procnode->deviceid);
     dummy = NULL;
     apr_pool_userdata_get(&dummy, key_name, g_inode_cginame_map);
     if (!dummy) {
         /* Insert a new item if key not found */
         const char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
-                                           procnode->inode,
+                                           (unsigned long) procnode->inode,
                                            (unsigned long) procnode->deviceid);
         const char *fcgipath = apr_psprintf(g_inode_cginame_map, "%s",
                                             procinfo->cgipath);
@@ -802,7 +803,8 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 
     /* Get the file name infomation base on inode and deviceid */
     apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-                 procnode->inode, (unsigned long) procnode->deviceid);
+                 (unsigned long) procnode->inode,
+                 (unsigned long) procnode->deviceid);
     apr_pool_userdata_get(&tmp, key_name,
                           g_inode_cginame_map);
     cgipath = tmp;
