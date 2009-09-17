@@ -125,7 +125,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             const char *argv0, dev_t deviceid,
                             apr_ino_t inode, apr_size_t share_grp_id)
 {
-    server_rec *main_server = r->server;
     apr_table_t *initenv;
     fcgid_wrapper_conf *wrapperconf;
     const apr_array_header_t *initenv_arr;
@@ -140,12 +139,12 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         initenv_arr = apr_table_elts(initenv);
         initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
         if (initenv_arr->nelts > INITENV_CNT)
-            ap_log_error(APLOG_MARK, LOG_WARNING, 0, main_server,
-                         "mod_fcgid: %d environment variables dropped; increase "
-                         "INITENV_CNT in fcgid_pm.h from %d to at least %d",
-                         initenv_arr->nelts - INITENV_CNT,
-                         INITENV_CNT,
-                         initenv_arr->nelts);
+            ap_log_rerror(APLOG_MARK, LOG_WARNING, 0, r,
+                          "mod_fcgid: %d environment variables dropped; increase "
+                          "INITENV_CNT in fcgid_pm.h from %d to at least %d",
+                          initenv_arr->nelts - INITENV_CNT,
+                          INITENV_CNT,
+                          initenv_arr->nelts);
         for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
             if (initenv_entry[i].key == NULL
                 || initenv_entry[i].key[0] == '\0')
@@ -178,8 +177,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
                                     request_rec * r)
 {
-    server_rec *main_server = r->server;
-
     if (g_thread && g_msgqueue && !g_must_exit
         && g_reqlock && g_notifyqueue) {
         apr_status_t rv;
@@ -196,8 +193,8 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 
         /* Get request lock first */
         if ((rv = apr_thread_mutex_lock(g_reqlock)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                         "mod_fcgid: can't get request lock");
+            ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
+                          "mod_fcgid: can't get request lock");
             return rv;
         }
 
@@ -205,8 +202,8 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
         if ((rv = apr_queue_push(g_msgqueue, postcmd)) != APR_SUCCESS) {
             apr_thread_mutex_unlock(g_reqlock);
             free(postcmd);
-            ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                         "mod_fcgid: can't push request message");
+            ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
+                          "mod_fcgid: can't push request message");
             return rv;
         } else {
             /* Wait the respond from process manager */
@@ -216,8 +213,8 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
                  apr_queue_pop(g_notifyqueue,
                                &notifybyte)) != APR_SUCCESS) {
                 apr_thread_mutex_lock(g_reqlock);
-                ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                             "mod_fcgid: can't pop notify message");
+                ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
+                              "mod_fcgid: can't pop notify message");
                 return rv;
             }
         }
@@ -225,8 +222,8 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
         /* Release the lock now */
         if ((rv = apr_thread_mutex_unlock(g_reqlock)) != APR_SUCCESS) {
             /* It's a fatal error */
-            ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                         "mod_fcgid: can't release request lock");
+            ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
+                          "mod_fcgid: can't release request lock");
             exit(1);
         }
     }

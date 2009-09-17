@@ -386,7 +386,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             const char *argv0, dev_t deviceid,
                             apr_ino_t inode, apr_size_t share_grp_id)
 {
-    server_rec *main_server = r->server;
     ap_unix_identity_t *ugid;
     apr_table_t *initenv;
     const apr_array_header_t *initenv_arr;
@@ -413,12 +412,12 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         initenv_arr = apr_table_elts(initenv);
         initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
         if (initenv_arr->nelts > INITENV_CNT)
-            ap_log_error(APLOG_MARK, LOG_WARNING, 0, main_server,
-                         "mod_fcgid: %d environment variables dropped; increase "
-                         "INITENV_CNT in fcgid_pm.h from %d to at least %d",
-                         initenv_arr->nelts - INITENV_CNT,
-                         INITENV_CNT,
-                         initenv_arr->nelts);
+            ap_log_rerror(APLOG_MARK, LOG_WARNING, 0, r,
+                          "mod_fcgid: %d environment variables dropped; increase "
+                          "INITENV_CNT in fcgid_pm.h from %d to at least %d",
+                          initenv_arr->nelts - INITENV_CNT,
+                          INITENV_CNT,
+                          initenv_arr->nelts);
 
         for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
             if (initenv_entry[i].key == NULL
@@ -453,7 +452,6 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
     apr_status_t rv;
     char notifybyte;
     apr_size_t nbytes = sizeof(*command);
-    server_rec *main_server = r->server;
 
     /* Sanity check first */
     if (g_caughtSigTerm || !g_ap_write_pipe)
@@ -461,8 +459,8 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 
     /* Get the global mutex before posting the request */
     if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
-                     "mod_fcgid: can't get pipe mutex");
+        ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+                      "mod_fcgid: can't get pipe mutex");
         exit(0);
     }
 
@@ -470,23 +468,23 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
          apr_file_write_full(g_ap_write_pipe, command, nbytes,
                              NULL)) != APR_SUCCESS) {
         /* Just print some error log and fall through */
-        ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
-                     "mod_fcgid: can't write spawn command");
+        ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+                      "mod_fcgid: can't write spawn command");
     } else {
         /* Wait the finish notify while send the request successfully */
         nbytes = sizeof(notifybyte);
         if ((rv =
              apr_file_read(g_ap_read_pipe, &notifybyte,
                            &nbytes)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
-                         "mod_fcgid: can't get notify from process manager");
+            ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+                          "mod_fcgid: can't get notify from process manager");
         }
     }
 
     /* Release the lock */
     if ((rv = apr_global_mutex_unlock(g_pipelock)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
-                     "mod_fcgid: can't release pipe mutex");
+        ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+                      "mod_fcgid: can't release pipe mutex");
         exit(0);
     }
 

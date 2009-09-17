@@ -50,20 +50,16 @@ apr_status_t proc_kill_force(fcgid_procnode * procnode,
 apr_status_t proc_wait_process(server_rec * main_server,
                                fcgid_procnode * procnode);
 
-apr_status_t proc_connect_ipc(server_rec * main_server,
-                              fcgid_procnode * procnode,
+apr_status_t proc_connect_ipc(fcgid_procnode * procnode,
                               fcgid_ipc * ipc_handle);
 
-apr_status_t proc_read_ipc(server_rec * main_server,
-                           fcgid_ipc * ipc_handle, const char *buffer,
+apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
                            apr_size_t * size);
 
-apr_status_t proc_write_ipc(server_rec * main_server,
-                            fcgid_ipc * ipc_handle,
+apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                             apr_bucket_brigade * output_brigade);
 
-apr_status_t proc_close_ipc(server_rec * main_server,
-                            fcgid_ipc * ipc_handle);
+apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle);
 
 void proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
                           apr_exit_why_e exitwhy,

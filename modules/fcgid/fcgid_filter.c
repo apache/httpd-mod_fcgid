@@ -51,8 +51,8 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
         /* Read the bucket now */
         if ((rv = apr_bucket_read(e, &buffer, &readlen,
                                   APR_BLOCK_READ)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_INFO, rv, s,
-                         "mod_fcgid: can't read data from fcgid handler");
+            ap_log_rerror(APLOG_MARK, APLOG_INFO, rv, f->r,
+                          "mod_fcgid: can't read data from fcgid handler");
             return rv;
         }
 

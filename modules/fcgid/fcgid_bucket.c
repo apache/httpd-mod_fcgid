@@ -32,7 +32,7 @@ static apr_status_t fcgid_feed_data(fcgid_bucket_ctx * ctx,
 
         *bufferlen = FCGID_FEED_LEN;
         if ((rv =
-             proc_read_ipc(s, &ctx->ipc, *buffer,
+             proc_read_ipc(&ctx->ipc, *buffer,
                            bufferlen)) != APR_SUCCESS) {
             ctx->has_error = 1;
             apr_bucket_free(*buffer);
@@ -148,8 +148,8 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
             if (end != NULL) {
                 *end = '\0';
             }
-            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                         "mod_fcgid: stderr: %s", line);
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, ctx->ipc.request,
+                          "mod_fcgid: stderr: %s", line);
             if (end == NULL) {
                 break;
             }

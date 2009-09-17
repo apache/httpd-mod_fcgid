@@ -520,8 +520,7 @@ static apr_status_t set_socket_nonblock(int sd)
 }
 
 apr_status_t
-proc_connect_ipc(server_rec * main_server,
-                 fcgid_procnode * procnode, fcgid_ipc * ipc_handle)
+proc_connect_ipc(fcgid_procnode * procnode, fcgid_ipc * ipc_handle)
 {
     fcgid_namedpipe_handle *handle_info;
     struct sockaddr_un unix_addr;
@@ -550,10 +549,10 @@ proc_connect_ipc(server_rec * main_server,
        and I will never retry on error */
     if (connect(handle_info->handle_socket, (struct sockaddr *) &unix_addr,
                 sizeof(unix_addr)) < 0) {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(),
-                     main_server,
-                     "mod_fcgid: can't connect unix domain socket: %s",
-                     procnode->socket_path);
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(),
+                      ipc_handle->request,
+                      "mod_fcgid: can't connect unix domain socket: %s",
+                      procnode->socket_path);
         return APR_ECONNREFUSED;
     }
 
@@ -564,16 +563,15 @@ proc_connect_ipc(server_rec * main_server,
     /* Set nonblock option */
     if ((rv =
          set_socket_nonblock(handle_info->handle_socket)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, rv, main_server,
-                     "mod_fcgid: can't make unix domain socket nonblocking");
+        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, rv, ipc_handle->request,
+                      "mod_fcgid: can't make unix domain socket nonblocking");
         return rv;
     }
 
     return APR_SUCCESS;
 }
 
-apr_status_t proc_close_ipc(server_rec * main_server,
-                            fcgid_ipc * ipc_handle)
+apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle)
 {
     apr_status_t rv;
 
@@ -584,8 +582,7 @@ apr_status_t proc_close_ipc(server_rec * main_server,
     return rv;
 }
 
-apr_status_t proc_read_ipc(server_rec * main_server,
-                           fcgid_ipc * ipc_handle, const char *buffer,
+apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
                            apr_size_t * size)
 {
     int retcode, unix_socket;
@@ -602,9 +599,9 @@ apr_status_t proc_read_ipc(server_rec * main_server,
         }
     } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
     if (retcode == -1 && !APR_STATUS_IS_EAGAIN(errno)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
-                     main_server,
-                     "mod_fcgid: error reading data from FastCGI server");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno,
+                      ipc_handle->request,
+                      "mod_fcgid: error reading data from FastCGI server");
         return errno;
     }
 
@@ -616,15 +613,15 @@ apr_status_t proc_read_ipc(server_rec * main_server,
         retcode = poll(pollfds, 1, ipc_handle->communation_timeout * 1000);
     } while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
     if (retcode == -1) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
-                     main_server,
-                     "mod_fcgid: error polling unix domain socket");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno,
+                      ipc_handle->request,
+                      "mod_fcgid: error polling unix domain socket");
         return errno;
     } else if (retcode == 0) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-                     main_server,
-                     "mod_fcgid: read data timeout in %d seconds",
-                     ipc_handle->communation_timeout);
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0,
+                      ipc_handle->request,
+                      "mod_fcgid: read data timeout in %d seconds",
+                      ipc_handle->communation_timeout);
         return APR_ETIMEDOUT;
     }
 
@@ -636,15 +633,15 @@ apr_status_t proc_read_ipc(server_rec * main_server,
     } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
 
     if (retcode == 0) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-                     main_server,
-                     "mod_fcgid: error reading data, FastCGI server closed connection");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0,
+                      ipc_handle->request,
+                      "mod_fcgid: error reading data, FastCGI server closed connection");
         return APR_EPIPE;
     }
 
-    ap_log_error(APLOG_MARK, APLOG_WARNING, errno,
-                 main_server,
-                 "mod_fcgid: error reading data from FastCGI server");
+    ap_log_rerror(APLOG_MARK, APLOG_WARNING, errno,
+                  ipc_handle->request,
+                  "mod_fcgid: error reading data from FastCGI server");
     return errno;
 }
 
@@ -687,9 +684,9 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
     } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
 
     if (retcode == -1) {
-        ap_log_error(APLOG_MARK, APLOG_INFO, apr_get_os_error(),
-                     ipc_handle->request->server,
-                     "mod_fcgid: error writing data, FastCGI server closed connection");
+        ap_log_rerror(APLOG_MARK, APLOG_INFO, apr_get_os_error(),
+                      ipc_handle->request,
+                      "mod_fcgid: error writing data, FastCGI server closed connection");
         return APR_EPIPE;
     }
 
@@ -739,8 +736,7 @@ static apr_status_t writev_it_all(fcgid_ipc * ipc_handle,
 }
 
 #define FCGID_VEC_COUNT 8
-apr_status_t proc_write_ipc(server_rec * main_server,
-                            fcgid_ipc * ipc_handle,
+apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                             apr_bucket_brigade * output_brigade)
 {
     apr_status_t rv;

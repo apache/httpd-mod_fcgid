@@ -298,8 +298,7 @@ static apr_status_t ipc_handle_cleanup(void *thehandle)
     return APR_SUCCESS;
 }
 
-apr_status_t proc_connect_ipc(server_rec *main_server,
-                              fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
+apr_status_t proc_connect_ipc(fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
 {
     /* Prepare the ipc struct */
     fcgid_namedpipe_handle *handle_info;
@@ -348,16 +347,16 @@ apr_status_t proc_connect_ipc(server_rec *main_server,
     if (handle_info->handle_pipe == INVALID_HANDLE_VALUE)
     {
         if (GetLastError() == ERROR_FILE_NOT_FOUND) /* The process has exited */
-            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
-                         "mod_fcgid: can't connect to named pipe, FastCGI"
-                         " server %" APR_PID_T_FMT " has been terminated",
-                         procnode->proc_id->pid);
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, ipc_handle->request,
+                          "mod_fcgid: can't connect to named pipe, FastCGI"
+                          " server %" APR_PID_T_FMT " has been terminated",
+                          procnode->proc_id->pid);
         else
-            ap_log_error(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(),
-                         main_server,
-                         "mod_fcgid: can't connect to named pipe, FastCGI"
-                         " server pid %" APR_PID_T_FMT,
-                         procnode->proc_id->pid);
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(), 
+                          ipc_handle->request,
+                          "mod_fcgid: can't connect to named pipe, FastCGI"
+                          " server pid %" APR_PID_T_FMT,
+                          procnode->proc_id->pid);
         return APR_ESPIPE;
     }
 
@@ -365,8 +364,7 @@ apr_status_t proc_connect_ipc(server_rec *main_server,
     return APR_SUCCESS;
 }
 
-apr_status_t proc_close_ipc(server_rec * main_server,
-                            fcgid_ipc * ipc_handle)
+apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle)
 {
     apr_status_t rv;
 
@@ -377,8 +375,7 @@ apr_status_t proc_close_ipc(server_rec * main_server,
     return rv;
 }
 
-apr_status_t proc_read_ipc(server_rec * main_server,
-                           fcgid_ipc * ipc_handle, const char *buffer,
+apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
                            apr_size_t * size)
 {
     apr_status_t rv;
@@ -392,8 +389,9 @@ apr_status_t proc_read_ipc(server_rec * main_server,
         *size = bytesread;
         return APR_SUCCESS;
     } else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, APR_FROM_OS_ERROR(rv),
-                     main_server, "mod_fcgid: can't read from pipe");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, APR_FROM_OS_ERROR(rv),
+                      ipc_handle->request,
+                      "mod_fcgid: can't read from pipe");
         return rv;
     } else {
         /* it's ERROR_IO_PENDING */
@@ -408,24 +406,23 @@ apr_status_t proc_read_ipc(server_rec * main_server,
                                      &transferred, FALSE /* don't wait */ )
                 || transferred == 0) {
                 rv = apr_get_os_error();
-                ap_log_error(APLOG_MARK, APLOG_WARNING,
-                             rv, main_server,
-                             "mod_fcgid: get overlap result error");
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, 
+                              ipc_handle->request,
+                              "mod_fcgid: get overlap result error");
                 return rv;
             }
 
             *size = transferred;
             return APR_SUCCESS;
         } else {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, 0,
-                         main_server, "mod_fcgid: read timeout from pipe");
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, ipc_handle->request,
+                          "mod_fcgid: read timeout from pipe");
             return APR_ETIMEDOUT;
         }
     }
 }
 
-apr_status_t proc_write_ipc(server_rec * main_server,
-                            fcgid_ipc * ipc_handle,
+apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                             apr_bucket_brigade * birgade_send)
 {
     fcgid_namedpipe_handle *handle_info;
@@ -451,8 +448,8 @@ apr_status_t proc_write_ipc(server_rec * main_server,
 
         if ((rv = apr_bucket_read(bucket_request, &write_buf, &write_buf_len,
                                   APR_BLOCK_READ)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
-                         "mod_fcgid: can't read request from bucket");
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, ipc_handle->request,
+                          "mod_fcgid: can't read request from bucket");
             return rv;
         }
 
@@ -468,9 +465,9 @@ apr_status_t proc_write_ipc(server_rec * main_server,
                 has_write += byteswrite;
                 continue;
             } else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING,
-                             APR_FROM_OS_ERROR(rv), main_server,
-                             "mod_fcgid: can't write to pipe");
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING,
+                              APR_FROM_OS_ERROR(rv), ipc_handle->request,
+                              "mod_fcgid: can't write to pipe");
                 return rv;
             } else {
                 /* 
@@ -486,16 +483,17 @@ apr_status_t proc_write_ipc(server_rec * main_server,
                                              FALSE /* don't wait */ )
                         || transferred == 0)
                     {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING,
-                                     apr_get_os_error(), main_server,
-                                     "mod_fcgid: get overlap result error");
+                        ap_log_rerror(APLOG_MARK, APLOG_WARNING,
+                                      apr_get_os_error(), ipc_handle->request,
+                                      "mod_fcgid: get overlap result error");
                         return APR_ESPIPE;
                     }
                     has_write += transferred;
                     continue;
                 } else {
-                    ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
-                                 "mod_fcgid: write timeout to pipe");
+                    ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0,
+                                  ipc_handle->request,
+                                  "mod_fcgid: write timeout to pipe");
                     return APR_ESPIPE;
                 }
             }

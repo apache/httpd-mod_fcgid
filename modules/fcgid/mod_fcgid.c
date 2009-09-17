@@ -199,8 +199,8 @@ static int fcgid_handler(request_rec * r)
         if ((rv =
              apr_stat(&r->finfo, command, APR_FINFO_IDENT,
                       r->pool)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-                         "mod_fcgid: can't get %s file info", command);
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                          "mod_fcgid: can't get %s file info", command);
             return HTTP_NOT_FOUND;
         }
     }

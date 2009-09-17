@@ -159,7 +159,8 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
        NOTE: ipc will be clean when request pool cleanup, so I don't need to close it here
      */
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) thectx;
-    server_rec *s = ctx->ipc.request->server;
+    request_rec *r = ctx->ipc.request;
+    server_rec *s = r->server;
     fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
                                                     &fcgid_module);
 
@@ -169,7 +170,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
         ctx->buffer = NULL;
     }
 
-    proc_close_ipc(s, &ctx->ipc);
+    proc_close_ipc(&ctx->ipc);
 
     if (ctx->procnode) {
         /* Return procnode
@@ -184,9 +185,9 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
         if (dt > sconf->busy_timeout) {
             /* Do nothing but print log */
-            ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
-                         "mod_fcgid: process busy timeout, took %d seconds for this request",
-                         dt);
+            ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
+                          "mod_fcgid: process busy timeout, took %d seconds for this request",
+                          dt);
         } else if (ctx->has_error) {
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
             return_procnode(s, ctx->procnode,
@@ -347,10 +348,9 @@ handle_request(request_rec * r, int role, const char *argv0,
 
         /* Connect to the fastcgi server */
         if (bucket_ctx->procnode) {
-            if (proc_connect_ipc
-                (r->server, bucket_ctx->procnode,
-                 &bucket_ctx->ipc) != APR_SUCCESS) {
-                proc_close_ipc(r->server, &bucket_ctx->ipc);
+            if (proc_connect_ipc(bucket_ctx->procnode,
+                                 &bucket_ctx->ipc) != APR_SUCCESS) {
+                proc_close_ipc(&bucket_ctx->ipc);
                 bucket_ctx->procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
                 return_procnode(r->server, bucket_ctx->procnode,
                                 1 /* has error */ );
@@ -362,8 +362,8 @@ handle_request(request_rec * r, int role, const char *argv0,
 
     /* Now I get a connected ipc handle */
     if (!bucket_ctx->procnode) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server,
-                     "mod_fcgid: can't apply process slot for %s", argv0);
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                      "mod_fcgid: can't apply process slot for %s", argv0);
         return HTTP_SERVICE_UNAVAILABLE;
     }
     bucket_ctx->active_time = bucket_ctx->procnode->last_active_time =
@@ -371,10 +371,10 @@ handle_request(request_rec * r, int role, const char *argv0,
 
     /* Write output_brigade to fastcgi server */
     if ((rv =
-         proc_write_ipc(s, &bucket_ctx->ipc,
+         proc_write_ipc(&bucket_ctx->ipc,
                         output_brigade)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-                     "mod_fcgid: error writing data to FastCGI server");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                      "mod_fcgid: error writing data to FastCGI server");
         bucket_ctx->has_error = 1;
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -423,8 +423,8 @@ handle_request(request_rec * r, int role, const char *argv0,
                                    ap_pass_brigade(r->output_filters,
                                                    brigade_stdout)) !=
         APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, r->server,
-                     "mod_fcgid: ap_pass_brigade failed in handle_request function");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                      "mod_fcgid: ap_pass_brigade failed in handle_request function");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
 
@@ -457,11 +457,11 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
     /* Build the begin request and environ request, append them to output_brigade */
     if (!build_begin_block
-        (role, r->server, r->connection->bucket_alloc, output_brigade)
-        || !build_env_block(r->server, envp, r->connection->bucket_alloc,
+        (role, r, r->connection->bucket_alloc, output_brigade)
+        || !build_env_block(r, envp, r->connection->bucket_alloc,
                             output_brigade)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                     "mod_fcgid: can't build begin or env request");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                      "mod_fcgid: can't build begin or env request");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
 
@@ -483,8 +483,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                  AP_MODE_READBYTES,
                                  APR_BLOCK_READ,
                                  HUGE_STRING_LEN)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
-                         "mod_fcgid: can't get data from http client");
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                          "mod_fcgid: can't get data from http client");
             apr_brigade_destroy(output_brigade);
             apr_brigade_destroy(input_brigade);
             return HTTP_INTERNAL_SERVER_ERROR;
@@ -507,8 +507,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
             if ((rv = apr_bucket_read(bucket_input, &data, &len,
                                       APR_BLOCK_READ)) != APR_SUCCESS) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
-                             "mod_fcgid: can't read request from HTTP client");
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                              "mod_fcgid: can't read request from HTTP client");
                 apr_brigade_destroy(input_brigade);
                 apr_brigade_destroy(output_brigade);
                 return HTTP_INTERNAL_SERVER_ERROR;
@@ -526,10 +526,10 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
             request_size += len;
             if (request_size > sconf->max_request_len) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                             "mod_fcgid: HTTP request length %" APR_SIZE_T_FMT 
-                             " (so far) exceeds MaxRequestLen (%" APR_SIZE_T_FMT
-                             ")",
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                              "mod_fcgid: HTTP request length %" APR_SIZE_T_FMT 
+                              " (so far) exceeds MaxRequestLen (%" APR_SIZE_T_FMT
+                              ")",
                              request_size, sconf->max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
@@ -551,8 +551,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 
                     rv = apr_temp_dir_get(&tempdir, r->pool);
                     if (rv != APR_SUCCESS) {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
-                                     "mod_fcigd: can't get tmp dir");
+                        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                                      "mod_fcgid: can't get tmp dir");
                         return HTTP_INTERNAL_SERVER_ERROR;
                     }
 
@@ -562,8 +562,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                     rv = apr_file_mktemp(&fd, template, 0,
                                          r->connection->pool);
                     if (rv != APR_SUCCESS) {
-                        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, s,
-                                     "mod_fcgid: can't open tmp file fot stdin request");
+                        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                                      "mod_fcgid: can't open tmp file fot stdin request");
                         return HTTP_INTERNAL_SERVER_ERROR;
                     }
                     apr_pool_userdata_set((const void *) fd, fd_key,
@@ -579,9 +579,9 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                      apr_file_write_full(fd, (const void *) data, len,
                                          &wrote_len)) != APR_SUCCESS
                     || len != wrote_len) {
-                    ap_log_error(APLOG_MARK, APLOG_WARNING,
-                                 rv, s,
-                                 "mod_fcgid: can't write tmp file for stdin request");
+                    ap_log_rerror(APLOG_MARK, APLOG_WARNING,
+                                  rv, r,
+                                  "mod_fcgid: can't write tmp file for stdin request");
                     return HTTP_INTERNAL_SERVER_ERROR;
                 }
                 // Create file bucket
@@ -606,8 +606,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
             }
 
             if (!init_header(FCGI_STDIN, 1, len, 0, stdin_request_header)) {
-                ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                             "mod_fcgid: header overflow");
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                              "mod_fcgid: header overflow");
                 apr_brigade_destroy(input_brigade);
                 apr_brigade_destroy(output_brigade);
                 return HTTP_INTERNAL_SERVER_ERROR;
@@ -629,8 +629,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                apr_bucket_free,
                                r->connection->bucket_alloc);
     if (!init_header(FCGI_STDIN, 1, 0, 0, stdin_request_header)) {
-        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                     "mod_fcgid: header overflow");
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                      "mod_fcgid: header overflow");
         return HTTP_INTERNAL_SERVER_ERROR;
     }
     APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_header);
