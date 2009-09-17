@@ -63,7 +63,8 @@ apr_status_t
 procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 {
     apr_status_t rv;
-    int error_scan_interval, busy_scan_interval, idle_scan_interval;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     /* Initialize spawn controler */
     spawn_control_init(main_server, pconf);
@@ -90,11 +91,10 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
     }
 
     /* Calculate procmgr_peek_cmd wake up interval */
-    error_scan_interval = get_error_scan_interval(main_server);
-    busy_scan_interval = get_busy_scan_interval(main_server);
-    idle_scan_interval = get_idle_scan_interval(main_server);
-    g_wakeup_timeout = min(error_scan_interval, busy_scan_interval);
-    g_wakeup_timeout = min(idle_scan_interval, g_wakeup_timeout);
+    g_wakeup_timeout = min(sconf->error_scan_interval,
+                           sconf->busy_scan_interval);
+    g_wakeup_timeout = min(sconf->idle_scan_interval,
+                           g_wakeup_timeout);
     if (g_wakeup_timeout == 0)
         g_wakeup_timeout = 1;   /* Make it reasonable */
 

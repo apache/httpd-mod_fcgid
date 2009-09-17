@@ -160,7 +160,8 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
      */
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) thectx;
     server_rec *s = ctx->ipc.request->server;
-    int max_requests_per_process = get_max_requests_per_process(s);
+    fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
+                                                    &fcgid_module);
 
     /* Free bucket buffer */
     if (ctx->buffer) {
@@ -173,7 +174,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
     if (ctx->procnode) {
         /* Return procnode
            I will return this slot to idle(or error) list except:
-           I take too much time on this request( greater than get_busy_timeout() ),
+           I take too much time on this request( greater than BusyTimeout) ),
            so the process manager may have put this slot from busy list to error
            list, and the contain of this slot may have been modified
            In this case I will do nothing and return, let the process manager 
@@ -181,7 +182,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
          */
         int dt = (int)
             (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
-        if (dt > get_busy_timeout(s)) {
+        if (dt > sconf->busy_timeout) {
             /* Do nothing but print log */
             ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
                          "mod_fcgid: process busy timeout, took %d seconds for this request",
@@ -190,9 +191,9 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
             return_procnode(s, ctx->procnode,
                             1 /* communication error */ );
-        } else if (max_requests_per_process != -1
+        } else if (sconf->max_requests_per_process != -1
                    && ++ctx->procnode->requests_handled >=
-                   max_requests_per_process) {
+                   sconf->max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
             return_procnode(s, ctx->procnode,
                             1 /* handled all requests */ );
@@ -288,6 +289,8 @@ handle_request(request_rec * r, int role, const char *argv0,
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
     server_rec *s = r->server;
+    fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
+                                                    &fcgid_module);
     fcgid_command fcgi_request;
     fcgid_bucket_ctx *bucket_ctx;
     int i, j, cond_status;
@@ -297,8 +300,8 @@ handle_request(request_rec * r, int role, const char *argv0,
     const char *location;
 
     bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
-    bucket_ctx->ipc.connect_timeout = get_ipc_connect_timeout(r->server);
-    bucket_ctx->ipc.communation_timeout = get_ipc_comm_timeout(r->server);
+    bucket_ctx->ipc.connect_timeout = sconf->ipc_connect_timeout;
+    bucket_ctx->ipc.communation_timeout = sconf->ipc_comm_timeout;
 
     bucket_ctx->ipc.request = r;
     apr_pool_cleanup_register(request_pool, bucket_ctx,
@@ -434,6 +437,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
     server_rec *s = r->server;
+    fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
+                                                    &fcgid_module);
     apr_status_t rv = APR_SUCCESS;
     int seen_eos;
     size_t request_size = 0;
@@ -443,8 +448,6 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     FCGI_Header *stdin_request_header;
     apr_bucket_brigade *output_brigade;
     apr_bucket *bucket_input, *bucket_header, *bucket_eos;
-    size_t max_request_len = get_max_request_len(s);
-    size_t max_mem_request_len = get_max_mem_request_len(s);
     char **envp = ap_create_environment(request_pool,
                                         r->subprocess_env);
 
@@ -523,14 +526,14 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                        r->connection->bucket_alloc);
 
             request_size += len;
-            if (request_size > max_request_len) {
+            if (request_size > sconf->max_request_len) {
                 ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                              "mod_fcgid: http request length %" APR_SIZE_T_FMT " > %" APR_SIZE_T_FMT,
-                             request_size, max_request_len);
+                             request_size, sconf->max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
 
-            if (request_size > max_mem_request_len) {
+            if (request_size > sconf->max_mem_request_len) {
                 apr_size_t wrote_len;
                 static const char *fd_key = "fcgid_fd";
 

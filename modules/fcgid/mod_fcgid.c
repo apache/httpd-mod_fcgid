@@ -543,10 +543,12 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     const char *userdata_key = "fcgid_init";
     apr_status_t rv;
     void *dummy = NULL;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     ap_add_version_component(config_pool, MODFCGID_PRODUCT);
 
-    g_php_fix_pathinfo_enable = get_php_fix_pathinfo_enable(main_server);
+    g_php_fix_pathinfo_enable = sconf->php_fix_pathinfo_enable;
 
     /* Initialize process manager only once */
     apr_pool_userdata_get(&dummy, userdata_key,

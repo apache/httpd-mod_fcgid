@@ -175,13 +175,6 @@ const char *set_idle_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     return NULL;
 }
 
-int get_idle_timeout(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->idle_timeout : DEFAULT_IDLE_TIMEOUT;
-}
-
 const char *set_idle_scan_interval(cmd_parms * cmd, void *dummy,
                                    const char *arg)
 {
@@ -198,13 +191,6 @@ const char *set_idle_scan_interval(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_idle_scan_interval(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->idle_scan_interval : DEFAULT_IDLE_TIMEOUT;
-}
-
 const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
 {
     server_rec *s = cmd->server;
@@ -213,13 +199,6 @@ const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     config->busy_timeout = atol(arg);
     config->busy_timeout_set = 1;
     return NULL;
-}
-
-int get_busy_timeout(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->busy_timeout : DEFAULT_BUSY_TIMEOUT;
 }
 
 const char *set_busy_scan_interval(cmd_parms * cmd, void *dummy,
@@ -238,14 +217,6 @@ const char *set_busy_scan_interval(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_busy_scan_interval(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        busy_scan_interval : DEFAULT_BUSY_SCAN_INTERVAL;
-}
-
 const char *set_proc_lifetime(cmd_parms * cmd, void *dummy,
                               const char *arg)
 {
@@ -260,13 +231,6 @@ const char *set_proc_lifetime(cmd_parms * cmd, void *dummy,
 
     config->proc_lifetime = atol(arg);
     return NULL;
-}
-
-int get_proc_lifetime(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->proc_lifetime : DEFAULT_PROC_LIFETIME;
 }
 
 const char *set_error_scan_interval(cmd_parms * cmd, void *dummy,
@@ -285,14 +249,6 @@ const char *set_error_scan_interval(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_error_scan_interval(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        error_scan_interval : DEFAULT_ERROR_SCAN_INTERVAL;
-}
-
 const char *set_zombie_scan_interval(cmd_parms * cmd, void *dummy,
                                      const char *arg)
 {
@@ -307,14 +263,6 @@ const char *set_zombie_scan_interval(cmd_parms * cmd, void *dummy,
 
     config->zombie_scan_interval = atol(arg);
     return NULL;
-}
-
-int get_zombie_scan_interval(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        zombie_scan_interval : DEFAULT_ZOMBIE_SCAN_INTERVAL;
 }
 
 const char *set_socketpath(cmd_parms * cmd, void *dummy, const char *arg)
@@ -335,13 +283,6 @@ const char *set_socketpath(cmd_parms * cmd, void *dummy, const char *arg)
     return NULL;
 }
 
-const char *get_socketpath(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config->sockname_prefix;
-}
-
 const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg)
 {
     server_rec *s = cmd->server;
@@ -360,13 +301,6 @@ const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg)
     return NULL;
 }
 
-const char *get_shmpath(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config->shmname_path;
-}
-
 const char *set_spawnscore_uplimit(cmd_parms * cmd, void *dummy,
                                    const char *arg)
 {
@@ -383,14 +317,6 @@ const char *set_spawnscore_uplimit(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_spawnscore_uplimit(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        spawnscore_uplimit : DEFAULT_SPAWNSOCRE_UPLIMIT;
-}
-
 const char *set_max_request_len(cmd_parms * cmd, void *dummy,
                                 const char *arg)
 {
@@ -402,13 +328,6 @@ const char *set_max_request_len(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_max_request_len(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->max_request_len : DEFAULT_MAX_REQUEST_LEN;
-}
-
 const char *set_max_mem_request_len(cmd_parms * cmd, void *dummy,
                                     const char *arg)
 {
@@ -418,14 +337,6 @@ const char *set_max_mem_request_len(cmd_parms * cmd, void *dummy,
     config->max_mem_request_len = atol(arg);
     config->max_mem_request_len_set = 1;
     return NULL;
-}
-
-int get_max_mem_request_len(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        max_mem_request_len : DEFAULT_MAX_MEM_REQUEST_LEN;
 }
 
 const char *set_spawn_score(cmd_parms * cmd, void *dummy, const char *arg)
@@ -443,13 +354,6 @@ const char *set_spawn_score(cmd_parms * cmd, void *dummy, const char *arg)
     return NULL;
 }
 
-int get_spawn_score(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->spawn_score : DEFAULT_SPAWN_SCORE;
-}
-
 const char *set_time_score(cmd_parms * cmd, void *dummy, const char *arg)
 {
     server_rec *s = cmd->server;
@@ -463,13 +367,6 @@ const char *set_time_score(cmd_parms * cmd, void *dummy, const char *arg)
 
     config->time_score = atol(arg);
     return NULL;
-}
-
-int get_time_score(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->time_score : DEFAULT_TIME_SCORE;
 }
 
 const char *set_termination_score(cmd_parms * cmd, void *dummy,
@@ -488,13 +385,6 @@ const char *set_termination_score(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_termination_score(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->termination_score : DEFAULT_TERMINATION_SCORE;
-}
-
 const char *set_max_process(cmd_parms * cmd, void *dummy, const char *arg)
 {
     server_rec *s = cmd->server;
@@ -510,13 +400,6 @@ const char *set_max_process(cmd_parms * cmd, void *dummy, const char *arg)
     return NULL;
 }
 
-int get_max_process(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->max_process_count : DEFAULT_MAX_PROCESS_COUNT;
-}
-
 const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
                                   const char *arg)
 {
@@ -526,13 +409,6 @@ const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
     config->output_buffersize = atol(arg);
     config->output_buffersize_set = 1;
     return NULL;
-}
-
-int get_output_buffersize(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->output_buffersize : DEFAULT_OUTPUT_BUFFERSIZE;
 }
 
 const char *set_max_class_process(cmd_parms * cmd, void *dummy,
@@ -551,14 +427,6 @@ const char *set_max_class_process(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_max_class_process(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        max_class_process_count : DEFAULT_MAX_CLASS_PROCESS_COUNT;
-}
-
 const char *set_min_class_process(cmd_parms * cmd, void *dummy,
                                   const char *arg)
 {
@@ -573,14 +441,6 @@ const char *set_min_class_process(cmd_parms * cmd, void *dummy,
 
     config->min_class_process_count = atol(arg);
     return NULL;
-}
-
-int get_min_class_process(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        min_class_process_count : DEFAULT_MIN_CLASS_PROCESS_COUNT;
 }
 
 const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
@@ -610,21 +470,6 @@ const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
-int get_max_requests_per_process(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        max_requests_per_process : DEFAULT_MAX_REQUESTS_PER_PROCESS;
-}
-
-int get_php_fix_pathinfo_enable(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->php_fix_pathinfo_enable : 0;
-}
-
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
                                     const char *arg)
 {
@@ -634,14 +479,6 @@ const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
     config->ipc_connect_timeout = atol(arg);
     config->ipc_connect_timeout_set = 1;
     return NULL;
-}
-
-int get_ipc_connect_timeout(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->
-        ipc_connect_timeout : DEFAULT_IPC_CONNECT_TIMEOUT;
 }
 
 const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
@@ -656,13 +493,6 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
     }
     config->ipc_comm_timeout_set = 1;
     return NULL;
-}
-
-int get_ipc_comm_timeout(server_rec * s)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(s->module_config, &fcgid_module);
-    return config ? config->ipc_comm_timeout : DEFAULT_IPC_COMM_TIMEOUT;
 }
 
 const char *add_default_env_vars(cmd_parms * cmd, void *dummy,

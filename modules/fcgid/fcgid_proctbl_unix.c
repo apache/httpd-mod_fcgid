@@ -130,15 +130,14 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
     fcgid_procnode *ptmpnode = NULL;
     int i;
     apr_status_t rv;
-    const char *fname;
-
-    fname = get_shmpath(main_server);
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     /* Remove share memory first */
-    apr_shm_remove(fname, main_server->process->pconf);
+    apr_shm_remove(sconf->shmname_path, main_server->process->pconf);
 
     /* Create share memory */
-    if ((rv = apr_shm_create(&g_sharemem, shmem_size, fname,
+    if ((rv = apr_shm_create(&g_sharemem, shmem_size, sconf->shmname_path,
                              main_server->process->pconf)) != APR_SUCCESS)
     {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,

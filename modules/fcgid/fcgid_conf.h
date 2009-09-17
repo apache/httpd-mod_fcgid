@@ -127,82 +127,61 @@ void *create_fcgid_dir_config(apr_pool_t * p, char *dummy);
 
 const char *set_idle_timeout(cmd_parms * cmd, void *dummy,
                              const char *arg);
-int get_idle_timeout(server_rec * s);
 
 const char *set_idle_scan_interval(cmd_parms * cmd, void *dummy,
                                    const char *arg);
-int get_idle_scan_interval(server_rec * s);
 
 const char *set_busy_timeout(cmd_parms * cmd, void *dummy,
                              const char *arg);
-int get_busy_timeout(server_rec * s);
 
 const char *set_busy_scan_interval(cmd_parms * cmd, void *dummy,
                                    const char *arg);
-int get_busy_scan_interval(server_rec * s);
 
 const char *set_proc_lifetime(cmd_parms * cmd, void *dummy,
                               const char *arg);
-int get_proc_lifetime(server_rec * s);
 
 const char *set_error_scan_interval(cmd_parms * cmd, void *dummy,
                                     const char *arg);
-int get_error_scan_interval(server_rec * s);
 
 const char *set_zombie_scan_interval(cmd_parms * cmd, void *dummy,
                                      const char *arg);
-int get_zombie_scan_interval(server_rec * s);
 
 const char *set_socketpath(cmd_parms * cmd, void *dummy, const char *arg);
-const char *get_socketpath(server_rec * s);
 
 const char *set_shmpath(cmd_parms * cmd, void *dummy, const char *arg);
-const char *get_shmpath(server_rec * s);
 
 const char *set_time_score(cmd_parms * cmd, void *dummy, const char *arg);
-int get_time_score(server_rec * s);
 
 const char *set_max_request_len(cmd_parms * cmd, void *dummy,
                                 const char *arg);
-int get_max_request_len(server_rec * s);
 
 const char *set_max_mem_request_len(cmd_parms * cmd, void *dummy,
                                     const char *arg);
-int get_max_mem_request_len(server_rec * s);
 
 const char *set_termination_score(cmd_parms * cmd, void *dummy,
                                   const char *arg);
-int get_termination_score(server_rec * s);
 
 const char *set_spawn_score(cmd_parms * cmd, void *dummy, const char *arg);
-int get_spawn_score(server_rec * s);
 
 const char *set_spawnscore_uplimit(cmd_parms * cmd, void *dummy,
                                    const char *arg);
-int get_spawnscore_uplimit(server_rec * s);
 
 const char *set_max_process(cmd_parms * cmd, void *dummy, const char *arg);
-int get_max_process(server_rec * s);
 
 const char *set_max_class_process(cmd_parms * cmd, void *dummy,
                                   const char *arg);
-int get_max_class_process(server_rec * s);
 
 const char *set_min_class_process(cmd_parms * cmd, void *dummy,
                                   const char *arg);
-int get_min_class_process(server_rec * s);
 
 const char *set_ipc_connect_timeout(cmd_parms * cmd, void *dummy,
                                     const char *arg);
-int get_ipc_connect_timeout(server_rec * s);
 
 const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
                                  const char *arg);
-int get_ipc_comm_timeout(server_rec * s);
 
 const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
                                   const char *arg);
-int get_output_buffersize(server_rec * s);
 
 const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
                                  const char *name, const char *value);
@@ -237,11 +216,11 @@ auth_conf *get_access_info(request_rec * r, int *authoritative);
 
 const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
                                         const char *arg);
-int get_php_fix_pathinfo_enable(server_rec * s);
 
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
                                          const char *arg);
-int get_max_requests_per_process(server_rec * s);
+
+AP_DECLARE_DATA extern module fcgid_module;
 
 #endif
 

@@ -35,20 +35,15 @@ struct fcgid_stat_node {
 
 static apr_pool_t *g_stat_pool = NULL;
 static struct fcgid_stat_node *g_stat_list_header = NULL;
-static int g_time_score;
-static int g_termination_score;
-static int g_spawn_score;
-static int g_score_uplimit;
-static int g_max_process;
 static int g_total_process;
-static int g_max_class_process;
-static int g_min_class_process;
 
 static void
 register_life_death(server_rec * main_server,
                     fcgid_procnode * procnode, int life_or_death)
 {
     struct fcgid_stat_node *previous_node, *current_node;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     if (!g_stat_pool || !procnode)
         abort();
@@ -73,19 +68,17 @@ register_life_death(server_rec * main_server,
 
         /* Increase the score first */
         if (life_or_death == REGISTER_LIFE) {
-            current_node->score += g_spawn_score;
+            current_node->score += sconf->spawn_score;
             current_node->process_counter++;
         } else {
-            current_node->score += g_termination_score;
+            current_node->score += sconf->termination_score;
             current_node->process_counter--;
         }
 
         /* Decrease the score base on the time passing */
-        current_node->score -= g_time_score * (int) (apr_time_sec(now)
-                                                     -
-                                                     apr_time_sec
-                                                     (current_node->
-                                                      last_stat_time));
+        current_node->score -= 
+          sconf->time_score * 
+          (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
 
         /* Make score reasonable */
         if (current_node->score < 0)
@@ -124,15 +117,6 @@ void spawn_control_init(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: can't create stat pool");
         exit(1);
     }
-
-    /* Initialize the variables from configuration */
-    g_time_score = get_time_score(main_server);
-    g_termination_score = get_termination_score(main_server);
-    g_spawn_score = get_spawn_score(main_server);
-    g_score_uplimit = get_spawnscore_uplimit(main_server);
-    g_max_process = get_max_process(main_server);
-    g_max_class_process = get_max_class_process(main_server);
-    g_min_class_process = get_min_class_process(main_server);
 }
 
 void
@@ -160,6 +144,8 @@ void register_spawn(server_rec * main_server, fcgid_procnode * procnode)
 int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 {
     struct fcgid_stat_node *current_node;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     if (!command || !g_stat_pool)
         return 1;
@@ -181,29 +167,27 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
     else {
         apr_time_t now = apr_time_now();
 
-        current_node->score -= g_time_score * (int) (apr_time_sec(now)
-                                                     -
-                                                     apr_time_sec
-                                                     (current_node->
-                                                      last_stat_time));
+        current_node->score -= 
+          sconf->time_score * 
+          (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
         current_node->last_stat_time = now;
         if (current_node->score < 0)
             current_node->score = 0;
 
         /* Score is higher than up limit? */
-        if (current_node->score >= g_score_uplimit) {
+        if (current_node->score >= sconf->spawnscore_uplimit) {
             ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
                          "mod_fcgid: %s spawn score %d >= %d, skip the spawn request",
                          command->cgipath, current_node->score,
-                         g_score_uplimit);
+                         sconf->spawnscore_uplimit);
             return 0;
         }
 
         /* Total process count higher than up limit? */
-        if (g_total_process >= g_max_process) {
+        if (g_total_process >= sconf->max_process_count) {
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
                          "mod_fcgid: %s total process count %d >= %d, skip the spawn request",
-                         command->cgipath, g_total_process, g_max_process);
+                         command->cgipath, g_total_process, sconf->max_process_count);
             return 0;
         }
 
@@ -211,11 +195,11 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
            Process count of this class higher than up limit?
          */
         /* I need max class proccess count */
-        if (current_node->process_counter >= g_max_class_process) {
+        if (current_node->process_counter >= sconf->max_class_process_count) {
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
                          "mod_fcgid: too many %s processes (current:%d, max:%d), skip the spawn request",
                          command->cgipath, current_node->process_counter,
-                         g_max_class_process);
+                         sconf->max_class_process_count);
             return 0;
         }
 
@@ -223,9 +207,11 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
     }
 }
 
-int is_kill_allowed(fcgid_procnode * procnode)
+int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
 {
     struct fcgid_stat_node *previous_node, *current_node;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     if (!g_stat_pool || !procnode)
         return 0;
@@ -246,7 +232,7 @@ int is_kill_allowed(fcgid_procnode * procnode)
 
     if (current_node) {
         /* Found the node */
-        if (current_node->process_counter <= g_min_class_process)
+        if (current_node->process_counter <= sconf->min_class_process_count)
             return 0;
     }
 

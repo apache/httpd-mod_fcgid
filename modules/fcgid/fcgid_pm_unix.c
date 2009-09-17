@@ -305,28 +305,28 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 {
     apr_status_t rv;
     apr_finfo_t finfo;
-    int error_scan_interval, busy_scan_interval, idle_scan_interval;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     /* Calculate procmgr_peek_cmd wake up interval */
-    error_scan_interval = get_error_scan_interval(main_server);
-    busy_scan_interval = get_busy_scan_interval(main_server);
-    idle_scan_interval = get_idle_scan_interval(main_server);
-    g_wakeup_timeout = fcgid_min(error_scan_interval, busy_scan_interval);
-    g_wakeup_timeout = fcgid_min(idle_scan_interval, g_wakeup_timeout);
+    g_wakeup_timeout = fcgid_min(sconf->error_scan_interval, 
+                                 sconf->busy_scan_interval);
+    g_wakeup_timeout = fcgid_min(sconf->idle_scan_interval, 
+                                 g_wakeup_timeout);
     if (g_wakeup_timeout == 0)
         g_wakeup_timeout = 1;   /* Make it reasonable */
 
-    rv = apr_stat(&finfo, get_socketpath(main_server), APR_FINFO_USER,
+    rv = apr_stat(&finfo, sconf->sockname_prefix, APR_FINFO_USER,
                   configpool);
     if (rv != APR_SUCCESS) {
         /* Make dir for unix domain socket */
-        if ((rv = apr_dir_make_recursive(get_socketpath(main_server),
+        if ((rv = apr_dir_make_recursive(sconf->sockname_prefix,
                                          APR_UREAD | APR_UWRITE |
                                          APR_UEXECUTE,
                                          configpool)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
                          "mod_fcgid: Can't create unix socket dir %s",
-                         get_socketpath(main_server));
+                         sconf->sockname_prefix);
             exit(1);
         }
 
@@ -342,11 +342,11 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
          */
 
         if (!geteuid()) {
-            if (chown(get_socketpath(main_server),
+            if (chown(sconf->sockname_prefix,
                       ap_unixd_config.user_id, -1) < 0) {
                 ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
                              "mod_fcgid: Can't set ownership of unix socket dir %s",
-                             get_socketpath(main_server));
+                             sconf->sockname_prefix);
                 exit(1);
             }
         }

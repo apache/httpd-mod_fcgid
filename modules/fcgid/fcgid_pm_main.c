@@ -29,14 +29,6 @@
 
 #define HAS_GRACEFUL_KILL "Gracefulkill"
 
-static int g_idle_timeout;
-static int g_idle_scan_interval;
-static int g_busy_timeout;
-static int g_busy_scan_interval;
-static int g_proc_lifetime;
-static int g_error_scan_interval;
-static int g_zombie_scan_interval;
-
 static void
 link_node_to_list(server_rec * main_server,
                   fcgid_procnode * header,
@@ -61,11 +53,13 @@ static void scan_idlelist(server_rec * main_server)
     fcgid_procnode *proc_table;
     apr_time_t last_active_time, start_time;
     apr_time_t now = apr_time_now();
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     /* Should I check the idle list now? */
     if (procmgr_must_exit()
         || apr_time_sec(now) - apr_time_sec(lastidlescan) <=
-        g_idle_scan_interval)
+        sconf->idle_scan_interval)
         return;
     lastidlescan = now;
 
@@ -81,16 +75,16 @@ static void scan_idlelist(server_rec * main_server)
         last_active_time = current_node->last_active_time;
         start_time = current_node->start_time;
         if ((apr_time_sec(now) - apr_time_sec(last_active_time) >
-             g_idle_timeout
+             sconf->idle_timeout
              || apr_time_sec(now) - apr_time_sec(start_time) >
-             g_proc_lifetime)
-            && is_kill_allowed(current_node)) {
+             sconf->proc_lifetime)
+            && is_kill_allowed(main_server, current_node)) {
             /* Set die reason for log */
             if (apr_time_sec(now) - apr_time_sec(last_active_time) >
-                g_idle_timeout)
+                sconf->idle_timeout)
                 current_node->diewhy = FCGID_DIE_IDLE_TIMEOUT;
             else if (apr_time_sec(now) - apr_time_sec(start_time) >
-                     g_proc_lifetime)
+                     sconf->proc_lifetime)
                 current_node->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
 
             /* Unlink from idle list */
@@ -119,11 +113,13 @@ static void scan_busylist(server_rec * main_server)
     fcgid_procnode *proc_table;
     apr_time_t last_active_time;
     apr_time_t now = apr_time_now();
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     /* Should I check the busy list? */
     if (procmgr_must_exit()
         || apr_time_sec(now) - apr_time_sec(lastbusyscan) <=
-        g_busy_scan_interval)
+        sconf->busy_scan_interval)
         return;
     lastbusyscan = now;
 
@@ -139,7 +135,7 @@ static void scan_busylist(server_rec * main_server)
 
         last_active_time = current_node->last_active_time;
         if (apr_time_sec(now) - apr_time_sec(last_active_time) >
-            g_busy_timeout) {
+            (sconf->busy_timeout + 10)) {
             /* Set dir reason for log */
             current_node->diewhy = FCGID_DIE_BUSY_TIMEOUT;
 
@@ -174,13 +170,15 @@ static void scan_idlelist_zombie(server_rec * main_server)
     apr_time_t last_active_time;
     apr_time_t now = apr_time_now();
     fcgid_procnode temp_header;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     memset(&temp_header, 0, sizeof(temp_header));
 
     /* Should I check zombie processes in idle list now? */
     if (procmgr_must_exit()
         || apr_time_sec(now) - apr_time_sec(lastzombiescan) <=
-        g_zombie_scan_interval)
+        sconf->zombie_scan_interval)
         return;
     lastzombiescan = now;
 
@@ -200,7 +198,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
         /* Is it time for zombie check? */
         last_active_time = current_node->last_active_time;
         if (apr_time_sec(now) - apr_time_sec(last_active_time) >
-            g_zombie_scan_interval) {
+            sconf->zombie_scan_interval) {
             /* Unlink from idle list */
             previous_node->next_index = current_node->next_index;
 
@@ -277,11 +275,13 @@ static void scan_errorlist(server_rec * main_server)
     fcgid_procnode *free_list_header = proctable_get_free_list();
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode temp_error_header;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
 
     /* Should I check the busy list? */
     if (procmgr_must_exit()
         || apr_time_sec(now) - apr_time_sec(lasterrorscan) <=
-        g_error_scan_interval)
+        sconf->error_scan_interval)
         return;
     lasterrorscan = now = apr_time_now();
 
@@ -551,16 +551,6 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 apr_status_t pm_main(server_rec * main_server, apr_pool_t * configpool)
 {
     fcgid_command command;
-
-    /* Initialize the variables from configuration */
-    g_idle_timeout = get_idle_timeout(main_server);
-    g_idle_scan_interval = get_idle_scan_interval(main_server);
-    g_busy_scan_interval = get_busy_scan_interval(main_server);
-    g_proc_lifetime = get_proc_lifetime(main_server);
-    g_error_scan_interval = get_error_scan_interval(main_server);
-    g_zombie_scan_interval = get_zombie_scan_interval(main_server);
-    g_busy_timeout = get_busy_timeout(main_server);
-    g_busy_timeout += 10;
 
     while (1) {
         if (procmgr_must_exit())

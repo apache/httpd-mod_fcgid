@@ -57,7 +57,6 @@ typedef struct {
 
 static int g_process_counter = 0;
 static apr_pool_t *g_inode_cginame_map = NULL;
-static const char *g_socket_dir = NULL;
 
 static apr_status_t ap_unix_create_privileged_process(apr_proc_t * newproc,
                                                       const char *progname,
@@ -175,6 +174,8 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
                    fcgid_procnode * procnode)
 {
     server_rec *main_server = procinfo->main_server;
+    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
+                                                    &fcgid_module);
     apr_status_t rv = APR_SUCCESS;
     apr_file_t *file;
     int omask, retcode, unix_socket;
@@ -214,26 +215,17 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
         }
     }
 
-    if (!g_socket_dir) {
-        g_socket_dir = get_socketpath(procinfo->main_server);
-        if (!g_socket_dir) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
-                         procinfo->main_server,
-                         "mod_fcgid: can't get socket path");
-            return APR_ENOMEM;
-        }
-    }
-
     /* 
        Create UNIX domain socket before spawn 
      */
 
     /* Generate a UNIX domain socket file path */
-    /* XXX It's nothing I can do if strlen(g_socket_dir) too long... */
+    /* XXX It's nothing I can do if the socket dir is too long... */
     memset(&unix_addr, 0, sizeof(unix_addr));
     unix_addr.sun_family = AF_UNIX;
     apr_snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path) - 1,
-                 "%s/%" APR_PID_T_FMT ".%d", g_socket_dir, getpid(), g_process_counter++);
+                 "%s/%" APR_PID_T_FMT ".%d", sconf->sockname_prefix,
+                 getpid(), g_process_counter++);
     strncpy(procnode->socket_path, unix_addr.sun_path,
             sizeof(procnode->socket_path) - 1);
 
