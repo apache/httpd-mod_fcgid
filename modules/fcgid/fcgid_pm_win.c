@@ -30,7 +30,7 @@ static apr_queue_t *g_notifyqueue = NULL;
 static apr_thread_mutex_t *g_reqlock = NULL;
 static apr_thread_t *g_wakeup_thread = NULL;
 static int g_must_exit = 0;
-static int g_wakeup_timeout = 3;
+static int g_wakeup_timeout = 0;
 
 static void *APR_THREAD_FUNC wakeup_thread(apr_thread_t * thd, void *data)
 {

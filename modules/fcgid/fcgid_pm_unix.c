@@ -42,7 +42,7 @@
 static apr_status_t create_process_manager(server_rec * main_server,
                                            apr_pool_t * configpool);
 
-static int g_wakeup_timeout = 3;
+static int g_wakeup_timeout = 0;
 static apr_proc_t *g_process_manager = NULL;
 static apr_file_t *g_pm_read_pipe = NULL;
 static apr_file_t *g_pm_write_pipe = NULL;
