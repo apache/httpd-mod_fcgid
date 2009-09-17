@@ -490,7 +490,6 @@ int bridge_request(request_rec * r, int role, const char *argv0,
             return HTTP_INTERNAL_SERVER_ERROR;
         }
 
-        request_size = 0;
         for (bucket_input = APR_BRIGADE_FIRST(input_brigade);
              bucket_input != APR_BRIGADE_SENTINEL(input_brigade);
              bucket_input = APR_BUCKET_NEXT(bucket_input)) {
@@ -528,7 +527,9 @@ int bridge_request(request_rec * r, int role, const char *argv0,
             request_size += len;
             if (request_size > sconf->max_request_len) {
                 ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                             "mod_fcgid: http request length %" APR_SIZE_T_FMT " > %" APR_SIZE_T_FMT,
+                             "mod_fcgid: HTTP request length %" APR_SIZE_T_FMT 
+                             " (so far) exceeds MaxRequestLen (%" APR_SIZE_T_FMT
+                             ")",
                              request_size, sconf->max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
