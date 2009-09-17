@@ -653,7 +653,7 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     if ((rv = apr_stat(&finfo, access, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return apr_psprintf(cmd->pool,
-                            "can't get authorizer file info: %s, errno: %d",
+                            "can't get access checker file info: %s, errno: %d",
                             access, apr_get_os_error());
     }
 
