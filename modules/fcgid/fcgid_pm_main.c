@@ -134,6 +134,7 @@ static void scan_busylist(server_rec * main_server)
         next_node = &proc_table[current_node->next_index];
 
         last_active_time = current_node->last_active_time;
+        /* FIXME See BZ #47483 */
         if (apr_time_sec(now) - apr_time_sec(last_active_time) >
             (sconf->busy_timeout + 10)) {
             /* Set dir reason for log */

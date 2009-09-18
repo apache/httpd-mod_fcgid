@@ -64,6 +64,7 @@ typedef struct {
 typedef struct {
     /* global only */
     int busy_scan_interval;
+    int busy_timeout;
     int max_class_process_count;
     int min_class_process_count;
     int error_scan_interval;
@@ -82,10 +83,6 @@ typedef struct {
     /* global or vhost
      * scalar values have corresponding _set field to aid merging
      */
-    int busy_timeout; /* TODO: Does setting this in a vhost work as expected?
-                       * Look at use in PM vs. handler.
-                       */
-    int busy_timeout_set;
     apr_table_t *default_init_env;
     int ipc_comm_timeout;
     int ipc_comm_timeout_set;

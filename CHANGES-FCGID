@@ -9,9 +9,8 @@ Changes with mod_fcgid 2.3.2
 
   *) Merge mod_fcgid server config/virtual host directives so that they can
      be inherited or overridden within a virtual host as expected.  Affected
-     directives: BusyTimeout, IPCCommTimeout, IPCConnectTimeout, 
-     MaxRequestInMem, MaxRequestLen, MaxRequestsPerProcess, OutputBufferSize.
-     [Jeff Trawick]
+     directives: IPCCommTimeout, IPCConnectTimeout, MaxRequestInMem,
+     MaxRequestLen, MaxRequestsPerProcess, OutputBufferSize. [Jeff Trawick]
 
   *) Use the virtual host settings for the request being processed instead
      of those of the first FastCGI request handled by this httpd child process.
@@ -19,7 +18,7 @@ Changes with mod_fcgid 2.3.2
      MaxRequestsPerProcess, and OutputBufferSize.  [Jeff Trawick]
 
   *) The following directives are no longer allowed in a virtual host
-     context: BusyScanInterval, DefaultMaxClassProcessCount, 
+     context: BusyScanInterval, BusyTimeout, DefaultMaxClassProcessCount, 
      DefaultMinProcessCount, ErrorScanInterval, IdleScanInterval, 
      IdleTimeout, MaxProcessCount, PHP_Fix_Pathinfo_Enable, 
      ProcessLifetime, SharedmemPath, SocketPath, SpawnScore,

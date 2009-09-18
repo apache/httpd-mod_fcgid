@@ -173,6 +173,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
     proc_close_ipc(&ctx->ipc);
 
     if (ctx->procnode) {
+        /* FIXME See BZ #47483 */
         /* Return procnode
            I will return this slot to idle(or error) list except:
            I take too much time on this request( greater than BusyTimeout) ),
@@ -186,8 +187,8 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
         if (dt > sconf->busy_timeout) {
             /* Do nothing but print log */
             ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
-                          "mod_fcgid: process busy timeout, took %d seconds for this request",
-                          dt);
+                          "mod_fcgid: process busy timeout (%d), took %d seconds for this request",
+                          sconf->busy_timeout, dt);
         } else if (ctx->has_error) {
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
             return_procnode(s, ctx->procnode,

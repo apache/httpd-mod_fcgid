@@ -77,7 +77,7 @@
     <description>a FastCGI application will be killed after handling a request for BusyTimeout</description>
     <syntax>BusyTimeout <em>seconds</em></syntax>
     <default>BusyTimeout 300</default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the maximum time limit for request handling.  If a FastCGI
       request does not complete within BusyTimeout seconds, it will be

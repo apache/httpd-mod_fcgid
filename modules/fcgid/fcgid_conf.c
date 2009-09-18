@@ -59,6 +59,7 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 
     if (!s->is_virtual) {
         config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;
+        config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
         config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
         config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
         config->error_scan_interval = DEFAULT_ERROR_SCAN_INTERVAL;
@@ -81,7 +82,6 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
      * config->php_fix_pathinfo_enable = 0;
      * config->*_set = 0;
      */
-    config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
     config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
     config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
     config->max_mem_request_len = DEFAULT_MAX_MEM_REQUEST_LEN;
@@ -133,9 +133,11 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
                            local->pass_headers);
     }
 
+    /* FIXME See BZ #47483 */
+    merged->busy_timeout = base->busy_timeout;
+
     /* Merge the scalar settings */
 
-    MERGE_SCALAR(base, local, merged, busy_timeout);
     MERGE_SCALAR(base, local, merged, ipc_comm_timeout);
     MERGE_SCALAR(base, local, merged, ipc_connect_timeout);
     MERGE_SCALAR(base, local, merged, max_mem_request_len);
@@ -196,8 +198,13 @@ const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+
+    if (err != NULL) {
+        return err;
+    }
+
     config->busy_timeout = atol(arg);
-    config->busy_timeout_set = 1;
     return NULL;
 }
 
