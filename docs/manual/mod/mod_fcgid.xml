@@ -54,6 +54,112 @@
 
   </summary>
 
+  <section id="examples">
+    <title>Examples</title>
+
+    <note type="hint"><title>Note</title>
+    <p>The examples assume that mod_fcgid and other necessary
+    modules are loaded into the server already, either built-in or 
+    via the <directive module="mod_so">LoadModule</directive>
+    directive.</p>
+
+    <p>Additionally, the example configurations provide full access
+    to the applications using access control directives which work 
+    with Apache 2.0 and 2.2.  These directives are not appropriate
+    for all environments, and they do not work for development
+    levels of Apache HTTP Server (Subversion trunk).</p>
+    </note>
+
+    <p>The first example is a very simple Perl FastCGI application,
+    and its configuration directives.  This is typical for FastCGI
+    applications which are named in the URL and which require no
+    special configuration.</p>
+
+    <example><title>Perl FastCGI application - /usr/local/apache/fcgi-bin/foo.pl</title>
+    #!/usr/bin/perl<br />
+    use CGI::Fast;<br />
+    <br />
+    while (my $q = CGI::Fast->new) {<br />
+    <indent>
+        print("Content-Type: text/plain\n\n");<br />
+        foreach $var (sort(keys(%ENV))) {<br />
+        <indent>
+            $val = $ENV{$var};<br />
+            $val =~ s|\n|\\n|g;<br />
+            $val =~ s|"|\\"|g;<br />
+            print "${var}=\"${val}\"\n";<br />
+        </indent>
+        }<br />
+    </indent>
+    }<br />
+    </example>
+
+    <example><title>Configuration directives</title>
+    &lt;Directory /usr/local/apache/fcgi-bin/&gt;<br />
+    <indent>
+      SetHandler fcgid-script<br />
+      Options +ExecCGI<br />
+      <br />
+      # Customize the next two directives for your requirements.<br />
+      Order allow,deny<br />
+      Allow from all<br />
+    </indent>
+    &lt;/Directory&gt;<br />
+    </example>
+
+    <p>PHP applications are usually configured using the
+    <directive module="mod_fcgid">FCGIWrapper</directive> directive
+    and a corresponding wrapper script, as in the following
+    example:</p>
+
+    <example><title>PHP application - /usr/local/phpapp/phpinfo.php</title>
+    &lt;?php<br />
+    <indent>
+      phpinfo();<br />
+    </indent>
+    ?&gt;<br />
+    </example>
+
+    <example><title>Configuration directives</title>
+    Alias /phpapp/ /usr/local/phpapp/<br />
+    &lt;Location /phpapp/&gt;<br />
+    <indent>
+      AddHandler fcgid-script .php<br />
+      Options +ExecCGI<br />
+      FCGIWrapper /usr/local/bin/php-wrapper .php<br />
+      # Uncomment the following line if cgi.fix_pathinfo<br />
+      # is set to 1 in php.ini:<br />
+      # PHP_Fix_Pathinfo_Enable 1<br />
+      <br />
+      # Customize the next two directives for your requirements.<br />
+      Order allow,deny<br />
+      Allow from all<br />
+    </indent>
+    &lt;/Location&gt;<br />
+    <br />
+    &lt;FilesMatch /usr/local/phpapp/phpinfo.php&gt;
+    <indent>
+      # Customize the next two directives for your requirements.<br />
+      Order allow,deny<br />
+      Allow from all<br />
+    </indent>
+    &lt;/FilesMatch&gt;
+
+    </example>
+
+    <example><title>PHP wrapper script - /usr/local/bin/php-wrapper</title>
+    #!/bin/sh<br />
+    # Set desired PHP_FCGI_* environment variables.<br />
+    # Example:<br />
+    PHP_FCGI_MAX_REQUESTS=1000<br />
+    export PHP_FCGI_MAX_REQUESTS<br />
+    <br />
+    # Replace with the path to your FastCGI-enabled PHP executable<br />
+    exec /usr/local/bin/php-cgi<br />
+    </example>
+
+  </section>
+
   <!-- References to other documents or directives -->
   <seealso><a href="../howto/cgi.html">Dynamic Content With CGI</a></seealso>
   <seealso><module>mod_cgi</module></seealso>
@@ -343,10 +449,10 @@
       <p>The optional <code>suffix</code> argument restricts the use of this FCGI
       server to all URLs with the given exact path suffix. A suffix needs to start
       with '<code>.</code>'.</p>
-      <p>The <code>virtual</code> flag signals, that there will be no check,
+      <p>The <code>virtual</code> flag signals that there will be no check
       whether the request URL actually points to an existing file. The only
       file which needs to exist is the wrapper itself.</p>
-      <p>The directive can be used multiply times. A wrapper defined without a suffix
+      <p>The directive can be used multiple times. A wrapper defined without a suffix
       is used as a default in case no suffix matches.</p>
     </usage>
   </directivesynopsis>
@@ -428,11 +534,12 @@
     <default>MaxRequestInMem 65536</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>This module reads the request body from the client before
-      sending to the application.  Normally the request body will
-      be stored in memory.  If the body exceeds 
-      <directive>MaxRequestInMem</directive> bytes, the body will
-      be stored in a temporary file.</p>
+      <p>This module reads the entire request body from the client
+      before sending it to the application.  Normally the request body
+      will be stored in memory.  Once the amount of request body read
+      from the client exceeds <directive>MaxRequestInMem</directive>
+      bytes, the remainder of the request body will be stored in a 
+      temporary file.</p>
     </usage>
   </directivesynopsis>
 
@@ -443,7 +550,7 @@
     <default>MaxRequestLen 1073741824</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>If the size of the request exceeds this amount, the
+      <p>If the size of the request body exceeds this amount, the
       request will fail with <code>500 Server Error</code>.</p>
     </usage>
   </directivesynopsis>
@@ -455,8 +562,9 @@
     <default>MaxRequestsPerProcess -1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>If set, FastCGI application processes will be terminated after
-      handling this many requests.</p>
+      <p>FastCGI application processes will be terminated after handling
+      the specified number of requests.  A value of <code>-1</code>
+      disables the check.</p>
     </usage>
   </directivesynopsis>
 
