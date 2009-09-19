@@ -80,7 +80,7 @@ generate-docs:
 	fi
 	@if test ! -d $(manualdir)/style; then \
 	  cd $(manualdir); \
-	  svn export $(svnroot)/httpd/branches/2.2.x/docs/manual/style; \
+	  svn export $(svnroot)/httpd/trunk/docs/manual/style; \
 	fi
 	cd $(manualdir)/build; \
 	  ./build.sh all
