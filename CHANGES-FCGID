@@ -1,8 +1,7 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
-  *) Route more error messages to the proper (virtual host-specific) log file.
-     [Jeff Trawick]
+  *) Log client IP address with many more error log messages.  [Jeff Trawick]
 
   *) Fix basic implementation of MaxRequestInMem and MaxRequestLen directives.
      [Jeff Trawick]
