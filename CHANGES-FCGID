@@ -25,6 +25,14 @@ Changes with mod_fcgid 2.3.2
      ZombieScanInterval.  They were allowed but ignored in previous
      releases.  [Jeff Trawick]
 
+  *) Add an optional flag "virtual" to FCGIWrapper.
+     If virtual is set, the URLs passed to the wrapper are not
+     checked, whether they resolve to a file. [Rainer Jung]
+
+  *) Make the second argument (suffix) for FCGIWrapper optional.
+     A wrapper defined without a suffix applies to all URLs, unless
+     there is another more specific wrapper with a suffix. [Rainer Jung]
+
 Changes with mod_fcgid 2.3.1
 
   *) Suppress "need AuthType to note auth failure" error-level messages when a
