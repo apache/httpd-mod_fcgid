@@ -91,25 +91,135 @@
 <li><img alt="" src="../images/down.gif" /> <a href="#timescore">TimeScore</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#zombiescaninterval">ZombieScanInterval</a></li>
 </ul>
-<h3>See also</h3>
+<h3>Topics</h3>
+<ul id="topics">
+<li><img alt="" src="../images/down.gif" /> <a href="#examples">Examples</a></li>
+</ul><h3>See also</h3>
 <ul class="seealso">
 <li><a href="../howto/cgi.html">Dynamic Content With CGI</a></li>
 <li><code class="module"><a href="../mod/mod_cgi.html">mod_cgi</a></code></li>
 <li><code class="module"><a href="../mod/mod_cgid.html">mod_cgid</a></code></li>
 </ul></div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="examples" id="examples">Examples</a></h2>
+    
 
+    <div class="note"><h3>Note</h3>
+    <p>The examples assume that mod_fcgid and other necessary
+    modules are loaded into the server already, either built-in or 
+    via the <code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>
+    directive.</p>
+
+    <p>Additionally, the example configurations provide full access
+    to the applications using access control directives which work 
+    with Apache 2.0 and 2.2.  These directives are not appropriate
+    for all environments, and they do not work for development
+    levels of Apache HTTP Server (Subversion trunk).</p>
+    </div>
+
+    <p>The first example is a very simple Perl FastCGI application,
+    and its configuration directives.  This is typical for FastCGI
+    applications which are named in the URL and which require no
+    special configuration.</p>
+
+    <div class="example"><h3>Perl FastCGI application - /usr/local/apache/fcgi-bin/foo.pl</h3><p><code>
+    #!/usr/bin/perl<br />
+    use CGI::Fast;<br />
+    <br />
+    while (my $q = CGI::Fast-&gt;new) {<br />
+    <span class="indent">
+        print("Content-Type: text/plain\n\n");<br />
+        foreach $var (sort(keys(%ENV))) {<br />
+        <span class="indent">
+            $val = $ENV{$var};<br />
+            $val =~ s|\n|\\n|g;<br />
+            $val =~ s|"|\\"|g;<br />
+            print "${var}=\"${val}\"\n";<br />
+        </span>
+        }<br />
+    </span>
+    }<br />
+    </code></p></div>
+
+    <div class="example"><h3>Configuration directives</h3><p><code>
+    &lt;Directory /usr/local/apache/fcgi-bin/&gt;<br />
+    <span class="indent">
+      SetHandler fcgid-script<br />
+      Options +ExecCGI<br />
+      <br />
+      # Customize the next two directives for your requirements.<br />
+      Order allow,deny<br />
+      Allow from all<br />
+    </span>
+    &lt;/Directory&gt;<br />
+    </code></p></div>
+
+    <p>PHP applications are usually configured using the
+    <code class="directive"><a href="#fcgiwrapper">FCGIWrapper</a></code> directive
+    and a corresponding wrapper script, as in the following
+    example:</p>
+
+    <div class="example"><h3>PHP application - /usr/local/phpapp/phpinfo.php</h3><p><code>
+    &lt;?php<br />
+    <span class="indent">
+      phpinfo();<br />
+    </span>
+    ?&gt;<br />
+    </code></p></div>
+
+    <div class="example"><h3>Configuration directives</h3><p><code>
+    Alias /phpapp/ /usr/local/phpapp/<br />
+    &lt;Location /phpapp/&gt;<br />
+    <span class="indent">
+      AddHandler fcgid-script .php<br />
+      Options +ExecCGI<br />
+      FCGIWrapper /usr/local/bin/php-wrapper .php<br />
+      # Uncomment the following line if cgi.fix_pathinfo<br />
+      # is set to 1 in php.ini:<br />
+      # PHP_Fix_Pathinfo_Enable 1<br />
+      <br />
+      # Customize the next two directives for your requirements.<br />
+      Order allow,deny<br />
+      Allow from all<br />
+    </span>
+    &lt;/Location&gt;<br />
+    <br />
+    &lt;FilesMatch /usr/local/phpapp/phpinfo.php&gt;
+    <span class="indent">
+      # Customize the next two directives for your requirements.<br />
+      Order allow,deny<br />
+      Allow from all<br />
+    </span>
+    &lt;/FilesMatch&gt;
+
+    </code></p></div>
+
+    <div class="example"><h3>PHP wrapper script - /usr/local/bin/php-wrapper</h3><p><code>
+    #!/bin/sh<br />
+    # Set desired PHP_FCGI_* environment variables.<br />
+    # Example:<br />
+    PHP_FCGI_MAX_REQUESTS=1000<br />
+    export PHP_FCGI_MAX_REQUESTS<br />
+    <br />
+    # Replace with the path to your FastCGI-enabled PHP executable<br />
+    exec /usr/local/bin/php-cgi<br />
+    </code></p></div>
+
+  </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="BusyScanInterval" id="BusyScanInterval">BusyScanInterval</a> <a name="busyscaninterval" id="busyscaninterval">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for busy timeout process</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>BusyScanInterval <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>BusyScanInterval 120</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>The module performs the <code class="directive">BusyTimeout</code> check 
-      at this interval.</p>
+      <p>The module performs the 
+      <code class="directive"><a href="#busytimeout">BusyTimeout</a></code> check at this 
+      interval.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -118,7 +228,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a FastCGI application will be killed after handling a request for BusyTimeout</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>BusyTimeout <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>BusyTimeout 300</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -146,6 +256,15 @@
       <p>Use <code class="directive">DefaultInitEnv</code> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
+
+      <div class="note"><h3>Note</h3>
+      <p>These settings are associated with the FastCGI process and are 
+      not reset on every request based on the current virtual host
+      settings.  The FastCGI process will run with the environment
+      settings of the virtual host of the request that caused the FastCGI
+      process to be started; these are not necessarily the same as those
+      of the virtual hosts of subsequent requests.</p>
+      </div>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -154,11 +273,16 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max process count of one class of FastCGI application</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>DefaultMaxClassProcessCount <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>DefaultMaxClassProcessCount 100</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the maximum number of processes in a class that
+      can be started.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -167,11 +291,16 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Min process count of one class of FastCGI application</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>DefaultMinClassProcessCount <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>DefaultMinClassProcessCount 3</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the minimum number of processes in a class that
+      will be retained after finishing requests.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -180,11 +309,15 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for exited process</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>ErrorScanInterval <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>ErrorScanInterval 3</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This is the interval at which the module will handle
+      pending process termination.  Termination is pending for
+      any processes which have exceeded 
+      <code class="directive"><a href="#idlescaninterval">IdleScanInterval</a></code> or
+      <code class="directive"><a href="#processlifetime">ProcessLifeTime</a></code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -233,7 +366,13 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This directive controls whether or not other access checkers
+      are allowed to run when this module has an access checker configured 
+      and it fails a request.  If this directive is <code>On</code> (default)
+      and a FastCGI access checker returns a failure status, a failure is
+      returned to the client without giving other access checkers a chance to
+      allow access.  If this directive is <code>Off</code>, other access
+      checkers will be called.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -289,7 +428,13 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This directive controls whether or not other authenticators
+      are allowed to run when this module has an authenticator configured 
+      and it fails a request.  If this directive is <code>On</code> (default)
+      and a FastCGI authenticator returns a failure status, a failure is
+      returned to the client without giving other authenticators a chance to
+      validate the client identity.  If this directive is <code>Off</code>, 
+      other authenticators will be called.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -343,7 +488,13 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This directive controls whether or not other authorizers
+      are allowed to run when this module has an authorizer configured 
+      and it fails a request.  If this directive is <code>On</code> (default)
+      and a FastCGI authorizer returns a failure status, a failure is
+      returned to the client without giving other authorizer a chance to
+      access the resource.  If this directive is <code>Off</code>, other
+      authorizers will be called.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -364,10 +515,10 @@
       <p>The optional <code>suffix</code> argument restricts the use of this FCGI
       server to all URLs with the given exact path suffix. A suffix needs to start
       with '<code>.</code>'.</p>
-      <p>The <code>virtual</code> flag signals, that there will be no check,
+      <p>The <code>virtual</code> flag signals that there will be no check
       whether the request URL actually points to an existing file. The only
       file which needs to exist is the wrapper itself.</p>
-      <p>The directive can be used multiply times. A wrapper defined without a suffix
+      <p>The directive can be used multiple times. A wrapper defined without a suffix
       is used as a default in case no suffix matches.</p>
     
 </div>
@@ -377,11 +528,14 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for idle timeout process</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IdleScanInterval <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IdleScanInterval 120</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This is the interval at which the module will search for
+      processes which have exceeded 
+      <code class="directive"><a href="#idlescaninterval">IdleScanInterval</a></code> or
+      <code class="directive"><a href="#processlifetime">ProcessLifeTime</a></code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -390,11 +544,12 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>An idle FastCGI application will be killed after IdleTimeout</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>IdleTimeout <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>IdleTimeout 300</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>Application processes which have not handled a request
+      for this period of time will be terminated.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -407,7 +562,14 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This is the maximum period of time the module will wait
+      while trying to read from or write to a FastCGI application.</p>
+
+      <div class="warning"><h3>Warning</h3>
+      <p>The FastCGI application must begin generating the response within
+      this period of time.  Increase this directive as necessary to handle
+      applications which take a relatively long period of time to respond.</p>
+      </div>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -420,7 +582,10 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This is the maximum period of time the module will wait
+      while trying to connect to a FastCGI application on Windows.
+      (This directive is not respected on Unix, where AF_UNIX defaults
+      will apply.)</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -429,7 +594,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum number of FastCGI application processes</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>MaxProcessCount <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>MaxProcessCount 1000</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -447,11 +612,12 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>This module reads the request body from the client before
-      sending to the application.  Normally the request body will
-      be stored in memory.  If the body exceeds 
-      <code class="directive">MaxRequestInMem</code> bytes, the body will
-      be stored in a temporary file.</p>
+      <p>This module reads the entire request body from the client
+      before sending it to the application.  Normally the request body
+      will be stored in memory.  Once the amount of request body read
+      from the client exceeds <code class="directive">MaxRequestInMem</code>
+      bytes, the remainder of the request body will be stored in a 
+      temporary file.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -464,7 +630,7 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>If the size of the request exceeds this amount, the
+      <p>If the size of the request body exceeds this amount, the
       request will fail with <code>500 Server Error</code>.</p>
     
 </div>
@@ -478,8 +644,9 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>If set, FastCGI application processes will be terminated after
-      handling this many requests.</p>
+      <p>FastCGI application processes will be terminated after handling
+      the specified number of requests.  A value of <code>-1</code>
+      disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -492,7 +659,8 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>TODO</p>
+      <p>This is the maximum amount of response data the module will read
+      from the FastCGI application before flushing the data to the client.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -517,7 +685,7 @@
     setting</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>PHP_Fix_Pathinfo_Enable 1</code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>PHP_Fix_Pathinfo_Enable 0</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -534,7 +702,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum FastCGI application process lifetime</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>ProcessLifeTime <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>ProcessLifeTime 3600</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -548,7 +716,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>shared memory file path</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SharememPath <em>pathname</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SharememPath logs/fcgid_shm</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -563,7 +731,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>directory for AF_UNIX sockets (Unix) or pipes (Windows)</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SocketPath <em>pathname</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SocketPath logs/fcgidsock</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -579,7 +747,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Each spawn adds this value to the process activity score.</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SpawnScore <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SpawnScore 1</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -594,7 +762,7 @@
     a spawn to occur</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>SpawnScoreUpLimit <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>SpawnScoreUpLimit 10</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -620,7 +788,7 @@
     score.</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>TerminationScore <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>TerminationScore 2</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -635,7 +803,7 @@
     second</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>TimeScore <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>TimeScore 1</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -649,7 +817,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for zombie process</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>ZombieScanInterval <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>ZombieScanInterval 3</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -662,6 +830,6 @@
 <div class="bottomlang">
 <p><span>Available Languages: </span><a href="../en/mod/mod_fcgid.html" title="English">&nbsp;en&nbsp;</a></p>
 </div><div id="footer">
-<p class="apache">Copyright 2008 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="apache">Copyright 2009 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="../faq/">FAQ</a> | <a href="../glossary.html">Glossary</a> | <a href="../sitemap.html">Sitemap</a></p></div>
 </body></html>
