@@ -693,7 +693,7 @@
       processing which allows PHP to provide additional path information.
       The setting of <code class="directive">PHP_Fix_Pathinfo_Enable</code>
       should mirror the <code>cgi.fix_pathinfo</code> setting in 
-      <code>php.ini</code>.  (That is not a recommended PHP setting.)</p>
+      <code>php.ini</code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>

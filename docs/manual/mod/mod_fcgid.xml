@@ -605,7 +605,7 @@
       processing which allows PHP to provide additional path information.
       The setting of <directive>PHP_Fix_Pathinfo_Enable</directive>
       should mirror the <code>cgi.fix_pathinfo</code> setting in 
-      <code>php.ini</code>.  (That is not a recommended PHP setting.)</p>
+      <code>php.ini</code>.</p>
     </usage>
   </directivesynopsis>
 
