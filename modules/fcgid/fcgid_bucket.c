@@ -24,7 +24,6 @@ static apr_status_t fcgid_feed_data(fcgid_bucket_ctx * ctx,
                                     apr_bucket_alloc_t * bucketalloc,
                                     char **buffer, apr_size_t * bufferlen)
 {
-    server_rec *s = ctx->ipc.request->server;
     apr_status_t rv;
 
     if (!ctx->buffer) {
@@ -78,7 +77,6 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
                                              apr_read_type_e block)
 {
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) b->data;
-    server_rec *s = ctx->ipc.request->server;
     apr_status_t rv;
     apr_size_t hasread, bodysize;
     FCGI_Header header;
