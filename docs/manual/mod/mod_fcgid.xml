@@ -48,11 +48,84 @@
     override using the <directive module="mod_mime">SetHandler</directive> 
     directive (e.g., for all files in a specific directory such as cgi-bin).</p>
 
+    <p>Some changes have been made in the ASF release of mod_fcgid which
+    can affect existing configurations. Especially all directives have been
+    renamed. The old names still work but are now deprecated.
+    Please read the <a href="#upgrade">Upgrade Notes</a> for details.</p>
+
     <p>For an introduction to using CGI scripts with Apache, see
     the generic tutorial on <a href="../howto/cgi.html">Dynamic Content
     With CGI</a>.</p>
 
   </summary>
+
+  <section id="upgrade">
+    <title>Upgrade Notes</title>
+    <p>The following changes have been made in the ASF release of mod_fcgid
+    and should be considered when upgrading from the original version by
+    Ryan Pan (Pan Qingfeng).
+    <ul>
+      <li>All directives have been renamed in order to use a common prefix "FCGID".
+      Underscores in directive names have been eliminated in favor of
+      CamelCase. The old directive names will still work but are deprecated.
+      To fix your configuration you can use the sed script tools/fixconf.sed.
+      The following tables contains old and new directive names:
+      <table>
+      <tr><th>Old Name</th><th>New Name</th></tr>
+      <tr><td>BusyScanInterval</td><td>FCGIDBusyScanInterval</td></tr>
+      <tr><td>BusyTimeout</td><td>FCGIDBusyTimeout</td></tr>
+      <tr><td>DefaultInitEnv</td><td>FCGIDDefaultInitEnv</td></tr>
+      <tr><td>DefaultMaxClassProcessCount</td><td>FCGIDDefaultMaxClassProcessCount</td></tr>
+      <tr><td>DefaultMinClassProcessCount</td><td>FCGIDDefaultMinClassProcessCount</td></tr>
+      <tr><td>ErrorScanInterval</td><td>FCGIDErrorScanInterval</td></tr>
+      <tr><td>FastCgiAccessChecker</td><td>FCGIDAccessChecker</td></tr>
+      <tr><td>FastCgiAccessCheckerAuthoritative</td><td>FCGIDAccessCheckerAuthoritative</td></tr>
+      <tr><td>FastCgiAuthenticator</td><td>FCGIDAuthenticator</td></tr>
+      <tr><td>FastCgiAuthenticatorAuthoritative</td><td>FCGIDAuthenticatorAuthoritative</td></tr>
+      <tr><td>FastCgiAuthorizer</td><td>FCGIDAuthorizer</td></tr>
+      <tr><td>FastCgiAuthorizerAuthoritative</td><td>FCGIDAuthorizerAuthoritative</td></tr>
+      <tr><td>FCGIWrapper</td><td>FCGIDWrapper</td></tr>
+      <tr><td>IdleScanInterval</td><td>FCGIDIdleScanInterval</td></tr>
+      <tr><td>IdleTimeout</td><td>FCGIDIdleTimeout</td></tr>
+      <tr><td>IPCCommTimeout</td><td>FCGIDIPCCommTimeout</td></tr>
+      <tr><td>IPCConnectTimeout</td><td>FCGIDIPCConnectTimeout</td></tr>
+      <tr><td>MaxProcessCount</td><td>FCGIDMaxProcessCount</td></tr>
+      <tr><td>MaxRequestInMem</td><td>FCGIDMaxRequestInMem</td></tr>
+      <tr><td>MaxRequestLen</td><td>FCGIDMaxRequestLen</td></tr>
+      <tr><td>MaxRequestsPerProcess</td><td>FCGIDMaxRequestsPerProcess</td></tr>
+      <tr><td>OutputBufferSize</td><td>FCGIDOutputBufferSize</td></tr>
+      <tr><td>PassHeader</td><td>FCGIDPassHeader</td></tr>
+      <tr><td>PHP_Fix_Pathinfo_Enable</td><td>FCGIDPHPFixPathinfoEnable</td></tr>
+      <tr><td>ProcessLifeTime</td><td>FCGIDProcessLifeTime</td></tr>
+      <tr><td>SharememPath</td><td>FCGIDSharememPath</td></tr>
+      <tr><td>SocketPath</td><td>FCGIDSocketPath</td></tr>
+      <tr><td>SpawnScore</td><td>FCGIDSpawnScore</td></tr>
+      <tr><td>SpawnScoreUpLimit</td><td>FCGIDSpawnScoreUpLimit</td></tr>
+      <tr><td>TerminationScore</td><td>FCGIDTerminationScore</td></tr>
+      <tr><td>TimeScore</td><td>FCGIDTimeScore</td></tr>
+      <tr><td>ZombieScanInterval</td><td>FCGIDZombieScanInterval</td></tr>
+      </table>
+      </li>
+
+      <li>Some directives which could be placed inside <code>&lt;VirtualHost &gt;</code> but were
+      ignored before now result in configuration errors.  As before, these
+      directives must be set at global scope to have the desired effect.
+      These include <directive module="mod_fcgid">FCGIDIdleTimeout</directive>,
+      <directive module="mod_fcgid">FCGIDMaxProcessCount</directive>,
+      <directive module="mod_fcgid">FCGIDPHPFixPathinfoEnable</directive>,
+      <directive module="mod_fcgid">FCGIDProcessLifetime</directive>, and others.
+      (Consult CHANGES-FCGID for the complete list.)</li>
+
+      <li>Some directives which can optionally be placed inside <code>&lt;VirtualHost &gt;</code>
+      were not inherited as expected in older releases.  This has been
+      corrected, and behavior will change for some configurations.  Affected
+      directives include <directive module="mod_fcgid">FCGIDIPCCommTimeout</directive>,
+      <directive module="mod_fcgid">FCGIDOutputBufferSize</directive>, and others.
+      (Consult CHANGES-FCGID for the complete list.)</li>
+    </ul>
+    </p>
+
+  </section>
 
   <section id="examples">
     <title>Examples</title>
