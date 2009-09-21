@@ -166,107 +166,6 @@
   <seealso><module>mod_cgid</module></seealso>
  
   <directivesynopsis>
-    <name>FCGIDBusyScanInterval</name>
-    <description>scan interval for busy timeout process</description>
-    <syntax>FCGIDBusyScanInterval <em>seconds</em></syntax>
-    <default>FCGIDBusyScanInterval 120</default>
-    <contextlist><context>server config</context></contextlist>
-    <usage>
-      <p>The module performs the 
-      <directive module="mod_fcgid">FCGIDBusyTimeout</directive> check at this 
-      interval.</p>
-    </usage>
-  </directivesynopsis>
-
-  <directivesynopsis>
-    <name>FCGIDBusyTimeout</name>
-    <description>a FastCGI application will be killed after handling a request for FCGIDBusyTimeout</description>
-    <syntax>FCGIDBusyTimeout <em>seconds</em></syntax>
-    <default>FCGIDBusyTimeout 300</default>
-    <contextlist><context>server config</context></contextlist>
-    <usage>
-      <p>This is the maximum time limit for request handling.  If a FastCGI
-      request does not complete within FCGIDBusyTimeout seconds, it will be
-      subject to termination.  Because the check is performed at the
-      interval defined by <directive module="mod_fcgid">FCGIDBusyScanInterval</directive>,
-      request handling may be allowed to proceed for a longer period of time.</p>
-
-      <p>The purpose of this directive is to terminate hung applications.
-      The default timeout may need to be increased for applications that
-      can take longer to process the request.</p>
-    </usage>
-  </directivesynopsis>
-
-  <directivesynopsis>
-    <name>FCGIDDefaultInitEnv</name>
-    <description>an environment variable name and optional value to pass to FastCGI.</description>
-    <syntax>FCGIDDefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>
-    <default><em>none</em></default>
-    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
-    <usage>
-      <p>Use <directive>FCGIDDefaultInitEnv</directive> to define environment 
-      variables to pass to the FastCGI application.  This directive can 
-      be used multiple times.</p>
-
-      <note type="hint"><title>Note</title>
-      <p>These settings are associated with the FastCGI process and are 
-      not reset on every request based on the current virtual host
-      settings.  The FastCGI process will run with the environment
-      settings of the virtual host of the request that caused the FastCGI
-      process to be started; these are not necessarily the same as those
-      of the virtual hosts of subsequent requests.</p>
-      </note>
-    </usage>
-  </directivesynopsis>
-
-  <directivesynopsis>
-    <name>FCGIDDefaultMaxClassProcessCount</name>
-    <description>Max process count of one class of FastCGI application</description>
-    <syntax>FCGIDDefaultMaxClassProcessCount <em>value</em></syntax>
-    <default>FCGIDDefaultMaxClassProcessCount 100</default>
-    <contextlist><context>server config</context></contextlist>
-    <usage>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.</p>
-
-      <p>This directive sets the maximum number of processes in a class that
-      can be started.</p>
-    </usage>
-  </directivesynopsis>
-
-  <directivesynopsis>
-    <name>FCGIDDefaultMinClassProcessCount</name>
-    <description>Min process count of one class of FastCGI application</description>
-    <syntax>FCGIDDefaultMinClassProcessCount <em>value</em></syntax>
-    <default>FCGIDDefaultMinClassProcessCount 3</default>
-    <contextlist><context>server config</context></contextlist>
-    <usage>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.</p>
-
-      <p>This directive sets the minimum number of processes in a class that
-      will be retained after finishing requests.</p>
-    </usage>
-  </directivesynopsis>
-
-  <directivesynopsis>
-    <name>FCGIDErrorScanInterval</name>
-    <description>scan interval for exited process</description>
-    <syntax>FCGIDErrorScanInterval <em>seconds</em></syntax>
-    <default>FCGIDErrorScanInterval 3</default>
-    <contextlist><context>server config</context></contextlist>
-    <usage>
-      <p>This is the interval at which the module will handle
-      pending process termination.  Termination is pending for
-      any processes which have exceeded 
-      <directive module="mod_fcgid">FCGIDIdleScanInterval</directive> or
-      <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>.</p>
-    </usage>
-  </directivesynopsis>
-
-  <directivesynopsis>
     <name>FCGIDAccessChecker</name>
     <description>full path to FastCGI access checker</description>
     <syntax>FCGIDAccessChecker <em>command</em></syntax>
@@ -432,28 +331,103 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDWrapper</name>
-    <description>The CGI wrapper setting</description>
-    <syntax>FCGIDWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
-    <default><em>none</em></default>
-    <contextlist>
-      <context>server config</context> <context>virtual host</context>
-      <context>directory</context> <context>.htaccess</context>
-    </contextlist>
-    <override>FileInfo</override>
+    <name>FCGIDBusyScanInterval</name>
+    <description>scan interval for busy timeout process</description>
+    <syntax>FCGIDBusyScanInterval <em>seconds</em></syntax>
+    <default>FCGIDBusyScanInterval 120</default>
+    <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>The given command is used to spawn FCGI server processes. If this directive
-      is not used, the file pointed to by the request URL will be used instead.
-      Options for the command can be included using quotation marks surrounding
-      the command and options.</p>
-      <p>The optional <code>suffix</code> argument restricts the use of this FCGI
-      server to all URLs with the given exact path suffix. A suffix needs to start
-      with '<code>.</code>'.</p>
-      <p>The <code>virtual</code> flag signals that there will be no check
-      whether the request URL actually points to an existing file. The only
-      file which needs to exist is the wrapper itself.</p>
-      <p>The directive can be used multiple times. A wrapper defined without a suffix
-      is used as a default in case no suffix matches.</p>
+      <p>The module performs the 
+      <directive module="mod_fcgid">FCGIDBusyTimeout</directive> check at this 
+      interval.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIDBusyTimeout</name>
+    <description>a FastCGI application will be killed after handling a request for FCGIDBusyTimeout</description>
+    <syntax>FCGIDBusyTimeout <em>seconds</em></syntax>
+    <default>FCGIDBusyTimeout 300</default>
+    <contextlist><context>server config</context></contextlist>
+    <usage>
+      <p>This is the maximum time limit for request handling.  If a FastCGI
+      request does not complete within FCGIDBusyTimeout seconds, it will be
+      subject to termination.  Because the check is performed at the
+      interval defined by <directive module="mod_fcgid">FCGIDBusyScanInterval</directive>,
+      request handling may be allowed to proceed for a longer period of time.</p>
+
+      <p>The purpose of this directive is to terminate hung applications.
+      The default timeout may need to be increased for applications that
+      can take longer to process the request.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIDDefaultInitEnv</name>
+    <description>an environment variable name and optional value to pass to FastCGI.</description>
+    <syntax>FCGIDDefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>
+    <default><em>none</em></default>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>Use <directive>FCGIDDefaultInitEnv</directive> to define environment 
+      variables to pass to the FastCGI application.  This directive can 
+      be used multiple times.</p>
+
+      <note type="hint"><title>Note</title>
+      <p>These settings are associated with the FastCGI process and are 
+      not reset on every request based on the current virtual host
+      settings.  The FastCGI process will run with the environment
+      settings of the virtual host of the request that caused the FastCGI
+      process to be started; these are not necessarily the same as those
+      of the virtual hosts of subsequent requests.</p>
+      </note>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIDDefaultMaxClassProcessCount</name>
+    <description>Max process count of one class of FastCGI application</description>
+    <syntax>FCGIDDefaultMaxClassProcessCount <em>value</em></syntax>
+    <default>FCGIDDefaultMaxClassProcessCount 100</default>
+    <contextlist><context>server config</context></contextlist>
+    <usage>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the maximum number of processes in a class that
+      can be started.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIDDefaultMinClassProcessCount</name>
+    <description>Min process count of one class of FastCGI application</description>
+    <syntax>FCGIDDefaultMinClassProcessCount <em>value</em></syntax>
+    <default>FCGIDDefaultMinClassProcessCount 3</default>
+    <contextlist><context>server config</context></contextlist>
+    <usage>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the minimum number of processes in a class that
+      will be retained after finishing requests.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIDErrorScanInterval</name>
+    <description>scan interval for exited process</description>
+    <syntax>FCGIDErrorScanInterval <em>seconds</em></syntax>
+    <default>FCGIDErrorScanInterval 3</default>
+    <contextlist><context>server config</context></contextlist>
+    <usage>
+      <p>This is the interval at which the module will handle
+      pending process termination.  Termination is pending for
+      any processes which have exceeded 
+      <directive module="mod_fcgid">FCGIDIdleScanInterval</directive> or
+      <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
 
@@ -707,6 +681,32 @@
     <usage>
       <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
+    <name>FCGIDWrapper</name>
+    <description>The CGI wrapper setting</description>
+    <syntax>FCGIDWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
+    <default><em>none</em></default>
+    <contextlist>
+      <context>server config</context> <context>virtual host</context>
+      <context>directory</context> <context>.htaccess</context>
+    </contextlist>
+    <override>FileInfo</override>
+    <usage>
+      <p>The given command is used to spawn FCGI server processes. If this directive
+      is not used, the file pointed to by the request URL will be used instead.
+      Options for the command can be included using quotation marks surrounding
+      the command and options.</p>
+      <p>The optional <code>suffix</code> argument restricts the use of this FCGI
+      server to all URLs with the given exact path suffix. A suffix needs to start
+      with '<code>.</code>'.</p>
+      <p>The <code>virtual</code> flag signals that there will be no check
+      whether the request URL actually points to an existing file. The only
+      file which needs to exist is the wrapper itself.</p>
+      <p>The directive can be used multiple times. A wrapper defined without a suffix
+      is used as a default in case no suffix matches.</p>
     </usage>
   </directivesynopsis>
 
