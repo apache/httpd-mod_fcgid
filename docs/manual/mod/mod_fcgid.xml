@@ -108,7 +108,7 @@
     </example>
 
     <p>PHP applications are usually configured using the
-    <directive module="mod_fcgid">FCGIWrapper</directive> directive
+    <directive module="mod_fcgid">FCGIDWrapper</directive> directive
     and a corresponding wrapper script, as in the following
     example:</p>
 
@@ -126,10 +126,10 @@
     <indent>
       AddHandler fcgid-script .php<br />
       Options +ExecCGI<br />
-      FCGIWrapper /usr/local/bin/php-wrapper .php<br />
+      FCGIDWrapper /usr/local/bin/php-wrapper .php<br />
       # Uncomment the following line if cgi.fix_pathinfo<br />
       # is set to 1 in php.ini:<br />
-      # PHP_Fix_Pathinfo_Enable 1<br />
+      # FCGIDPHPFixPathinfoEnable 1<br />
       <br />
       # Customize the next two directives for your requirements.<br />
       Order allow,deny<br />
@@ -166,29 +166,29 @@
   <seealso><module>mod_cgid</module></seealso>
  
   <directivesynopsis>
-    <name>BusyScanInterval</name>
+    <name>FCGIDBusyScanInterval</name>
     <description>scan interval for busy timeout process</description>
-    <syntax>BusyScanInterval <em>seconds</em></syntax>
-    <default>BusyScanInterval 120</default>
+    <syntax>FCGIDBusyScanInterval <em>seconds</em></syntax>
+    <default>FCGIDBusyScanInterval 120</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>The module performs the 
-      <directive module="mod_fcgid">BusyTimeout</directive> check at this 
+      <directive module="mod_fcgid">FCGIDBusyTimeout</directive> check at this 
       interval.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>BusyTimeout</name>
-    <description>a FastCGI application will be killed after handling a request for BusyTimeout</description>
-    <syntax>BusyTimeout <em>seconds</em></syntax>
-    <default>BusyTimeout 300</default>
+    <name>FCGIDBusyTimeout</name>
+    <description>a FastCGI application will be killed after handling a request for FCGIDBusyTimeout</description>
+    <syntax>FCGIDBusyTimeout <em>seconds</em></syntax>
+    <default>FCGIDBusyTimeout 300</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the maximum time limit for request handling.  If a FastCGI
-      request does not complete within BusyTimeout seconds, it will be
+      request does not complete within FCGIDBusyTimeout seconds, it will be
       subject to termination.  Because the check is performed at the
-      interval defined by <directive module="mod_fcgid">BusyScanInterval</directive>,
+      interval defined by <directive module="mod_fcgid">FCGIDBusyScanInterval</directive>,
       request handling may be allowed to proceed for a longer period of time.</p>
 
       <p>The purpose of this directive is to terminate hung applications.
@@ -198,13 +198,13 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>DefaultInitEnv</name>
+    <name>FCGIDDefaultInitEnv</name>
     <description>an environment variable name and optional value to pass to FastCGI.</description>
-    <syntax>DefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>
+    <syntax>FCGIDDefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>
     <default><em>none</em></default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Use <directive>DefaultInitEnv</directive> to define environment 
+      <p>Use <directive>FCGIDDefaultInitEnv</directive> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
 
@@ -220,10 +220,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>DefaultMaxClassProcessCount</name>
+    <name>FCGIDDefaultMaxClassProcessCount</name>
     <description>Max process count of one class of FastCGI application</description>
-    <syntax>DefaultMaxClassProcessCount <em>value</em></syntax>
-    <default>DefaultMaxClassProcessCount 100</default>
+    <syntax>FCGIDDefaultMaxClassProcessCount <em>value</em></syntax>
+    <default>FCGIDDefaultMaxClassProcessCount 100</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
@@ -236,10 +236,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>DefaultMinClassProcessCount</name>
+    <name>FCGIDDefaultMinClassProcessCount</name>
     <description>Min process count of one class of FastCGI application</description>
-    <syntax>DefaultMinClassProcessCount <em>value</em></syntax>
-    <default>DefaultMinClassProcessCount 3</default>
+    <syntax>FCGIDDefaultMinClassProcessCount <em>value</em></syntax>
+    <default>FCGIDDefaultMinClassProcessCount 3</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
@@ -252,24 +252,24 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>ErrorScanInterval</name>
+    <name>FCGIDErrorScanInterval</name>
     <description>scan interval for exited process</description>
-    <syntax>ErrorScanInterval <em>seconds</em></syntax>
-    <default>ErrorScanInterval 3</default>
+    <syntax>FCGIDErrorScanInterval <em>seconds</em></syntax>
+    <default>FCGIDErrorScanInterval 3</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the interval at which the module will handle
       pending process termination.  Termination is pending for
       any processes which have exceeded 
-      <directive module="mod_fcgid">IdleScanInterval</directive> or
-      <directive module="mod_fcgid">ProcessLifeTime</directive>.</p>
+      <directive module="mod_fcgid">FCGIDIdleScanInterval</directive> or
+      <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FastCgiAccessChecker</name>
+    <name>FCGIDAccessChecker</name>
     <description>full path to FastCGI access checker</description>
-    <syntax>FastCgiAccessChecker <em>command</em></syntax>
+    <syntax>FCGIDAccessChecker <em>command</em></syntax>
     <default><em>none</em></default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
@@ -300,10 +300,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FastCgiAccessCheckerAuthoritative</name>
+    <name>FCGIDAccessCheckerAuthoritative</name>
     <description>Set to 'off' to allow access control to be passed along to lower modules upon failure</description>
-    <syntax>FastCgiAccessCheckerAuthoritative <em>On|Off</em></syntax>
-    <default>FastCgiAccessCheckerAuthoritative On</default>
+    <syntax>FCGIDAccessCheckerAuthoritative <em>On|Off</em></syntax>
+    <default>FCGIDAccessCheckerAuthoritative On</default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
@@ -318,9 +318,9 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FastCgiAuthenticator</name>
+    <name>FCGIDAuthenticator</name>
     <description>full path to FastCGI authenticator</description>
-    <syntax>FastCgiAuthenticator <em>command</em></syntax>
+    <syntax>FCGIDAuthenticator <em>command</em></syntax>
     <default><em>none</em></default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
@@ -358,10 +358,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FastCgiAuthenticatorAuthoritative</name>
+    <name>FCGIDAuthenticatorAuthoritative</name>
     <description>Set to 'off' to allow authentication to be passed along to lower modules upon failure</description>
-    <syntax>FastCgiAuthenticatorAuthoritative <em>On|Off</em></syntax>
-    <default>FastCgiAuthenticatorAuthoritative On</default>
+    <syntax>FCGIDAuthenticatorAuthoritative <em>On|Off</em></syntax>
+    <default>FCGIDAuthenticatorAuthoritative On</default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
@@ -376,9 +376,9 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FastCgiAuthorizer</name>
+    <name>FCGIDAuthorizer</name>
     <description>full path to FastCGI authorizer</description>
-    <syntax>FastCgiAuthorizer <em>command</em></syntax>
+    <syntax>FCGIDAuthorizer <em>command</em></syntax>
     <default><em>none</em></default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
@@ -414,10 +414,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FastCgiAuthorizerAuthoritative</name>
+    <name>FCGIDAuthorizerAuthoritative</name>
     <description>Set to 'off' to allow authorization to be passed along to lower modules upon failure</description>
-    <syntax>FastCgiAuthorizerAuthoritative <em>On|Off</em></syntax>
-    <default>FastCgiAuthorizerAuthoritative On</default>
+    <syntax>FCGIDAuthorizerAuthoritative <em>On|Off</em></syntax>
+    <default>FCGIDAuthorizerAuthoritative On</default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
@@ -432,9 +432,9 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIWrapper</name>
+    <name>FCGIDWrapper</name>
     <description>The CGI wrapper setting</description>
-    <syntax>FCGIWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
+    <syntax>FCGIDWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
     <default><em>none</em></default>
     <contextlist>
       <context>server config</context> <context>virtual host</context>
@@ -458,24 +458,24 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>IdleScanInterval</name>
+    <name>FCGIDIdleScanInterval</name>
     <description>scan interval for idle timeout process</description>
-    <syntax>IdleScanInterval <em>seconds</em></syntax>
-    <default>IdleScanInterval 120</default>
+    <syntax>FCGIDIdleScanInterval <em>seconds</em></syntax>
+    <default>FCGIDIdleScanInterval 120</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the interval at which the module will search for
       processes which have exceeded 
-      <directive module="mod_fcgid">IdleScanInterval</directive> or
-      <directive module="mod_fcgid">ProcessLifeTime</directive>.</p>
+      <directive module="mod_fcgid">FCGIDIdleScanInterval</directive> or
+      <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>IdleTimeout</name>
-    <description>An idle FastCGI application will be killed after IdleTimeout</description>
-    <syntax>IdleTimeout <em>seconds</em></syntax>
-    <default>IdleTimeout 300</default>
+    <name>FCGIDIdleTimeout</name>
+    <description>An idle FastCGI application will be killed after FCGIDIdleTimeout</description>
+    <syntax>FCGIDIdleTimeout <em>seconds</em></syntax>
+    <default>FCGIDIdleTimeout 300</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Application processes which have not handled a request
@@ -484,10 +484,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>IPCCommTimeout</name>
+    <name>FCGIDIPCCommTimeout</name>
     <description>Communication timeout to FastCGI server</description>
-    <syntax>IPCCommTimeout <em>seconds</em></syntax>
-    <default>IPCCommTimeout 40</default>
+    <syntax>FCGIDIPCCommTimeout <em>seconds</em></syntax>
+    <default>FCGIDIPCCommTimeout 40</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This is the maximum period of time the module will wait
@@ -502,10 +502,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>IPCConnectTimeout</name>
+    <name>FCGIDIPCConnectTimeout</name>
     <description>Connect timeout to FastCGI server</description>
-    <syntax>IPCConnectTimeout <em>seconds</em></syntax>
-    <default>IPCConnectTimeout 3</default>
+    <syntax>FCGIDIPCConnectTimeout <em>seconds</em></syntax>
+    <default>FCGIDIPCConnectTimeout 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This is the maximum period of time the module will wait
@@ -516,10 +516,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>MaxProcessCount</name>
+    <name>FCGIDMaxProcessCount</name>
     <description>maximum number of FastCGI application processes</description>
-    <syntax>MaxProcessCount <em>value</em></syntax>
-    <default>MaxProcessCount 1000</default>
+    <syntax>FCGIDMaxProcessCount <em>value</em></syntax>
+    <default>FCGIDMaxProcessCount 1000</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This directive sets the maximum number of FastCGI application
@@ -528,26 +528,26 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>MaxRequestInMem</name>
+    <name>FCGIDMaxRequestInMem</name>
     <description>maximum size of a request which will be held in memory</description>
-    <syntax>MaxRequestInMem <em>bytes</em></syntax>
-    <default>MaxRequestInMem 65536</default>
+    <syntax>FCGIDMaxRequestInMem <em>bytes</em></syntax>
+    <default>FCGIDMaxRequestInMem 65536</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This module reads the entire request body from the client
       before sending it to the application.  Normally the request body
       will be stored in memory.  Once the amount of request body read
-      from the client exceeds <directive>MaxRequestInMem</directive>
+      from the client exceeds <directive>FCGIDMaxRequestInMem</directive>
       bytes, the remainder of the request body will be stored in a 
       temporary file.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>MaxRequestLen</name>
+    <name>FCGIDMaxRequestLen</name>
     <description>maximum HTTP request length</description>
-    <syntax>MaxRequestLen <em>bytes</em></syntax>
-    <default>MaxRequestLen 1073741824</default>
+    <syntax>FCGIDMaxRequestLen <em>bytes</em></syntax>
+    <default>FCGIDMaxRequestLen 1073741824</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>If the size of the request body exceeds this amount, the
@@ -556,10 +556,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>MaxRequestsPerProcess</name>
+    <name>FCGIDMaxRequestsPerProcess</name>
     <description>Max requests handled by each FastCGI application</description>
-    <syntax>MaxRequestsPerProcess <em>value</em></syntax>
-    <default>MaxRequestsPerProcess -1</default>
+    <syntax>FCGIDMaxRequestsPerProcess <em>value</em></syntax>
+    <default>FCGIDMaxRequestsPerProcess -1</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>FastCGI application processes will be terminated after handling
@@ -569,10 +569,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>OutputBufferSize</name>
+    <name>FCGIDOutputBufferSize</name>
     <description>CGI output buffer size</description>
-    <syntax>OutputBufferSize <em>bytes</em></syntax>
-    <default>OutputBufferSize 65536</default>
+    <syntax>FCGIDOutputBufferSize <em>bytes</em></syntax>
+    <default>FCGIDOutputBufferSize 65536</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This is the maximum amount of response data the module will read
@@ -581,9 +581,9 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>PassHeader</name>
+    <name>FCGIDPassHeader</name>
     <description>Header name which will be passed to FastCGI as environment variable.</description>
-    <syntax>PassHeader <em>name</em></syntax>
+    <syntax>FCGIDPassHeader <em>name</em></syntax>
     <default><em>none</em></default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
@@ -594,26 +594,26 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>PHP_Fix_Pathinfo_Enable</name>
+    <name>FCGIDPHPFixPathinfoEnable</name>
     <description>Mirror the PHP <code>cgi.fix_pathinfo</code>
     setting</description>
-    <syntax>PHP_Fix_Pathinfo_Enable 1</syntax>
-    <default>PHP_Fix_Pathinfo_Enable 0</default>
+    <syntax>FCGIDPHPFixPathinfoEnable 1</syntax>
+    <default>FCGIDPHPFixPathinfoEnable 0</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This directive enables special <code>SCRIPT_NAME</code> 
       processing which allows PHP to provide additional path information.
-      The setting of <directive>PHP_Fix_Pathinfo_Enable</directive>
+      The setting of <directive>FCGIDPHPFixPathinfoEnable</directive>
       should mirror the <code>cgi.fix_pathinfo</code> setting in 
       <code>php.ini</code>.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>ProcessLifeTime</name>
+    <name>FCGIDProcessLifeTime</name>
     <description>maximum FastCGI application process lifetime</description>
-    <syntax>ProcessLifeTime <em>seconds</em></syntax>
-    <default>ProcessLifeTime 3600</default>
+    <syntax>FCGIDProcessLifeTime <em>seconds</em></syntax>
+    <default>FCGIDProcessLifeTime 3600</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Idle application processes which have existed for greater
@@ -622,10 +622,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>SharememPath</name>
+    <name>FCGIDSharememPath</name>
     <description>shared memory file path</description>
-    <syntax>SharememPath <em>pathname</em></syntax>
-    <default>SharememPath logs/fcgid_shm</default>
+    <syntax>FCGIDSharememPath <em>pathname</em></syntax>
+    <default>FCGIDSharememPath logs/fcgid_shm</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This module uses shared memory on Unix to maintain state which
@@ -635,10 +635,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>SocketPath</name>
+    <name>FCGIDSocketPath</name>
     <description>directory for AF_UNIX sockets (Unix) or pipes (Windows)</description>
-    <syntax>SocketPath <em>pathname</em></syntax>
-    <default>SocketPath logs/fcgidsock</default>
+    <syntax>FCGIDSocketPath <em>pathname</em></syntax>
+    <default>FCGIDSocketPath logs/fcgidsock</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This module uses AF_UNIX sockets or named pipes, depending on the
@@ -649,23 +649,23 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>SpawnScore</name>
+    <name>FCGIDSpawnScore</name>
     <description>Each spawn adds this value to the process activity score.</description>
-    <syntax>SpawnScore <em>value</em></syntax>
-    <default>SpawnScore 1</default>
+    <syntax>FCGIDSpawnScore <em>value</em></syntax>
+    <default>FCGIDSpawnScore 1</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
+      <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>SpawnScoreUpLimit</name>
+    <name>FCGIDSpawnScoreUpLimit</name>
     <description>Maximum value of the process activity score which allows
     a spawn to occur</description>
-    <syntax>SpawnScoreUpLimit <em>value</em></syntax>
-    <default>SpawnScoreUpLimit 10</default>
+    <syntax>FCGIDSpawnScoreUpLimit <em>value</em></syntax>
+    <default>FCGIDSpawnScoreUpLimit 10</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>The module maintains a process activity score for each FastCGI
@@ -675,46 +675,46 @@
       directive, a new instance of the FastCGI application cannot yet be 
       started.</p>
 
-      <p>The <directive module="mod_fcgid">SpawnScore</directive> directive 
+      <p>The <directive module="mod_fcgid">FCGIDSpawnScore</directive> directive 
       determines how much is added to the score for every spawned application
-      process.  The <directive module="mod_fcgid">TerminationScore</directive>
+      process.  The <directive module="mod_fcgid">FCGIDTerminationScore</directive>
       directive determines how much is added to the score for every terminated
-      application process.  The <directive module="mod_fcgid">TimeScore</directive>
+      application process.  The <directive module="mod_fcgid">FCGIDTimeScore</directive>
       directive determines how much is subtracted from the score every second.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>TerminationScore</name>
+    <name>FCGIDTerminationScore</name>
     <description>Each terminated process adds this value to the process activity
     score.</description>
-    <syntax>TerminationScore <em>value</em></syntax>
-    <default>TerminationScore 2</default>
+    <syntax>FCGIDTerminationScore <em>value</em></syntax>
+    <default>FCGIDTerminationScore 2</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
+      <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>TimeScore</name>
+    <name>FCGIDTimeScore</name>
     <description>Amount subtracted from process activity score each 
     second</description>
-    <syntax>TimeScore <em>value</em></syntax>
-    <default>TimeScore 1</default>
+    <syntax>FCGIDTimeScore <em>value</em></syntax>
+    <default>FCGIDTimeScore 1</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>Refer to the <directive module="mod_fcgid">SpawnScoreUpLimit</directive>
+      <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>ZombieScanInterval</name>
+    <name>FCGIDZombieScanInterval</name>
     <description>scan interval for zombie process</description>
-    <syntax>ZombieScanInterval <em>seconds</em></syntax>
-    <default>ZombieScanInterval 3</default>
+    <syntax>FCGIDZombieScanInterval <em>seconds</em></syntax>
+    <default>FCGIDZombieScanInterval 3</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>The module checks for exited FastCGI applications at this interval.
