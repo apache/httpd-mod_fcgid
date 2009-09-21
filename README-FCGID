@@ -136,18 +136,25 @@ Incompatible configuration changes
 Some changes have been made in the ASF release of mod_fcgid which can affect
 existing configurations:
 
-i. Some directives which could be placed inside <VirtualHost > but were
-   ignored before now result in configuration errors.  As before, these 
-   directives must be set at global scope to have the desired effect.
-   These include IdleTimeout, MaxProcessCount, PHP_Fix_Pathinfo_Enable,
-   ProcessLifetime, and others.  (Consult CHANGES-FCGID for the complete
-   list.)
+i.   All directives have been renamed in order to use a common prefix "FCGID".
+     Underscores in directive names have been eliminated in favor of
+     CamelCase. The old directive names will still work but are deprecated.
+     To fix your configuration you can use the sed script tools/fixconf.sed.
+     A table with old and new directive names is included in CHANGES-FCGID.
 
-ii. Some directives which can optionally be placed inside <VirtualHost >
-    were not inherited as expected in older releases.  This has been
-    corrected, and behavior will change for some configurations.  Affected
-    directives include IPCCommTimeout, OutputBufferSize, and others.
-    (Consult CHANGES-FCGID for the complete list.)
+ii.  Some directives which could be placed inside <VirtualHost > but were
+     ignored before now result in configuration errors.  As before, these 
+     directives must be set at global scope to have the desired effect.
+     These include FCGIDIdleTimeout, FCGIDMaxProcessCount, FCGIDPHPFixPathinfoEnable,
+     FCGIDProcessLifetime, and others.  (Consult CHANGES-FCGID for the complete
+     list.)
+
+iii. Some directives which can optionally be placed inside <VirtualHost >
+     were not inherited as expected in older releases.  This has been
+     corrected, and behavior will change for some configurations.  Affected
+     directives include FCGIDIPCCommTimeout, FCGIDOutputBufferSize, and others.
+     (Consult CHANGES-FCGID for the complete list.)
+
 
 Acknowledgements
 ----------------
