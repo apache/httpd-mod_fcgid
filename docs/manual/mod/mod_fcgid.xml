@@ -70,7 +70,7 @@
       CamelCase. The old directive names will still work but are deprecated.
       To fix your configuration you can use the sed script tools/fixconf.sed.
       The following tables contains old and new directive names:
-      <table>
+      <table border="1" style="zebra">
       <tr><th>Old Name</th><th>New Name</th></tr>
       <tr><td>BusyScanInterval</td><td>FCGIDBusyScanInterval</td></tr>
       <tr><td>BusyTimeout</td><td>FCGIDBusyTimeout</td></tr>
