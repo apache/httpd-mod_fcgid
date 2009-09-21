@@ -11,7 +11,7 @@ Changes with mod_fcgid 2.3.2
   *) Merge mod_fcgid server config/virtual host directives so that they can
      be inherited or overridden within a virtual host as expected.  Affected
      directives: IPCCommTimeout, IPCConnectTimeout, MaxRequestInMem,
-     MaxRequestLen, MaxRequestsPerProcess, OutputBufferSize. [Jeff Trawick]
+     MaxRequestLen, MaxRequestsPerProcess, OutputBufferSize.  [Jeff Trawick]
 
   *) Use the virtual host settings for the request being processed instead
      of those of the first FastCGI request handled by this httpd child process.
@@ -29,17 +29,17 @@ Changes with mod_fcgid 2.3.2
 
   *) Add an optional flag "virtual" to FCGIWrapper.
      If virtual is set, the URLs passed to the wrapper are not
-     checked, whether they resolve to a file. [Rainer Jung]
+     checked, whether they resolve to a file.  [Rainer Jung]
 
   *) Make the second argument (suffix) for FCGIWrapper optional.
      A wrapper defined without a suffix applies to all URLs, unless
-     there is another more specific wrapper with a suffix. [Rainer Jung]
+     there is another more specific wrapper with a suffix.  [Rainer Jung]
 
 Changes with mod_fcgid 2.3.1
 
   *) Suppress "need AuthType to note auth failure" error-level messages when a
      FastCGIAccessChecker fails without any other kind of authentication 
-     (Basic, Digest) configured. [Eric Covener]
+     (Basic, Digest) configured.  [Eric Covener]
   
   *) Complete the unix port to 2.3-dev trunk.  [William Rowe]
 
