@@ -126,9 +126,9 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             apr_ino_t inode, apr_size_t share_grp_id)
 {
     apr_table_t *initenv;
-    fcgid_wrapper_conf *wrapperconf;
     const apr_array_header_t *initenv_arr;
     const apr_table_entry_t *initenv_entry;
+    fcgid_wrapper_conf *wrapperconf;
     int i;
 
     memset(command, 0, sizeof(*command));
@@ -145,6 +145,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                           initenv_arr->nelts - INITENV_CNT,
                           INITENV_CNT,
                           initenv_arr->nelts);
+
         for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
             if (initenv_entry[i].key == NULL
                 || initenv_entry[i].key[0] == '\0')
@@ -163,6 +164,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
+    command->virtualhost = r->server->server_hostname;
 
     /* Update fcgid_command with wrapper info */
     command->wrapperpath[0] = '\0';
