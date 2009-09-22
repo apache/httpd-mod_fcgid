@@ -1,6 +1,12 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
+  *) Termination of idle processes after inactivity timeout can now be 
+     disabled by setting FCGIDIdleTimeout to 0.  Termination of idle 
+     processes based on the process lifetime can now be disabled by setting
+     FCGIDProcessLifeTime to 0.  FCGIDMaxRequestsPerProcess now accepts 0
+     for unlimited.  [Ricardo Cantu <ricardo smartcsc.com>]
+
   *) All directives have been renamed in order to use a common prefix "FCGID".
      Underscores in directive names have been eliminated in favor of
      CamelCase. The old directive names will still work but are deprecated.

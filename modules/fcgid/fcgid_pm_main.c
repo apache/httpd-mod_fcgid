@@ -59,7 +59,8 @@ static void scan_idlelist(server_rec * main_server)
     /* Should I check the idle list now? */
     if (procmgr_must_exit()
         || apr_time_sec(now) - apr_time_sec(lastidlescan) <=
-        sconf->idle_scan_interval)
+        sconf->idle_scan_interval
+        || (!sconf->idle_timeout && !sconf->proc_lifetime))
         return;
     lastidlescan = now;
 
@@ -74,17 +75,17 @@ static void scan_idlelist(server_rec * main_server)
         next_node = &proc_table[current_node->next_index];
         last_active_time = current_node->last_active_time;
         start_time = current_node->start_time;
-        if ((apr_time_sec(now) - apr_time_sec(last_active_time) >
-             sconf->idle_timeout
-             || apr_time_sec(now) - apr_time_sec(start_time) >
-             sconf->proc_lifetime)
+        if (((sconf->idle_timeout && 
+              (apr_time_sec(now) - apr_time_sec(last_active_time) > sconf->idle_timeout))
+             || (sconf->proc_lifetime && 
+              (apr_time_sec(now) - apr_time_sec(start_time) > sconf->proc_lifetime)))
             && is_kill_allowed(main_server, current_node)) {
             /* Set die reason for log */
-            if (apr_time_sec(now) - apr_time_sec(last_active_time) >
-                sconf->idle_timeout)
+            if (sconf->idle_timeout &&
+                (apr_time_sec(now) - apr_time_sec(last_active_time) > sconf->idle_timeout))
                 current_node->diewhy = FCGID_DIE_IDLE_TIMEOUT;
-            else if (apr_time_sec(now) - apr_time_sec(start_time) >
-                     sconf->proc_lifetime)
+            else if (sconf->proc_lifetime && 
+                     (apr_time_sec(now) - apr_time_sec(start_time) > sconf->proc_lifetime))
                 current_node->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
 
             /* Unlink from idle list */

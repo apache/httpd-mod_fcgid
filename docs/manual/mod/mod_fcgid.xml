@@ -606,7 +606,8 @@
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Application processes which have not handled a request
-      for this period of time will be terminated.</p>
+      for this period of time will be terminated.  A value of <code>0</code>
+      disables the check.</p>
     </usage>
   </directivesynopsis>
 
@@ -686,12 +687,17 @@
     <name>FCGIDMaxRequestsPerProcess</name>
     <description>Max requests handled by each FastCGI application</description>
     <syntax>FCGIDMaxRequestsPerProcess <em>value</em></syntax>
-    <default>FCGIDMaxRequestsPerProcess -1</default>
+    <default>FCGIDMaxRequestsPerProcess 0</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>FastCGI application processes will be terminated after handling
-      the specified number of requests.  A value of <code>-1</code>
+      the specified number of requests.  A value of <code>0</code>
       disables the check.</p>
+      <note type="hint"><title>Note</title>
+      <p>A value of <code>-1</code> is currently accepted for ease of
+      migration for existing configurations.  It is treated the same as
+      <code>0</code>.</p>
+      </note>
     </usage>
   </directivesynopsis>
 
@@ -744,7 +750,8 @@
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Idle application processes which have existed for greater
-      than this time will be terminated.</p>
+      than this time will be terminated.  A value of <code>0</code>
+      disables the check.</p>
     </usage>
   </directivesynopsis>
 

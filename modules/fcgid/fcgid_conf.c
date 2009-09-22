@@ -47,7 +47,7 @@ extern module AP_MODULE_DECLARE_DATA fcgid_module;
 #define DEFAULT_IPC_CONNECT_TIMEOUT 3
 #define DEFAULT_IPC_COMM_TIMEOUT 40
 #define DEFAULT_OUTPUT_BUFFERSIZE 65536
-#define DEFAULT_MAX_REQUESTS_PER_PROCESS -1
+#define DEFAULT_MAX_REQUESTS_PER_PROCESS 0
 #define DEFAULT_MAX_REQUEST_LEN (1024*1024*1024)    /* 1G */
 #define DEFAULT_MAX_MEM_REQUEST_LEN (1024*64)   /* 64k */
 #define DEFAULT_WRAPPER_KEY "ALL"
@@ -472,7 +472,9 @@ const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    config->max_requests_per_process = atol(arg);
+    if ((config->max_requests_per_process = atol(arg)) == -1) {
+        config->max_requests_per_process = 0;
+    }
     config->max_requests_per_process_set = 1;
     return NULL;
 }

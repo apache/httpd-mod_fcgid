@@ -193,7 +193,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
             return_procnode(s, ctx->procnode,
                             1 /* communication error */ );
-        } else if (sconf->max_requests_per_process != -1
+        } else if (sconf->max_requests_per_process
                    && ++ctx->procnode->requests_handled >=
                    sconf->max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
