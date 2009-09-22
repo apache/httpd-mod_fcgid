@@ -120,38 +120,134 @@
       To fix your configuration you can use the sed script tools/fixconf.sed.
       The following tables contains old and new directive names:
       <table class="bordered"><tr class="header"><th>Old Name</th><th>New Name</th></tr>
-<tr><td>BusyScanInterval</td><td>FCGIDBusyScanInterval</td></tr>
-<tr class="odd"><td>BusyTimeout</td><td>FCGIDBusyTimeout</td></tr>
-<tr><td>DefaultInitEnv</td><td>FCGIDDefaultInitEnv</td></tr>
-<tr class="odd"><td>DefaultMaxClassProcessCount</td><td>FCGIDDefaultMaxClassProcessCount</td></tr>
-<tr><td>DefaultMinClassProcessCount</td><td>FCGIDDefaultMinClassProcessCount</td></tr>
-<tr class="odd"><td>ErrorScanInterval</td><td>FCGIDErrorScanInterval</td></tr>
-<tr><td>FastCgiAccessChecker</td><td>FCGIDAccessChecker</td></tr>
-<tr class="odd"><td>FastCgiAccessCheckerAuthoritative</td><td>FCGIDAccessCheckerAuthoritative</td></tr>
-<tr><td>FastCgiAuthenticator</td><td>FCGIDAuthenticator</td></tr>
-<tr class="odd"><td>FastCgiAuthenticatorAuthoritative</td><td>FCGIDAuthenticatorAuthoritative</td></tr>
-<tr><td>FastCgiAuthorizer</td><td>FCGIDAuthorizer</td></tr>
-<tr class="odd"><td>FastCgiAuthorizerAuthoritative</td><td>FCGIDAuthorizerAuthoritative</td></tr>
-<tr><td>FCGIWrapper</td><td>FCGIDWrapper</td></tr>
-<tr class="odd"><td>IdleScanInterval</td><td>FCGIDIdleScanInterval</td></tr>
-<tr><td>IdleTimeout</td><td>FCGIDIdleTimeout</td></tr>
-<tr class="odd"><td>IPCCommTimeout</td><td>FCGIDIPCCommTimeout</td></tr>
-<tr><td>IPCConnectTimeout</td><td>FCGIDIPCConnectTimeout</td></tr>
-<tr class="odd"><td>MaxProcessCount</td><td>FCGIDMaxProcessCount</td></tr>
-<tr><td>MaxRequestInMem</td><td>FCGIDMaxRequestInMem</td></tr>
-<tr class="odd"><td>MaxRequestLen</td><td>FCGIDMaxRequestLen</td></tr>
-<tr><td>MaxRequestsPerProcess</td><td>FCGIDMaxRequestsPerProcess</td></tr>
-<tr class="odd"><td>OutputBufferSize</td><td>FCGIDOutputBufferSize</td></tr>
-<tr><td>PassHeader</td><td>FCGIDPassHeader</td></tr>
-<tr class="odd"><td>PHP_Fix_Pathinfo_Enable</td><td>FCGIDPHPFixPathinfoEnable</td></tr>
-<tr><td>ProcessLifeTime</td><td>FCGIDProcessLifeTime</td></tr>
-<tr class="odd"><td>SharememPath</td><td>FCGIDSharememPath</td></tr>
-<tr><td>SocketPath</td><td>FCGIDSocketPath</td></tr>
-<tr class="odd"><td>SpawnScore</td><td>FCGIDSpawnScore</td></tr>
-<tr><td>SpawnScoreUpLimit</td><td>FCGIDSpawnScoreUpLimit</td></tr>
-<tr class="odd"><td>TerminationScore</td><td>FCGIDTerminationScore</td></tr>
-<tr><td>TimeScore</td><td>FCGIDTimeScore</td></tr>
-<tr class="odd"><td>ZombieScanInterval</td><td>FCGIDZombieScanInterval</td></tr>
+<tr>
+          <td><code class="directive">BusyScanInterval</code></td>
+          <td><code class="directive"><a href="#fcgidbusyscaninterval">FCGIDBusyScanInterval</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">BusyTimeout</code></td>
+          <td><code class="directive"><a href="#fcgidbusytimeout">FCGIDBusyTimeout</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">DefaultInitEnv</code></td>
+          <td><code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">DefaultMaxClassProcessCount</code></td>
+          <td><code class="directive"><a href="#fcgiddefaultmaxclassprocesscount">FCGIDDefaultMaxClassProcessCount</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">DefaultMinClassProcessCount</code></td>
+          <td><code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">ErrorScanInterval</code></td>
+          <td><code class="directive"><a href="#fcgiderrorscaninterval">FCGIDErrorScanInterval</a></code></td> 
+        </tr>
+<tr>
+          <td><code class="directive">FastCgiAccessChecker</code></td>
+          <td><code class="directive"><a href="#fcgidaccesschecker">FCGIDAccessChecker</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">FastCgiAccessCheckerAuthoritative</code></td>
+          <td><code class="directive"><a href="#fcgidaccesscheckerauthoritative">FCGIDAccessCheckerAuthoritative</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">FastCgiAuthenticator</code></td>
+          <td><code class="directive"><a href="#fcgidauthenticator">FCGIDAuthenticator</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">FastCgiAuthenticatorAuthoritative</code></td>
+          <td><code class="directive"><a href="#fcgidauthenticatorauthoritative">FCGIDAuthenticatorAuthoritative</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">FastCgiAuthorizer</code></td>
+          <td><code class="directive"><a href="#fcgidauthorizer">FCGIDAuthorizer</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">FastCgiAuthorizerAuthoritative</code></td>
+          <td><code class="directive"><a href="#fcgidauthorizerauthoritative">FCGIDAuthorizerAuthoritative</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">FCGIWrapper</code></td>
+          <td><code class="directive"><a href="#fcgidwrapper">FCGIDWrapper</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">IdleScanInterval</code></td>
+          <td><code class="directive"><a href="#fcgididlescaninterval">FCGIDIdleScanInterval</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">IdleTimeout</code></td>
+          <td><code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">IPCCommTimeout</code></td>
+          <td><code class="directive"><a href="#fcgidipccommtimeout">FCGIDIPCCommTimeout</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">IPCConnectTimeout</code></td>
+          <td><code class="directive"><a href="#fcgidipcconnecttimeout">FCGIDIPCConnectTimeout</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">MaxProcessCount</code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocesscount">FCGIDMaxProcessCount</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">MaxRequestInMem</code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestinmem">FCGIDMaxRequestInMem</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">MaxRequestLen</code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestlen">FCGIDMaxRequestLen</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">MaxRequestsPerProcess</code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">OutputBufferSize</code></td>
+          <td><code class="directive"><a href="#fcgidoutputbuffersize">FCGIDOutputBufferSize</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">PassHeader</code></td>
+          <td><code class="directive"><a href="#fcgidpassheader">FCGIDPassHeader</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">PHP_Fix_Pathinfo_Enable</code></td>
+          <td><code class="directive"><a href="#fcgidphpfixpathinfoenable">FCGIDPHPFixPathinfoEnable</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">ProcessLifeTime</code></td>
+          <td><code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">SharememPath</code></td>
+          <td><code class="directive"><a href="#fcgidsharemempath">FCGIDSharememPath</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">SocketPath</code></td>
+          <td><code class="directive"><a href="#fcgidsocketpath">FCGIDSocketPath</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">SpawnScore</code></td>
+          <td><code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">SpawnScoreUpLimit</code></td>
+          <td><code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">TerminationScore</code></td>
+          <td><code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code></td>
+        </tr>
+<tr>
+          <td><code class="directive">TimeScore</code></td>
+          <td><code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code class="directive">ZombieScanInterval</code></td>
+          <td><code class="directive"><a href="#fcgidzombiescaninterval">FCGIDZombieScanInterval</a></code></td>
+        </tr>
 </table>
       </li>
     </ul>
