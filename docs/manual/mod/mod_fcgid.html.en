@@ -677,7 +677,8 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Application processes which have not handled a request
-      for this period of time will be terminated.</p>
+      for this period of time will be terminated.  A value of <code>0</code>
+      disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -767,14 +768,19 @@
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max requests handled by each FastCGI application</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxRequestsPerProcess <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxRequestsPerProcess -1</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxRequestsPerProcess 0</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>FastCGI application processes will be terminated after handling
-      the specified number of requests.  A value of <code>-1</code>
+      the specified number of requests.  A value of <code>0</code>
       disables the check.</p>
+      <div class="note"><h3>Note</h3>
+      <p>A value of <code>-1</code> is currently accepted for ease of
+      migration for existing configurations.  It is treated the same as
+      <code>0</code>.</p>
+      </div>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -835,7 +841,8 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Idle application processes which have existed for greater
-      than this time will be terminated.</p>
+      than this time will be terminated.  A value of <code>0</code>
+      disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
