@@ -155,6 +155,11 @@ iii. Some directives which can optionally be placed inside <VirtualHost >
      directives include FCGIDIPCCommTimeout, FCGIDOutputBufferSize, and others.
      (Consult CHANGES-FCGID for the complete list.)
 
+iv.  Some directives which can be placed inside <Directory >, <Location >,
+     etc. were not inherited as expected in older releases.  This has been
+     corrected, and behavior will change for some configurations.  Affected
+     directives include FCGIDWrapper and the AAA-related directives.  (Consult
+     CHANGES-FCGID for the complete list.)
 
 Acknowledgements
 ----------------

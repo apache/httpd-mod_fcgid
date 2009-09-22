@@ -162,6 +162,36 @@ void *create_fcgid_dir_config(apr_pool_t * p, char *dummy)
     return (void *) config;
 }
 
+void *merge_fcgid_dir_config(apr_pool_t *p, void *basev, void *locv)
+{
+    fcgid_dir_conf *base = (fcgid_dir_conf *) basev;
+    fcgid_dir_conf *local = (fcgid_dir_conf *) locv;
+    fcgid_dir_conf *merged =
+      (fcgid_dir_conf *) apr_pmemdup(p, local, sizeof(fcgid_dir_conf));
+
+    merged->wrapper_info_hash =
+      apr_hash_overlay(p, local->wrapper_info_hash,
+                       base->wrapper_info_hash);
+
+    if (!local->authenticator_info) {
+        merged->authenticator_info = base->authenticator_info;
+    }
+
+    if (!local->authorizer_info) {
+        merged->authorizer_info = base->authorizer_info;
+    }
+
+    if (!local->access_info) {
+        merged->access_info = base->access_info;
+    }
+
+    MERGE_SCALAR(base, local, merged, authenticator_authoritative);
+    MERGE_SCALAR(base, local, merged, authorizer_authoritative);
+    MERGE_SCALAR(base, local, merged, access_authoritative);
+
+    return merged;
+}
+
 const char *set_idle_timeout(cmd_parms * cmd, void *dummy, const char *arg)
 {
     server_rec *s = cmd->server;
@@ -586,6 +616,7 @@ const char *set_authenticator_authoritative(cmd_parms * cmd,
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
 
     dirconfig->authenticator_authoritative = arg;
+    dirconfig->authenticator_authoritative_set = 1;
     return NULL;
 }
 
@@ -635,6 +666,7 @@ const char *set_authorizer_authoritative(cmd_parms * cmd,
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
 
     dirconfig->authorizer_authoritative = arg;
+    dirconfig->authorizer_authoritative_set = 1;
     return NULL;
 }
 
@@ -683,6 +715,7 @@ const char *set_access_authoritative(cmd_parms * cmd,
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
 
     dirconfig->access_authoritative = arg;
+    dirconfig->access_authoritative_set = 1;
     return NULL;
 }
 

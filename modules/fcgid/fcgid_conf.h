@@ -100,20 +100,25 @@ typedef struct {
 } fcgid_server_conf;
 
 typedef struct {
+    /* scalar values have corresponding _set field to aid merging */
+
     /* wrapper */
     apr_hash_t *wrapper_info_hash;
 
     /* authenticator */
     auth_conf *authenticator_info;
     int authenticator_authoritative;
+    int authenticator_authoritative_set;
 
     /* authorizer */
     auth_conf *authorizer_info;
     int authorizer_authoritative;
+    int authorizer_authoritative_set;
 
     /* access check */
     auth_conf *access_info;
     int access_authoritative;
+    int access_authoritative_set;
 } fcgid_dir_conf;
 
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s);
@@ -121,6 +126,8 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev,
                                 void *overridesv);
 
 void *create_fcgid_dir_config(apr_pool_t * p, char *dummy);
+void *merge_fcgid_dir_config(apr_pool_t * p, void *basev,
+                             void *overridesv);
 
 const char *set_idle_timeout(cmd_parms * cmd, void *dummy,
                              const char *arg);

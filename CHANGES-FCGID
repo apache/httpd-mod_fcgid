@@ -1,6 +1,12 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
+  *) Merge mod_fcgid per-directory directives so that they can be inherited
+     or overridden within other containers as expected.  Affected directives:
+     FCGIDAccessChecker, FCGIDAccessCheckerAuthoritative, FCGIDAuthenticator,
+     FCGIDAuthenticatorAuthoritative, FCGIDAuthorizer,
+     FCGIDAuthorizerAuthoritative, and FCGIDWrapper.  [Jeff Trawick]
+
   *) Termination of idle processes after inactivity timeout can now be 
      disabled by setting FCGIDIdleTimeout to 0.  Termination of idle 
      processes based on the process lifetime can now be disabled by setting
