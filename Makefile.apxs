@@ -25,10 +25,10 @@ INSTALL_TARGETS = install-manual
 DISTCLEAN_TARGETS  = config.apxs.log modules/fcgid/fcgid_config.h
 EXTRACLEAN_TARGETS = 
 
+include $(exp_installbuilddir)/rules.mk
+
 x-local-distclean:
 	rm -rf docs/manual/build docs/manual/style
-
-include $(exp_installbuilddir)/rules.mk
 
 # Dang nabbit, these are stripped!  Reconstitute them;
 rel_libexecdir=`echo $(exp_libexecdir) | sed -e "s#^$(prefix)/##;"`
