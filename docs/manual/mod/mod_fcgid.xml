@@ -711,6 +711,13 @@
       migration for existing configurations.  It is treated the same as
       <code>0</code>.</p>
       </note>
+      <note type="warning"><title>Warning</title>
+      <p>If this is set such that frequent process creation will be
+      required, you will likely need to adjust 
+      <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
+      or other score-related directives to allow more frequent process
+      creation.</p>
+      </note>
     </usage>
   </directivesynopsis>
 
@@ -735,7 +742,20 @@
     <usage>
       <p>This directive specifies the name of a request header which
       will be passed to the FastCGI application as an environment
-      variable.  The directive can be used multiple times.</p>
+      variable.  The environment variable name will match the name 
+      specified on this directive, with hyphens converted to 
+      underscores, and no case conversion performed.</p>
+
+      <note type="hint"><title>Note</title>
+      <p>Most request headers are already available to the application
+      as environment variables, and generally are prefixed with 
+      <code>HTTP_</code>.  (Notable exceptions are <code>Content-type</code>
+      and <code>Content-length</code>, which do not have the
+      <code>HTTP_</code> prefix.)  Thus, this directive is only required
+      for request headers that are purposefully omitted, such as
+      <code>Authorization</code> and <code>Proxy-Authorization</code>.
+      Only pass these request headers if absolutely required.</p>
+      </note>
     </usage>
   </directivesynopsis>
 
