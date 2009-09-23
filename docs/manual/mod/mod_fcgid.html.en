@@ -100,6 +100,7 @@
 <ul id="topics">
 <li><img alt="" src="../images/down.gif" /> <a href="#upgrade">Upgrade Notes</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#examples">Examples</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#process-mgmt">Process Management</a></li>
 </ul><h3>See also</h3>
 <ul class="seealso">
 <li><a href="../howto/cgi.html">Dynamic Content With CGI</a></li>
@@ -359,6 +360,28 @@
     exec /usr/local/bin/php-cgi<br />
     </code></p></div>
 
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="process-mgmt" id="process-mgmt">Process Management</a></h2>
+    
+
+    <p>TODO</p>
+
+    <div class="note"><h3>Note</h3>
+    <p>Certain settings or other concepts that depend on the virtual host,
+    such as <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>
+    or process classes, distinguish between virtual hosts only if they
+    have distinct server names.  (See the <code class="directive">ServerName</code>
+    documentation for more information.) In the case of
+    <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>, if two
+    virtual hosts have the same server name but different environments as
+    defined by 
+    <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>, the 
+    environment used for a particular request will be that defined for the
+    virtual host of the request that caused the FastCGI process to be 
+    started.</p>
+    </div>
+
   </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="FCGIDAccessChecker" id="FCGIDAccessChecker">FCGIDAccessChecker</a> <a name="fcgidaccesschecker" id="fcgidaccesschecker">Directive</a></h2>
@@ -586,15 +609,6 @@
       <p>Use <code class="directive">FCGIDDefaultInitEnv</code> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
-
-      <div class="note"><h3>Note</h3>
-      <p>These settings are associated with the FastCGI process and are 
-      not reset on every request based on the current virtual host
-      settings.  The FastCGI process will run with the environment
-      settings of the virtual host of the request that caused the FastCGI
-      process to be started; these are not necessarily the same as those
-      of the virtual hosts of subsequent requests.</p>
-      </div>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -781,6 +795,13 @@
       migration for existing configurations.  It is treated the same as
       <code>0</code>.</p>
       </div>
+      <div class="warning"><h3>Warning</h3>
+      <p>If this is set such that frequent process creation will be
+      required, you will likely need to adjust 
+      <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
+      or other score-related directives to allow more frequent process
+      creation.</p>
+      </div>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -809,7 +830,20 @@
 </table>
       <p>This directive specifies the name of a request header which
       will be passed to the FastCGI application as an environment
-      variable.  The directive can be used multiple times.</p>
+      variable.  The environment variable name will match the name 
+      specified on this directive, with hyphens converted to 
+      underscores, and no case conversion performed.</p>
+
+      <div class="note"><h3>Note</h3>
+      <p>Most request headers are already available to the application
+      as environment variables, and generally are prefixed with 
+      <code>HTTP_</code>.  (Notable exceptions are <code>Content-type</code>
+      and <code>Content-length</code>, which do not have the
+      <code>HTTP_</code> prefix.)  Thus, this directive is only required
+      for request headers that are purposefully omitted, such as
+      <code>Authorization</code> and <code>Proxy-Authorization</code>.
+      Only pass these request headers if absolutely required.</p>
+      </div>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
