@@ -470,7 +470,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     /* XXX HACK: I have to read all the request into memory before sending it 
        to fastcgi application server, this prevents slow clients from 
        keeping the server in processing too long. 
-       Buf sometimes it's not acceptable(think about uploading a large attachment)
+       But sometimes it's not acceptable (think about uploading a large attachment)
        file_bucket is a better choice in this case...
        To do, or not to do, that is the question ^_^
      */
