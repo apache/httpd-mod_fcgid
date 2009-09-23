@@ -94,21 +94,21 @@ generate-dox:
 
 install-manual:
 	@echo Installing online manual
-	@test -d $(exp_manualdir) \
-          || $(MKINSTALLDIRS) $(exp_manualdir)
+	@test -d $(DESTDIR)$(exp_manualdir) \
+          || $(MKINSTALLDIRS) $(DESTDIR)$(exp_manualdir)
 	@if test "x$(RSYNC)" != "x" && test -x $(RSYNC) ; then \
 	  $(RSYNC) --exclude .svn -rlpt --numeric-ids \
-		$(fcgid_srcdir)/docs/manual/ $(exp_manualdir)/; \
+		$(fcgid_srcdir)/docs/manual/ $(DESTDIR)$(exp_manualdir)/; \
 	else \
-	  cp -rp $(fcgid_srcdir)/docs/manual/* $(exp_manualdir)/ && \
-	  find $(exp_manualdir) -name ".svn" -type d -print \
+	  cp -rp $(fcgid_srcdir)/docs/manual/* $(DESTDIR)$(exp_manualdir)/ && \
+	  find $(DESTDIR)$(exp_manualdir) -name ".svn" -type d -print \
 	    | xargs rm -rf 2>/dev/null || true; \
 	fi
 
 install-include:
 	@echo Installing header files
-	@$(MKINSTALLDIRS) $(exp_includedir) && \
-	  cp $(fcgid_srcdir)/include/mod_fcgid.h $(exp_includedir)/ && \
-	  chmod 0644 $(exp_includedir)/mod_fcgid.h
+	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_includedir) && \
+	  cp $(fcgid_srcdir)/include/mod_fcgid.h $(DESTDIR)$(exp_includedir)/ && \
+	  chmod 0644 $(DESTDIR)$(exp_includedir)/mod_fcgid.h
 
 .PHONY: generate-dox generate-docs
