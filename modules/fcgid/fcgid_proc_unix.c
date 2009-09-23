@@ -58,15 +58,13 @@ typedef struct {
 static int g_process_counter = 0;
 static apr_pool_t *g_inode_cginame_map = NULL;
 
-static apr_status_t ap_unix_create_privileged_process(apr_proc_t * newproc,
+static apr_status_t ap_unix_create_privileged_process(apr_proc_t *newproc,
                                                       const char *progname,
-                                                      const char *const
-                                                      *args, const char *const
-                                                      *env,
-                                                      apr_procattr_t *
-                                                      attr,
-                                                      ap_unix_identity_t *
-                                                      ugid, apr_pool_t * p)
+                                                      const char *const *args,
+                                                      const char *const *env,
+                                                      apr_procattr_t *attr,
+                                                      ap_unix_identity_t *ugid,
+                                                      apr_pool_t *p)
 {
     int i = 0;
     const char **newargs;
@@ -129,15 +127,13 @@ static apr_status_t ap_unix_create_privileged_process(apr_proc_t * newproc,
     return apr_proc_create(newproc, newprogname, newargs, env, attr, p);
 }
 
-static apr_status_t fcgid_create_privileged_process(apr_proc_t * newproc,
+static apr_status_t fcgid_create_privileged_process(apr_proc_t *newproc,
                                                     const char *progname,
-                                                    const char *const
-                                                    *args,
+                                                    const char *const *args,
                                                     const char *const *env,
-                                                    apr_procattr_t * attr,
-                                                    fcgid_proc_info *
-                                                    procinfo,
-                                                    apr_pool_t * p)
+                                                    apr_procattr_t *attr,
+                                                    fcgid_proc_info *procinfo,
+                                                    apr_pool_t *p)
 {
     ap_unix_identity_t ugid;
 
