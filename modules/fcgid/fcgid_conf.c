@@ -354,13 +354,35 @@ const char *set_spawnscore_uplimit(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
+static int strtoff(apr_off_t *val, const char *arg)
+{
+    char *errp;
+
+#if APR_MAJOR_VERSION < 1
+    *val = (apr_off_t)strtol(arg, &errp, 10);
+    if (*errp) {
+        return 1;
+    }
+#else
+    if (APR_SUCCESS != apr_strtoff(&conf->max_request_len, arg, &errp, 10) || *errp) {
+        return 1;
+    }
+#endif
+    return 0;
+}
+
 const char *set_max_request_len(cmd_parms * cmd, void *dummy,
                                 const char *arg)
 {
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    config->max_request_len = atol(arg);
+
+    if (strtoff(&config->max_request_len, arg)
+        || config->max_request_len < 0) {
+        return "FCGIDMaxRequestLen requires a non-negative integer.";
+    }
+
     config->max_request_len_set = 1;
     return NULL;
 }

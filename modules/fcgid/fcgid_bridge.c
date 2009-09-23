@@ -442,7 +442,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                                     &fcgid_module);
     apr_status_t rv = APR_SUCCESS;
     int seen_eos;
-    size_t request_size = 0;
+    apr_off_t request_size = 0;
     apr_file_t *fd = NULL;
     int need_truncate = 1;
     apr_off_t cur_pos = 0;
@@ -528,8 +528,8 @@ int bridge_request(request_rec * r, int role, const char *argv0,
             request_size += len;
             if (request_size > sconf->max_request_len) {
                 ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
-                              "mod_fcgid: HTTP request length %" APR_SIZE_T_FMT 
-                              " (so far) exceeds MaxRequestLen (%" APR_SIZE_T_FMT
+                              "mod_fcgid: HTTP request length %" APR_OFF_T_FMT 
+                              " (so far) exceeds MaxRequestLen (%" APR_OFF_T_FMT
                               ")",
                              request_size, sconf->max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;

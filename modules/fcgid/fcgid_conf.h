@@ -90,7 +90,7 @@ typedef struct {
     int ipc_connect_timeout_set;
     int max_mem_request_len;
     int max_mem_request_len_set;
-    int max_request_len;
+    apr_off_t max_request_len;
     int max_request_len_set;
     int max_requests_per_process;
     int max_requests_per_process_set;
