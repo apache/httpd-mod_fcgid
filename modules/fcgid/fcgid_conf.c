@@ -21,6 +21,7 @@
 #include "apr_hash.h"
 #include "apr_lib.h"
 #include "apr_tables.h"
+#include "apr_version.h"
 #include "http_main.h"
 #include "httpd.h"
 #include "http_config.h"
@@ -364,7 +365,7 @@ static int strtoff(apr_off_t *val, const char *arg)
         return 1;
     }
 #else
-    if (APR_SUCCESS != apr_strtoff(&conf->max_request_len, arg, &errp, 10) || *errp) {
+    if (APR_SUCCESS != apr_strtoff(val, arg, &errp, 10) || *errp) {
         return 1;
     }
 #endif
