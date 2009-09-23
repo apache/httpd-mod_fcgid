@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.2
 
+  *) Fix a mod_fcgid 2.3.1 failure with <sys/mutex.h> when building for
+     httpd 2.0.x on some platforms.  [Paul Howarth <paul city-fan.org>]
+
   *) Merge mod_fcgid per-directory directives so that they can be inherited
      or overridden within other containers as expected.  Affected directives:
      FCGIDAccessChecker, FCGIDAccessCheckerAuthoritative, FCGIDAuthenticator,

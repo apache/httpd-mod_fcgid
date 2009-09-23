@@ -40,13 +40,13 @@ include $(exp_installbuilddir)/rules.mk
 conftest_foofn: conftest_foofn.lo
 	$(LINK) conftest_foofn.lo
 
-conftest_sys_file_h: conftest_sys_mman_h.lo
+conftest_sys_file_h: conftest_sys_file_h.lo
 	@echo "success" > $@
 
 conftest_sys_mman_h: conftest_sys_mman_h.lo
 	@echo "success" > $@
 
-conftest_sys_mutex_h: conftest_sys_mman_h.lo
+conftest_sys_mutex_h: conftest_sys_mutex_h.lo
 	@echo "success" > $@
 
 conftest_sys_shm_h: conftest_sys_shm_h.lo
