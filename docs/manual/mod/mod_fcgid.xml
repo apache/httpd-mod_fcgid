@@ -313,6 +313,28 @@
 
   </section>
 
+  <section id="process-mgmt">
+    <title>Process Management</title>
+
+    <p>TODO</p>
+
+    <note type="hint"><title>Note</title>
+    <p>Certain settings or other concepts that depend on the virtual host,
+    such as <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>
+    or process classes, distinguish between virtual hosts only if they
+    have distinct server names.  (See the <directive>ServerName</directive>
+    documentation for more information.) In the case of
+    <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>, if two
+    virtual hosts have the same server name but different environments as
+    defined by 
+    <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>, the 
+    environment used for a particular request will be that defined for the
+    virtual host of the request that caused the FastCGI process to be 
+    started.</p>
+    </note>
+
+  </section>
+
   <!-- References to other documents or directives -->
   <seealso><a href="../howto/cgi.html">Dynamic Content With CGI</a></seealso>
   <seealso><module>mod_cgi</module></seealso>
@@ -525,15 +547,6 @@
       <p>Use <directive>FCGIDDefaultInitEnv</directive> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
-
-      <note type="hint"><title>Note</title>
-      <p>These settings are associated with the FastCGI process and are 
-      not reset on every request based on the current virtual host
-      settings.  The FastCGI process will run with the environment
-      settings of the virtual host of the request that caused the FastCGI
-      process to be started; these are not necessarily the same as those
-      of the virtual hosts of subsequent requests.</p>
-      </note>
     </usage>
   </directivesynopsis>
 
