@@ -262,8 +262,15 @@
 
     <p>PHP applications are usually configured using the
     <directive module="mod_fcgid">FCGIDWrapper</directive> directive
-    and a corresponding wrapper script, as in the following
-    example:</p>
+    and a corresponding wrapper script.  The wrapper script can be 
+    an appropriate place to define any environment variables required
+    by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>,
+    <code>PHP_FCGI_CHILDREN</code>, or anything else.  (Environment
+    variables can also be set with
+    <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>,
+    but they then apply to all applications.)</p>
+
+    <p>Here is an example that uses a wrapper script to invoke PHP:</p>
 
     <example><title>PHP application - /usr/local/phpapp/phpinfo.php</title>
     &lt;?php<br />
@@ -304,13 +311,35 @@
     #!/bin/sh<br />
     # Set desired PHP_FCGI_* environment variables.<br />
     # Example:<br />
-    PHP_FCGI_MAX_REQUESTS=1000<br />
+    # PHP FastCGI processes normally exit after 500 requests.<br />
+    PHP_FCGI_MAX_REQUESTS=10000<br />
     export PHP_FCGI_MAX_REQUESTS<br />
     <br />
     # Replace with the path to your FastCGI-enabled PHP executable<br />
     exec /usr/local/bin/php-cgi<br />
     </example>
 
+    <note type="warning"><title>Warning</title>
+    <p>By default, PHP FastCGI processes exit after handling 500
+    requests, and they may exit after this module has already
+    connected to the application and sent a request.  When that
+    occurs, an error will be logged and <code>500 Internal Server
+    Error</code> will be returned to the client.  This PHP behavior
+    can be disabled by setting <code>PHP_FCGI_MAX_REQUESTS</code> to
+    0, but that can be a problem if the PHP application leaks
+    resources.  Alternatively, <code>PHP_FCGI_MAX_REQUESTS</code> can
+    be set to a much higher value than the default to reduce the
+    frequency of this problem.</p>
+
+    <p>The <directive module="mod_fcgid">FCGIDMaxRequestsPerProcess</directive>
+    directive provides another way to address the issue:  set this
+    directive to the same value as the corresponding PHP setting, and
+    no additional requests will be sent to the application once it is
+    ready to exit.</p>
+    </note>
+
+    <p>TODO: Should PHP child process management always be disabled
+    with mod_fcgid?</p>
   </section>
 
   <section id="process-mgmt">
@@ -711,6 +740,11 @@
       migration for existing configurations.  It is treated the same as
       <code>0</code>.</p>
       </note>
+      <p>Certain applications, notably PHP as FastCGI, have their own
+      facility for terminating after handling a certain number of
+      requests.  This directive can be used to avoid sending
+      additional requests to the application after it has handled its
+      limit.</p>
       <note type="warning"><title>Warning</title>
       <p>If this is set such that frequent process creation will be
       required, you will likely need to adjust 
