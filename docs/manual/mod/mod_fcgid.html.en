@@ -311,8 +311,15 @@
 
     <p>PHP applications are usually configured using the
     <code class="directive"><a href="#fcgidwrapper">FCGIDWrapper</a></code> directive
-    and a corresponding wrapper script, as in the following
-    example:</p>
+    and a corresponding wrapper script.  The wrapper script can be 
+    an appropriate place to define any environment variables required
+    by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>,
+    <code>PHP_FCGI_CHILDREN</code>, or anything else.  (Environment
+    variables can also be set with
+    <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>,
+    but they then apply to all applications.)</p>
+
+    <p>Here is an example that uses a wrapper script to invoke PHP:</p>
 
     <div class="example"><h3>PHP application - /usr/local/phpapp/phpinfo.php</h3><p><code>
     &lt;?php<br />
@@ -353,19 +360,76 @@
     #!/bin/sh<br />
     # Set desired PHP_FCGI_* environment variables.<br />
     # Example:<br />
-    PHP_FCGI_MAX_REQUESTS=1000<br />
+    # PHP FastCGI processes normally exit after 500 requests.<br />
+    PHP_FCGI_MAX_REQUESTS=10000<br />
     export PHP_FCGI_MAX_REQUESTS<br />
     <br />
     # Replace with the path to your FastCGI-enabled PHP executable<br />
     exec /usr/local/bin/php-cgi<br />
     </code></p></div>
 
+    <div class="note"><h3>Note</h3>
+    <p>By default, PHP FastCGI processes exit after handling 500
+    requests, and they may exit after this module has already
+    connected to the application and sent a request.  When that
+    occurs, an error will be logged and <code>500 Internal Server
+    Error</code> will be returned to the client.  This PHP behavior
+    can be disabled by setting <code>PHP_FCGI_MAX_REQUESTS</code> to
+    0, but that can be a problem if the PHP application leaks
+    resources.  Alternatively, <code>PHP_FCGI_MAX_REQUESTS</code> can
+    be set to a much higher value than the default to reduce the
+    frequency of this problem.</p>
+
+    <p>The <code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code>
+    directive provides another way to address the issue:  set this
+    directive to the same value as the corresponding PHP setting, and
+    no additional requests will be sent to the application once it is
+    ready to exit.</p>
+    </div>
+
+    <p>TODO: Should PHP child process management always be disabled
+    with mod_fcgid?</p>
   </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="section">
 <h2><a name="process-mgmt" id="process-mgmt">Process Management</a></h2>
     
 
-    <p>TODO</p>
+    <p>mod_fcgid has several types of controls which affect the creation
+    of additional application processes:</p>
+
+    <table class="bordered"><tr class="header"><th>Type of control</th><th>Directive</th></tr>
+<tr>
+        <td>global limit on number of processes</td>
+        <td><code class="directive"><a href="#fcgidmaxprocesscount">FCGIDMaxProcessCount</a></code></td>
+      </tr>
+<tr class="odd">
+        <td>limit on number of processes per application</td>
+        <td><code class="directive"><a href="#fcgidmaxclassprocesscount">FCGIDMaxClassProcessCount</a></code></td>
+      </tr>
+<tr>
+        <td>limit on rate of spawning new application processes</td>
+        <td><code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code> and
+        other score-related directives</td>
+      </tr>
+</table>
+
+    <p>mod_fcgid has several types of controls which affect the termination
+    of existing application processes:</p>
+
+    <table class="bordered"><tr class="header"><th>Type of control</th><th>Directive</th></tr>
+<tr>
+        <td>termination after an idle period</td>
+        <td><code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code></td>
+      </tr>
+<tr class="odd">
+        <td>termination after it handles a certain number of requests</td>
+        <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code></td>
+      </tr>
+<tr>
+        <td>termination after a certain lifetime</td>
+        <td><code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifetime</a></code></td>
+      </tr>
+</table>
 
     <div class="note"><h3>Note</h3>
     <p>Certain settings or other concepts that depend on the virtual host,
@@ -708,7 +772,7 @@
       <p>This is the maximum period of time the module will wait
       while trying to read from or write to a FastCGI application.</p>
 
-      <div class="warning"><h3>Warning</h3>
+      <div class="note"><h3>Note</h3>
       <p>The FastCGI application must begin generating the response within
       this period of time.  Increase this directive as necessary to handle
       applications which take a relatively long period of time to respond.</p>
@@ -795,7 +859,12 @@
       migration for existing configurations.  It is treated the same as
       <code>0</code>.</p>
       </div>
-      <div class="warning"><h3>Warning</h3>
+      <p>Certain applications, notably PHP as FastCGI, have their own
+      facility for terminating after handling a certain number of
+      requests.  This directive can be used to avoid sending
+      additional requests to the application after it has handled its
+      limit.</p>
+      <div class="note"><h3>Note</h3>
       <p>If this is set such that frequent process creation will be
       required, you will likely need to adjust 
       <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
@@ -920,6 +989,8 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
+      <p>Lower values of this directive increase the allowed spawn rate.</p>
+
       <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
       directive for more information.</p>
     
@@ -935,19 +1006,30 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>The module maintains a process activity score for each FastCGI
-      application which represents process activity; it uses that score to 
-      determine if more instances of the FastCGI application can be spawned
-      (started).  If the current score is higher than the value of this 
-      directive, a new instance of the FastCGI application cannot yet be 
-      started.</p>
+      <p>A process activity score is maintained for each FastCGI application;
+      the score is used to control the rate of spawning in order to avoid 
+      placing too much load on the system, particularly for applications that
+      are repeatedly exiting abnormally.</p>
 
-      <p>The <code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code> directive 
-      determines how much is added to the score for every spawned application
-      process.  The <code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code>
-      directive determines how much is added to the score for every terminated
-      application process.  The <code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code>
-      directive determines how much is subtracted from the score every second.</p>
+      <p>The value of <code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code>
+      is added to the score for every spawned application process.  The value of 
+      <code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code> is added
+      to the score for every terminated application process.  The value of
+      <code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code> is subtracted
+      from the score every second.</p>
+
+      <p>When the current score is higher than the value of
+      <code class="directive">FCGIDSpawnScoreUpLimit</code>, no additional application
+      processes will be spawned; subsequent requests must wait until an existing 
+      process is free or until the score decreases below the limit.</p>
+
+      <p>If the limit is reached under normal load, it may not be sufficient to
+      simply increase the limit, as that would only delay the amount of time 
+      before the limit is reached again.  Decrease the value of 
+      <code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code> and/or 
+      <code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code>, or
+      increase the value of <code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code>,
+      to allow a higher rate of spawning.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -961,6 +1043,10 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
+      <p>Lower values of this directive increase the allowed spawn rate.  Negative
+      values can be useful in some circumstances, such as allowing process 
+      replacement without increasing the score.</p>
+
       <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
       directive for more information.</p>
     
@@ -976,6 +1062,8 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
+      <p>Higher values of this directive increase the allowed spawn rate.</p>
+
       <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
       directive for more information.</p>
     
