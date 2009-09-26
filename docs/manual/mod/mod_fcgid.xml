@@ -319,7 +319,7 @@
     exec /usr/local/bin/php-cgi<br />
     </example>
 
-    <note type="warning"><title>Warning</title>
+    <note type="hint"><title>Note</title>
     <p>By default, PHP FastCGI processes exit after handling 500
     requests, and they may exit after this module has already
     connected to the application and sent a request.  When that
@@ -700,7 +700,7 @@
       <p>This is the maximum period of time the module will wait
       while trying to read from or write to a FastCGI application.</p>
 
-      <note type="warning"><title>Warning</title>
+      <note type="hint"><title>Note</title>
       <p>The FastCGI application must begin generating the response within
       this period of time.  Increase this directive as necessary to handle
       applications which take a relatively long period of time to respond.</p>
@@ -782,7 +782,7 @@
       requests.  This directive can be used to avoid sending
       additional requests to the application after it has handled its
       limit.</p>
-      <note type="warning"><title>Warning</title>
+      <note type="hint"><title>Note</title>
       <p>If this is set such that frequent process creation will be
       required, you will likely need to adjust 
       <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
