@@ -345,7 +345,44 @@
   <section id="process-mgmt">
     <title>Process Management</title>
 
-    <p>TODO</p>
+    <p>mod_fcgid has several types of controls which affect the creation
+    of additional application processes:</p>
+
+    <table border="1" style="zebra">
+      <tr><th>Type of control</th><th>Directive</th></tr>
+      <tr>
+        <td>global limit on number of processes</td>
+        <td><directive module="mod_fcgid">FCGIDMaxProcessCount</directive></td>
+      </tr>
+      <tr>
+        <td>limit on number of processes per application</td>
+        <td><directive module="mod_fcgid">FCGIDMaxClassProcessCount</directive></td>
+      </tr>
+      <tr>
+        <td>limit on rate of spawning new application processes</td>
+        <td><directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive> and
+        other score-related directives</td>
+      </tr>
+    </table>
+
+    <p>mod_fcgid has several types of controls which affect the termination
+    of existing application processes:</p>
+
+    <table border="1" style="zebra">
+      <tr><th>Type of control</th><th>Directive</th></tr>
+      <tr>
+        <td>termination after an idle period</td>
+        <td><directive module="mod_fcgid">FCGIDIdleTimeout</directive></td>
+      </tr>
+      <tr>
+        <td>termination after it handles a certain number of requests</td>
+        <td><directive module="mod_fcgid">FCGIDMaxRequestsPerProcess</directive></td>
+      </tr>
+      <tr>
+        <td>termination after a certain lifetime</td>
+        <td><directive module="mod_fcgid">FCGIDProcessLifetime</directive></td>
+      </tr>
+    </table>
 
     <note type="hint"><title>Note</title>
     <p>Certain settings or other concepts that depend on the virtual host,
@@ -856,6 +893,8 @@
     <default>FCGIDSpawnScore 1</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
+      <p>Lower values of this directive increase the allowed spawn rate.</p>
+
       <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
     </usage>
@@ -869,19 +908,30 @@
     <default>FCGIDSpawnScoreUpLimit 10</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>The module maintains a process activity score for each FastCGI
-      application which represents process activity; it uses that score to 
-      determine if more instances of the FastCGI application can be spawned
-      (started).  If the current score is higher than the value of this 
-      directive, a new instance of the FastCGI application cannot yet be 
-      started.</p>
+      <p>A process activity score is maintained for each FastCGI application;
+      the score is used to control the rate of spawning in order to avoid 
+      placing too much load on the system, particularly for applications that
+      are repeatedly exiting abnormally.</p>
 
-      <p>The <directive module="mod_fcgid">FCGIDSpawnScore</directive> directive 
-      determines how much is added to the score for every spawned application
-      process.  The <directive module="mod_fcgid">FCGIDTerminationScore</directive>
-      directive determines how much is added to the score for every terminated
-      application process.  The <directive module="mod_fcgid">FCGIDTimeScore</directive>
-      directive determines how much is subtracted from the score every second.</p>
+      <p>The value of <directive module="mod_fcgid">FCGIDSpawnScore</directive>
+      is added to the score for every spawned application process.  The value of 
+      <directive module="mod_fcgid">FCGIDTerminationScore</directive> is added
+      to the score for every terminated application process.  The value of
+      <directive module="mod_fcgid">FCGIDTimeScore</directive> is subtracted
+      from the score every second.</p>
+
+      <p>When the current score is higher than the value of
+      <directive>FCGIDSpawnScoreUpLimit</directive>, no additional application
+      processes will be spawned; subsequent requests must wait until an existing 
+      process is free or until the score decreases below the limit.</p>
+
+      <p>If the limit is reached under normal load, it may not be sufficient to
+      simply increase the limit, as that would only delay the amount of time 
+      before the limit is reached again.  Decrease the value of 
+      <directive module="mod_fcgid">FCGIDSpawnScore</directive> and/or 
+      <directive module="mod_fcgid">FCGIDTerminationScore</directive>, or
+      increase the value of <directive module="mod_fcgid">FCGIDTimeScore</directive>,
+      to allow a higher rate of spawning.</p>
     </usage>
   </directivesynopsis>
 
@@ -893,6 +943,10 @@
     <default>FCGIDTerminationScore 2</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
+      <p>Lower values of this directive increase the allowed spawn rate.  Negative
+      values can be useful in some circumstances, such as allowing process 
+      replacement without increasing the score.</p>
+
       <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
     </usage>
@@ -906,6 +960,8 @@
     <default>FCGIDTimeScore 1</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
+      <p>Higher values of this directive increase the allowed spawn rate.</p>
+
       <p>Refer to the <directive module="mod_fcgid">FCGIDSpawnScoreUpLimit</directive>
       directive for more information.</p>
     </usage>
