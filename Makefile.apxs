@@ -63,9 +63,9 @@ install-conf:
 	@awk -f $(fcgid_srcdir)/build/addloadexample.awk \
 		-v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
 		-v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf \
-		$(httpd_conffile) > $(httpd_conffile).new && \
-	  ( mv $(httpd_conffile) $(httpd_conffile).bak && \
-	    mv $(httpd_conffile).new $(httpd_conffile) );
+		$(DESTDIR)$(httpd_conffile) > $(DESTDIR)$(httpd_conffile).new && \
+	  ( mv $(DESTDIR)$(httpd_conffile) $(DESTDIR)$(httpd_conffile).bak && \
+	    mv $(DESTDIR)$(httpd_conffile).new $(DESTDIR)$(httpd_conffile) );
 
 svnroot=http://svn.apache.org/repos/asf/httpd
 manualdir=$(fcgid_srcdir)/docs/manual
