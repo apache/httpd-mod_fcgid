@@ -139,7 +139,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         initenv_arr = apr_table_elts(initenv);
         initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
         if (initenv_arr->nelts > INITENV_CNT)
-            ap_log_rerror(APLOG_MARK, LOG_WARNING, 0, r,
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
                           "mod_fcgid: %d environment variables dropped; increase "
                           "INITENV_CNT in fcgid_pm.h from %d to at least %d",
                           initenv_arr->nelts - INITENV_CNT,

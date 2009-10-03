@@ -160,7 +160,7 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
 
     /* Create process now */
     procnode->proc_id = apr_pcalloc(procnode->proc_pool,
-                                    sizeof(apr_proc_t))
+                                    sizeof(apr_proc_t));
     if ((rv = apr_procattr_create(&proc_attr, procnode->proc_pool))
                != APR_SUCCESS
         || (rv = apr_procattr_dir_set(proc_attr,
