@@ -224,7 +224,7 @@ const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
                                          const char *arg);
 
-AP_DECLARE_DATA extern module fcgid_module;
+AP_MODULE_DECLARE_DATA extern module fcgid_module;
 
 #endif
 
