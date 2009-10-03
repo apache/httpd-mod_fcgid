@@ -32,7 +32,6 @@
 #include "fcgid_filter.h"
 #include "fcgid_protocol.h"
 
-module AP_MODULE_DECLARE_DATA fcgid_module;
 static APR_OPTIONAL_FN_TYPE(ap_cgi_build_command) * cgi_build_command;
 static ap_filter_rec_t *fcgid_filter_handle;
 static int g_php_fix_pathinfo_enable = 0;

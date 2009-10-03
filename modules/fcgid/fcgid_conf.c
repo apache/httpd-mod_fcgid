@@ -27,7 +27,6 @@
 #include "http_config.h"
 #include "fcgid_global.h"
 #include "fcgid_conf.h"
-extern module AP_MODULE_DECLARE_DATA fcgid_module;
 
 #define DEFAULT_IDLE_TIMEOUT 300
 #define DEFAULT_IDLE_SCAN_INTERVAL 120
