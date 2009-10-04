@@ -21,6 +21,7 @@
 #include "httpd.h"
 #include "apr_thread_proc.h"
 #include "fcgid_global.h"
+#include "fcgid_conf.h"
 
 /* Increase it if necessary */
 #define FCGID_MAX_APPLICATION (1024)
@@ -50,6 +51,7 @@ typedef struct {
     apr_time_t last_active_time;    /* the time this process last active */
     int requests_handled;       /* number of requests process has handled */
     char diewhy;                /* why it die */
+    fcgid_cmd_options cmdopts;  /* context-specific configuration */
 } fcgid_procnode;
 
 /* Macros for diewhy */

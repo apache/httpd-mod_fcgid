@@ -1,7 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.3
 
-
+  *) Allow/respect virtual host settings for the following directives:
+     FCGIDBusyTimeout, FCGIDDefaultMaxClassProcessCount, 
+     FCGIDDefaultMinClassProcessCount, FCGIDIdleTimeout, and 
+     FCGIDProcessLifetime.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.2
 

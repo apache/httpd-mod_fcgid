@@ -18,9 +18,7 @@
 #ifndef FCGID_PM_H
 #define FCGID_PM_H
 #include "fcgid_global.h"
-#define INITENV_KEY_LEN 64
-#define INITENV_VAL_LEN 128
-#define INITENV_CNT 64
+#include "fcgid_conf.h"
 
 typedef struct {
     char cgipath[_POSIX_PATH_MAX];
@@ -32,8 +30,7 @@ typedef struct {
     uid_t uid;                  /* For suEXEC */
     gid_t gid;                  /* For suEXEC */
     int userdir;                /* For suEXEC */
-    char initenv_key[INITENV_CNT][INITENV_KEY_LEN];
-    char initenv_val[INITENV_CNT][INITENV_VAL_LEN];
+    fcgid_cmd_options cmdopts;  /* context-specific configuration */
 } fcgid_command;
 
 void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,

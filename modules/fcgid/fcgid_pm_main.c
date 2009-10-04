@@ -53,14 +53,14 @@ static void scan_idlelist(server_rec * main_server)
     fcgid_procnode *proc_table;
     apr_time_t last_active_time, start_time;
     apr_time_t now = apr_time_now();
+    int idle_timeout, proc_lifetime;
     fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
                                                     &fcgid_module);
 
     /* Should I check the idle list now? */
     if (procmgr_must_exit()
         || apr_time_sec(now) - apr_time_sec(lastidlescan) <=
-        sconf->idle_scan_interval
-        || (!sconf->idle_timeout && !sconf->proc_lifetime))
+        sconf->idle_scan_interval)
         return;
     lastidlescan = now;
 
@@ -75,17 +75,19 @@ static void scan_idlelist(server_rec * main_server)
         next_node = &proc_table[current_node->next_index];
         last_active_time = current_node->last_active_time;
         start_time = current_node->start_time;
-        if (((sconf->idle_timeout && 
-              (apr_time_sec(now) - apr_time_sec(last_active_time) > sconf->idle_timeout))
-             || (sconf->proc_lifetime && 
-              (apr_time_sec(now) - apr_time_sec(start_time) > sconf->proc_lifetime)))
+        idle_timeout = current_node->cmdopts.idle_timeout;
+        proc_lifetime = current_node->cmdopts.proc_lifetime;
+        if (((idle_timeout && 
+              (apr_time_sec(now) - apr_time_sec(last_active_time) > idle_timeout))
+             || (proc_lifetime && 
+              (apr_time_sec(now) - apr_time_sec(start_time) > proc_lifetime)))
             && is_kill_allowed(main_server, current_node)) {
             /* Set die reason for log */
-            if (sconf->idle_timeout &&
-                (apr_time_sec(now) - apr_time_sec(last_active_time) > sconf->idle_timeout))
+            if (idle_timeout &&
+                (apr_time_sec(now) - apr_time_sec(last_active_time) > idle_timeout))
                 current_node->diewhy = FCGID_DIE_IDLE_TIMEOUT;
-            else if (sconf->proc_lifetime && 
-                     (apr_time_sec(now) - apr_time_sec(start_time) > sconf->proc_lifetime))
+            else if (proc_lifetime && 
+                     (apr_time_sec(now) - apr_time_sec(start_time) > proc_lifetime))
                 current_node->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
 
             /* Unlink from idle list */
@@ -137,7 +139,7 @@ static void scan_busylist(server_rec * main_server)
         last_active_time = current_node->last_active_time;
         /* FIXME See BZ #47483 */
         if (apr_time_sec(now) - apr_time_sec(last_active_time) >
-            (sconf->busy_timeout + 10)) {
+            (current_node->cmdopts.busy_timeout + 10)) {
             /* Set dir reason for log */
             current_node->diewhy = FCGID_DIE_BUSY_TIMEOUT;
 
@@ -495,6 +497,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     procnode->requests_handled = 0;
     procnode->diewhy = FCGID_DIE_KILLSELF;
     procnode->proc_pool = NULL;
+    procnode->cmdopts = command->cmdopts;
 
     procinfo.cgipath = command->cgipath;
     procinfo.configpool = configpool;
@@ -521,10 +524,10 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
      */
     default_proc_env(procinfo.proc_environ);        
     for (i = 0; i < INITENV_CNT; i++) {
-        if (command->initenv_key[i][0] == '\0')
+        if (command->cmdopts.initenv_key[i][0] == '\0')
             break;
-        apr_table_set(procinfo.proc_environ, command->initenv_key[i],
-                      command->initenv_val[i]);
+        apr_table_set(procinfo.proc_environ, command->cmdopts.initenv_key[i],
+                      command->cmdopts.initenv_val[i]);
     }
 
     /* Spawn the process now */

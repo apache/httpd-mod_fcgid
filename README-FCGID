@@ -145,17 +145,21 @@ i.   All directives have been renamed in order to use a common prefix "FCGID".
 ii.  Some directives which could be placed inside <VirtualHost > but were
      ignored before now result in configuration errors.  As before, these 
      directives must be set at global scope to have the desired effect.
-     These include FCGIDIdleTimeout, FCGIDMaxProcessCount, FCGIDPHPFixPathinfoEnable,
-     FCGIDProcessLifetime, and others.  (Consult CHANGES-FCGID for the complete
+     These include FCGIDMaxProcessCount, FCGIDPHPFixPathinfoEnable, and
+     others.  (Consult CHANGES-FCGID for the complete list.)
+
+iii. Some directives which could be placed inside <VirtualHost > but were
+     ignored before are now respected.  These include FCGIDIdleTimeout,
+     FCGIDProcessLifeTime, and others.  (Consult CHANGES-FCGID for the complete
      list.)
 
-iii. Some directives which can optionally be placed inside <VirtualHost >
+iv.  Some directives which can optionally be placed inside <VirtualHost >
      were not inherited as expected in older releases.  This has been
      corrected, and behavior will change for some configurations.  Affected
      directives include FCGIDIPCCommTimeout, FCGIDOutputBufferSize, and others.
      (Consult CHANGES-FCGID for the complete list.)
 
-iv.  Some directives which can be placed inside <Directory >, <Location >,
+v.   Some directives which can be placed inside <Directory >, <Location >,
      etc. were not inherited as expected in older releases.  This has been
      corrected, and behavior will change for some configurations.  Affected
      directives include FCGIDWrapper and the AAA-related directives.  (Consult

@@ -184,7 +184,9 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
          */
         int dt = (int)
             (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
-        if (dt > sconf->busy_timeout) {
+        if (dt > sconf->busy_timeout) { /* can't reference from procnode->cmdopts
+                                         * because procnode could have been reused
+                                         */
             /* Do nothing but print log */
             ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
                           "mod_fcgid: process busy timeout (%d), took %d seconds for this request",

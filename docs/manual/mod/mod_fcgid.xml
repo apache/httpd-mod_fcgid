@@ -594,7 +594,7 @@
     <description>a FastCGI application will be killed after handling a request for FCGIDBusyTimeout</description>
     <syntax>FCGIDBusyTimeout <em>seconds</em></syntax>
     <default>FCGIDBusyTimeout 300</default>
-    <contextlist><context>server config</context></contextlist>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This is the maximum time limit for request handling.  If a FastCGI
       request does not complete within FCGIDBusyTimeout seconds, it will be
@@ -626,7 +626,7 @@
     <description>Max process count of one class of FastCGI application</description>
     <syntax>FCGIDDefaultMaxClassProcessCount <em>value</em></syntax>
     <default>FCGIDDefaultMaxClassProcessCount 100</default>
-    <contextlist><context>server config</context></contextlist>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
       command, and share certain other characteristics such as virtual host and
@@ -642,7 +642,7 @@
     <description>Min process count of one class of FastCGI application</description>
     <syntax>FCGIDDefaultMinClassProcessCount <em>value</em></syntax>
     <default>FCGIDDefaultMinClassProcessCount 3</default>
-    <contextlist><context>server config</context></contextlist>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
       command, and share certain other characteristics such as virtual host and
@@ -687,7 +687,7 @@
     <description>An idle FastCGI application will be killed after FCGIDIdleTimeout</description>
     <syntax>FCGIDIdleTimeout <em>seconds</em></syntax>
     <default>FCGIDIdleTimeout 300</default>
-    <contextlist><context>server config</context></contextlist>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>Application processes which have not handled a request for this 
       period of time will be terminated, if the number of processses for the
@@ -858,7 +858,7 @@
     <description>maximum FastCGI application process lifetime</description>
     <syntax>FCGIDProcessLifeTime <em>seconds</em></syntax>
     <default>FCGIDProcessLifeTime 3600</default>
-    <contextlist><context>server config</context></contextlist>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>Idle application processes which have existed for greater
       than this time will be terminated, if the number of processses for the

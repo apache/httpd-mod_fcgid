@@ -59,14 +59,9 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 
     if (!s->is_virtual) {
         config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;
-        config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
-        config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
-        config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
         config->error_scan_interval = DEFAULT_ERROR_SCAN_INTERVAL;
         config->idle_scan_interval = DEFAULT_IDLE_SCAN_INTERVAL;
-        config->idle_timeout = DEFAULT_IDLE_TIMEOUT;
         config->max_process_count = DEFAULT_MAX_PROCESS_COUNT;
-        config->proc_lifetime = DEFAULT_PROC_LIFETIME;
         config->shmname_path = ap_server_root_relative(p, DEFAULT_SHM_PATH);
         config->sockname_prefix =
           ap_server_root_relative(p, DEFAULT_SOCKET_PREFIX);
@@ -88,6 +83,11 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
     config->max_request_len = DEFAULT_MAX_REQUEST_LEN;
     config->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
     config->output_buffersize = DEFAULT_OUTPUT_BUFFERSIZE;
+    config->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
+    config->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
+    config->busy_timeout = DEFAULT_BUSY_TIMEOUT;
+    config->idle_timeout = DEFAULT_IDLE_TIMEOUT;
+    config->proc_lifetime = DEFAULT_PROC_LIFETIME;
 
     return config;
 }
@@ -133,9 +133,6 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
                            local->pass_headers);
     }
 
-    /* FIXME See BZ #47483 */
-    merged->busy_timeout = base->busy_timeout;
-
     /* Merge the scalar settings */
 
     MERGE_SCALAR(base, local, merged, ipc_comm_timeout);
@@ -144,6 +141,11 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
     MERGE_SCALAR(base, local, merged, max_request_len);
     MERGE_SCALAR(base, local, merged, max_requests_per_process);
     MERGE_SCALAR(base, local, merged, output_buffersize);
+    MERGE_SCALAR(base, local, merged, max_class_process_count);
+    MERGE_SCALAR(base, local, merged, min_class_process_count);
+    MERGE_SCALAR(base, local, merged, busy_timeout);
+    MERGE_SCALAR(base, local, merged, idle_timeout);
+    MERGE_SCALAR(base, local, merged, proc_lifetime);
 
     return merged;
 }
@@ -197,13 +199,9 @@ const char *set_idle_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-
-    if (err != NULL) {
-        return err;
-    }
 
     config->idle_timeout = atol(arg);
+    config->idle_timeout_set = 1;
     return NULL;
 }
 
@@ -228,13 +226,9 @@ const char *set_busy_timeout(cmd_parms * cmd, void *dummy, const char *arg)
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-
-    if (err != NULL) {
-        return err;
-    }
 
     config->busy_timeout = atol(arg);
+    config->busy_timeout_set = 1;
     return NULL;
 }
 
@@ -260,13 +254,9 @@ const char *set_proc_lifetime(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-
-    if (err != NULL) {
-        return err;
-    }
 
     config->proc_lifetime = atol(arg);
+    config->proc_lifetime_set = 1;
     return NULL;
 }
 
@@ -476,13 +466,9 @@ const char *set_max_class_process(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-
-    if (err != NULL) {
-        return err;
-    }
 
     config->max_class_process_count = atol(arg);
+    config->max_class_process_count_set = 1;
     return NULL;
 }
 
@@ -492,13 +478,9 @@ const char *set_min_class_process(cmd_parms * cmd, void *dummy,
     server_rec *s = cmd->server;
     fcgid_server_conf *config =
         ap_get_module_config(s->module_config, &fcgid_module);
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-
-    if (err != NULL) {
-        return err;
-    }
 
     config->min_class_process_count = atol(arg);
+    config->min_class_process_count_set = 1;
     return NULL;
 }
 
@@ -573,13 +555,6 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
 #endif
     apr_table_set(config->default_init_env, name, value ? value : "");
     return NULL;
-}
-
-apr_table_t *get_default_env_vars(request_rec * r)
-{
-    fcgid_server_conf *config =
-        ap_get_module_config(r->server->module_config, &fcgid_module);
-    return config->default_init_env;
 }
 
 const char *add_pass_headers(cmd_parms * cmd, void *dummy,
@@ -878,4 +853,50 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
     }
 
     return NULL;
+}
+
+void get_cmd_options(request_rec *r, fcgid_cmd_options *cmdopts)
+{
+    fcgid_server_conf *sconf =
+        ap_get_module_config(r->server->module_config, &fcgid_module);
+    apr_table_t *initenv = sconf->default_init_env;
+    const apr_array_header_t *initenv_arr;
+    const apr_table_entry_t *initenv_entry;
+    int i;
+    
+    cmdopts->busy_timeout = sconf->busy_timeout;
+    cmdopts->idle_timeout = sconf->idle_timeout;
+    cmdopts->max_class_process_count = sconf->max_class_process_count;
+    cmdopts->min_class_process_count = sconf->min_class_process_count;
+    cmdopts->proc_lifetime = sconf->proc_lifetime;
+
+    /* Environment variables */
+    if (initenv) {
+        initenv_arr = apr_table_elts(initenv);
+        initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
+        if (initenv_arr->nelts > INITENV_CNT) {
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                          "mod_fcgid: %d environment variables dropped; increase "
+                          "INITENV_CNT in fcgid_pm.h from %d to at least %d",
+                          initenv_arr->nelts - INITENV_CNT,
+                          INITENV_CNT,
+                          initenv_arr->nelts);
+        }
+
+        for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
+            if (initenv_entry[i].key == NULL
+                || initenv_entry[i].key[0] == '\0')
+                break;
+            apr_cpystrn(cmdopts->initenv_key[i], initenv_entry[i].key,
+                        INITENV_KEY_LEN);
+            apr_cpystrn(cmdopts->initenv_val[i], initenv_entry[i].val,
+                        INITENV_VAL_LEN);
+        }
+        if (i < INITENV_CNT) {
+            cmdopts->initenv_key[i][0] = '\0';
+        }
+    }
+    else {
+        cmdopts->initenv_key[0][0] = '\0';
+    }
 }

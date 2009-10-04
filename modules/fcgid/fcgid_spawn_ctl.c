@@ -29,6 +29,8 @@ struct fcgid_stat_node {
     const char *virtualhost;
     int score;
     int process_counter;
+    int max_class_process_count;
+    int min_class_process_count;
     apr_time_t last_stat_time;
     struct fcgid_stat_node *next;
 };
@@ -97,6 +99,10 @@ register_life_death(server_rec * main_server,
         current_node->last_stat_time = apr_time_now();
         current_node->score = 0;
         current_node->process_counter = 1;
+        current_node->max_class_process_count =
+            procnode->cmdopts.max_class_process_count;
+        current_node->min_class_process_count =
+            procnode->cmdopts.min_class_process_count;
         current_node->next = NULL;
 
         /* append it to stat list for next search */
@@ -195,11 +201,11 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
            Process count of this class higher than up limit?
          */
         /* I need max class proccess count */
-        if (current_node->process_counter >= sconf->max_class_process_count) {
+        if (current_node->process_counter >= current_node->max_class_process_count) {
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
                          "mod_fcgid: too many %s processes (current:%d, max:%d), skip the spawn request",
                          command->cgipath, current_node->process_counter,
-                         sconf->max_class_process_count);
+                         current_node->max_class_process_count);
             return 0;
         }
 
@@ -232,7 +238,7 @@ int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
 
     if (current_node) {
         /* Found the node */
-        if (current_node->process_counter <= sconf->min_class_process_count)
+        if (current_node->process_counter <= current_node->min_class_process_count)
             return 0;
     }
 

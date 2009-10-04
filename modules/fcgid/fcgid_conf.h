@@ -64,15 +64,10 @@ typedef struct {
 typedef struct {
     /* global only */
     int busy_scan_interval;
-    int busy_timeout;
-    int max_class_process_count;
-    int min_class_process_count;
     int error_scan_interval;
     int idle_scan_interval;
-    int idle_timeout;
     int max_process_count;
     int php_fix_pathinfo_enable;
-    int proc_lifetime;
     char *shmname_path;
     char *sockname_prefix;
     int spawn_score;
@@ -97,6 +92,16 @@ typedef struct {
     int output_buffersize;
     int output_buffersize_set;
     apr_array_header_t *pass_headers;
+    int max_class_process_count;
+    int max_class_process_count_set;
+    int min_class_process_count;
+    int min_class_process_count_set;
+    int busy_timeout;
+    int busy_timeout_set;
+    int idle_timeout;
+    int idle_timeout_set;
+    int proc_lifetime;
+    int proc_lifetime_set;
 } fcgid_server_conf;
 
 typedef struct {
@@ -120,6 +125,20 @@ typedef struct {
     int access_authoritative;
     int access_authoritative_set;
 } fcgid_dir_conf;
+
+/* processing options which are sent to the PM with a spawn request */
+#define INITENV_KEY_LEN 64
+#define INITENV_VAL_LEN 128
+#define INITENV_CNT 64
+typedef struct {
+    int busy_timeout;
+    int idle_timeout;
+    int max_class_process_count;
+    int min_class_process_count;
+    int proc_lifetime;
+    char initenv_key[INITENV_CNT][INITENV_KEY_LEN];
+    char initenv_val[INITENV_CNT][INITENV_VAL_LEN];
+} fcgid_cmd_options;
 
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s);
 void *merge_fcgid_server_config(apr_pool_t * p, void *basev,
@@ -189,7 +208,6 @@ const char *set_output_buffersize(cmd_parms * cmd, void *dummy,
 
 const char *add_default_env_vars(cmd_parms * cmd, void *sconf,
                                  const char *name, const char *value);
-apr_table_t *get_default_env_vars(request_rec * r);
 
 const char *add_pass_headers(cmd_parms * cmd, void *sconf,
                              const char *name);
@@ -223,6 +241,8 @@ const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
                                          const char *arg);
+
+void get_cmd_options(request_rec *r, fcgid_cmd_options *cmdopts);
 
 AP_MODULE_DECLARE_DATA extern module fcgid_module;
 

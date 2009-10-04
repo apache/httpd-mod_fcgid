@@ -388,11 +388,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             apr_ino_t inode, apr_size_t share_grp_id)
 {
     ap_unix_identity_t *ugid;
-    apr_table_t *initenv;
-    const apr_array_header_t *initenv_arr;
-    const apr_table_entry_t *initenv_entry;
     fcgid_wrapper_conf *wrapperconf;
-    int i;
 
     memset(command, 0, sizeof(*command));
 
@@ -405,30 +401,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         command->uid = (uid_t) - 1;
         command->gid = (gid_t) - 1;
         command->userdir = 0;
-    }
-
-    /* Environment variables */
-    initenv = get_default_env_vars(r);
-    if (initenv) {
-        initenv_arr = apr_table_elts(initenv);
-        initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
-        if (initenv_arr->nelts > INITENV_CNT)
-            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
-                          "mod_fcgid: %d environment variables dropped; increase "
-                          "INITENV_CNT in fcgid_pm.h from %d to at least %d",
-                          initenv_arr->nelts - INITENV_CNT,
-                          INITENV_CNT,
-                          initenv_arr->nelts);
-
-        for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
-            if (initenv_entry[i].key == NULL
-                || initenv_entry[i].key[0] == '\0')
-                break;
-            apr_cpystrn(command->initenv_key[i], initenv_entry[i].key,
-                        INITENV_KEY_LEN);
-            apr_cpystrn(command->initenv_val[i], initenv_entry[i].val,
-                        INITENV_VAL_LEN);
-        }
     }
 
     apr_cpystrn(command->cgipath, argv0, _POSIX_PATH_MAX);
@@ -445,6 +417,8 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         command->inode = wrapperconf->inode;
         command->share_grp_id = wrapperconf->share_group_id;
     }
+
+    get_cmd_options(r, &command->cmdopts);
 }
 
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
