@@ -689,9 +689,11 @@
     <default>FCGIDIdleTimeout 300</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>Application processes which have not handled a request
-      for this period of time will be terminated.  A value of <code>0</code>
-      disables the check.</p>
+      <p>Application processes which have not handled a request for this 
+      period of time will be terminated, if the number of processses for the
+      class exceeds
+      <directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive>.
+      A value of <code>0</code> disables the check.</p>
     </usage>
   </directivesynopsis>
 
@@ -859,8 +861,10 @@
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Idle application processes which have existed for greater
-      than this time will be terminated.  A value of <code>0</code>
-      disables the check.</p>
+      than this time will be terminated, if the number of processses for the
+      class exceeds
+      <directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive>.
+      A value of <code>0</code> disables the check.</p>
     </usage>
   </directivesynopsis>
 
