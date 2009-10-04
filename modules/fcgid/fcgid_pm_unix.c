@@ -22,6 +22,7 @@
 #include "apr_queue.h"
 #include "apr_global_mutex.h"
 #include "apr_support.h"
+#include "http_config.h"
 #include "fcgid_pm.h"
 #include "fcgid_pm_main.h"
 #include "fcgid_conf.h"
@@ -239,7 +240,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: Process manager %" APR_PID_T_FMT  " started", getpid());
 
         if ((rv = init_signal(main_server)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
+            ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
                          "mod_fcgid: can't install signal handler, exiting now");
             exit(1);
         }
@@ -247,7 +248,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         /* if running as root, switch to configured user */
         if (ap_unixd_config.suexec_enabled) {
             if (getuid() != 0) {
-                ap_log_error(APLOG_MARK, LOG_EMERG, 0, main_server,
+                ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
                              "mod_fcgid: current user is not root while suexec is enabled, exiting now");
                 exit(1);
             }
@@ -412,7 +413,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         initenv_arr = apr_table_elts(initenv);
         initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
         if (initenv_arr->nelts > INITENV_CNT)
-            ap_log_rerror(APLOG_MARK, LOG_WARNING, 0, r,
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
                           "mod_fcgid: %d environment variables dropped; increase "
                           "INITENV_CNT in fcgid_pm.h from %d to at least %d",
                           initenv_arr->nelts - INITENV_CNT,
@@ -459,7 +460,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 
     /* Get the global mutex before posting the request */
     if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                       "mod_fcgid: can't get pipe mutex");
         exit(0);
     }
@@ -468,7 +469,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
          apr_file_write_full(g_ap_write_pipe, command, nbytes,
                              NULL)) != APR_SUCCESS) {
         /* Just print some error log and fall through */
-        ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                       "mod_fcgid: can't write spawn command");
     } else {
         /* Wait the finish notify while send the request successfully */
@@ -476,14 +477,14 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
         if ((rv =
              apr_file_read(g_ap_read_pipe, &notifybyte,
                            &nbytes)) != APR_SUCCESS) {
-            ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                           "mod_fcgid: can't get notify from process manager");
         }
     }
 
     /* Release the lock */
     if ((rv = apr_global_mutex_unlock(g_pipelock)) != APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, LOG_WARNING, rv, r,
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                       "mod_fcgid: can't release pipe mutex");
         exit(0);
     }
@@ -500,7 +501,7 @@ apr_status_t procmgr_finish_notify(server_rec * main_server)
     if ((rv =
          apr_file_write(g_pm_write_pipe, &notifybyte,
                         &nbytes)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: can't send notify from process manager");
     }
 
@@ -522,7 +523,7 @@ apr_status_t procmgr_peek_cmd(fcgid_command * command,
 
     /* Log any unexpect result */
     if (rv != APR_SUCCESS && !APR_STATUS_IS_TIMEUP(rv)) {
-        ap_log_error(APLOG_MARK, LOG_WARNING, rv, main_server,
+        ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: error while waiting for message from pipe");
         return rv;
     }
