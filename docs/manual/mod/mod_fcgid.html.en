@@ -650,7 +650,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a FastCGI application will be killed after handling a request for FCGIDBusyTimeout</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDBusyTimeout <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDBusyTimeout 300</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -686,7 +686,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max process count of one class of FastCGI application</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDDefaultMaxClassProcessCount <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDDefaultMaxClassProcessCount 100</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -704,7 +704,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Min process count of one class of FastCGI application</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDDefaultMinClassProcessCount <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDDefaultMinClassProcessCount 3</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -755,7 +755,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>An idle FastCGI application will be killed after FCGIDIdleTimeout</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIdleTimeout <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIdleTimeout 300</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
@@ -946,7 +946,7 @@
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum FastCGI application process lifetime</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDProcessLifeTime <em>seconds</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDProcessLifeTime 3600</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
