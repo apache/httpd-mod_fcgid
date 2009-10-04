@@ -759,9 +759,11 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>Application processes which have not handled a request
-      for this period of time will be terminated.  A value of <code>0</code>
-      disables the check.</p>
+      <p>Application processes which have not handled a request for this 
+      period of time will be terminated, if the number of processses for the
+      class exceeds
+      <code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code>.
+      A value of <code>0</code> disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -949,8 +951,10 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Idle application processes which have existed for greater
-      than this time will be terminated.  A value of <code>0</code>
-      disables the check.</p>
+      than this time will be terminated, if the number of processses for the
+      class exceeds
+      <code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code>.
+      A value of <code>0</code> disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
