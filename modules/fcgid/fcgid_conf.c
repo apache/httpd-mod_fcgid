@@ -590,6 +590,16 @@ apr_array_header_t *get_pass_headers(request_rec * r)
     return config->pass_headers;
 }
 
+static const char *missing_file_msg(apr_pool_t *p, const char *filetype, const char *filename,
+                                    apr_status_t rv)
+{
+    char errbuf[120];
+
+    apr_strerror(rv, errbuf, sizeof errbuf);
+    return apr_psprintf(p, "%s %s cannot be accessed: (%d)%s",
+                        filetype, filename, rv, errbuf);
+}
+
 const char *set_authenticator_info(cmd_parms * cmd, void *config,
                                    const char *authenticator)
 {
@@ -600,9 +610,7 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     /* Is the wrapper exist? */
     if ((rv = apr_stat(&finfo, authenticator, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
-        return apr_psprintf(cmd->pool,
-                            "can't get authenticator file info: %s, errno: %d",
-                            authenticator, apr_get_os_error());
+        return missing_file_msg(cmd->pool, "Authenticator", authenticator, rv);
     }
 
     /* Create the wrapper node */
@@ -650,9 +658,7 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     /* Is the wrapper exist? */
     if ((rv = apr_stat(&finfo, authorizer, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
-        return apr_psprintf(cmd->pool,
-                            "can't get authorizer file info: %s, errno: %d",
-                            authorizer, apr_get_os_error());
+        return missing_file_msg(cmd->pool, "Authorizer", authorizer, rv);
     }
 
     /* Create the wrapper node */
@@ -700,9 +706,7 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     /* Is the wrapper exist? */
     if ((rv = apr_stat(&finfo, access, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
-        return apr_psprintf(cmd->pool,
-                            "can't get access checker file info: %s, errno: %d",
-                            access, apr_get_os_error());
+        return missing_file_msg(cmd->pool, "Access checker", access, rv);
     }
 
     /* Create the wrapper node */
@@ -816,9 +820,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     /* Does the wrapper exist? */
     if ((rv = apr_stat(&finfo, path, APR_FINFO_NORM,
                        cmd->temp_pool)) != APR_SUCCESS) {
-        return apr_psprintf(cmd->pool,
-                            "can't get FastCGI file info: '%s' (%s), errno: %d",
-                            wrapperpath, path, apr_get_os_error());
+        return missing_file_msg(cmd->pool, "Wrapper", path, rv);
     }
 
     apr_cpystrn(wrapper->args, wrapperpath, _POSIX_PATH_MAX);
@@ -930,9 +932,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
 
     rv = apr_stat(&finfo, cmdname, APR_FINFO_NORM, cmd->temp_pool);
     if (rv != APR_SUCCESS) {
-        return apr_psprintf(cmd->pool,
-                            "File %s does not exist or cannot be accessed (error %d)",
-                            cmdname, rv);
+        return missing_file_msg(cmd->pool, "Command", cmdname, rv);
     }
 
     if (!*args) {
