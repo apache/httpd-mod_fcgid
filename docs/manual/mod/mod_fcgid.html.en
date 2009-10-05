@@ -71,6 +71,7 @@
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthorizerauthoritative">FCGIDAuthorizerAuthoritative</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusyscaninterval">FCGIDBusyScanInterval</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusytimeout">FCGIDBusyTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidcmdoptions">FCGIDCmdOptions</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgiddefaultmaxclassprocesscount">FCGIDDefaultMaxClassProcessCount</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></li>
@@ -663,6 +664,86 @@
       <p>The purpose of this directive is to terminate hung applications.
       The default timeout may need to be increased for applications that
       can take longer to process the request.</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FCGIDCmdOptions" id="FCGIDCmdOptions">FCGIDCmdOptions</a> <a name="fcgidcmdoptions" id="fcgidcmdoptions">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set processing options for a FastCGI
+    command</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDCmdOptions <em>command</em> <em>option</em>
+    [<em>option</em>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>This directive allows processing options to be specified for
+      a specific command spawned by mod_fcgid.  Each option for the
+      command corresponds to another directive that normally applies to
+      all commands started within a particular context.  If a
+      particular option is not specified on this directive, the
+      default will be used.</p>
+
+      <p>The following table provides a list of options and
+      corresponding directives:</p>
+
+      <table class="bordered"><tr class="header"><th>Option name and syntax</th><th>Corresponding directive</th></tr>
+<tr>
+          <td><code>ConnectTimeout <em>seconds</em></code></td>
+          <td><code class="directive"><a href="#fcgidipcconnecttimeout">FCGIDIPCConnectTimeout</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code>IdleTimeout <em>seconds</em></code></td>
+          <td><code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code></td>
+        </tr>
+<tr>
+          <td><code>InitialEnv <em>name[=value]</em></code></td>
+          <td><code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code>IOTimeout <em>seconds</em></code></td>
+          <td><code class="directive"><a href="#fcgidipccommtimeout">FCGIDIPCCommTimeout</a></code></td>
+        </tr>
+<tr>
+          <td><code>MaxProcesses <em>value</em></code></td>
+          <td><code class="directive"><a href="#fcgiddefaultmaxclassprocesscount">FCGIDDefaultMaxClassProcessCount</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code>MaxProcessLifeTime <em>seconds</em></code></td>
+          <td><code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code></td>
+        </tr>
+<tr>
+          <td><code>MaxRequestsPerProcess <em>value</em></code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code></td>
+        </tr>
+<tr class="odd">
+          <td><code>MinProcesses <em>value</em></code></td>
+          <td><code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code></td>
+        </tr>
+</table>
+
+      <p>Multiple environment variables are defined by repeating
+      the <code>InitialEnv</code> option.</p>
+
+      <div class="example"><h3>Example</h3><p><code>
+      FCGIDCmdOptions /usr/local/bin/wrapper \<br />
+      <span class="indent">
+      InitialEnv MAX_REQUESTS=2000 \<br />
+      MaxRequestsPerProcess 2000 \<br />
+      IOTimeout 90<br />
+      </span>
+      </code></p></div>
+
+      <p>When <code>/usr/local/bin/wrapper</code> is spawned, its initial
+      environment contains the <code>MAX_REQUESTS=2000</code>
+      environment variable setting; additionally, mod_fcgid will
+      terminate it after it has handled 2000 requests, and I/O
+      operations will time out after 90 seconds.  Directives
+      corresponding to other options, such as 
+      <code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code> or
+      <code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code>,
+      will be ignored for this command; defaults will be used for options
+      not specified on <code class="directive">FCGIDCmdOptions</code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
