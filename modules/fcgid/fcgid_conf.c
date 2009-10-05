@@ -1034,7 +1034,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         return apr_psprintf(cmd->pool,
-                            "Invalid option for FCGIDCommandOptions: %s",
+                            "Invalid option for FCGIDCmdOptions: %s",
                             option);
     }
 
