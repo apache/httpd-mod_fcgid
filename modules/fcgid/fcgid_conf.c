@@ -542,7 +542,7 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
                                  const char *name, const char *value)
 {
     fcgid_server_conf *config =
-        ap_get_module_config(cmd->server->module_config, &fcgid_module);;
+        ap_get_module_config(cmd->server->module_config, &fcgid_module);
     if (config->default_init_env == NULL)
         config->default_init_env = apr_table_make(cmd->pool, 20);
 #if defined(WIN32) || defined(OS2) || defined(NETWARE)
