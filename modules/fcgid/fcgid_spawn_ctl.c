@@ -216,8 +216,6 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
 {
     struct fcgid_stat_node *previous_node, *current_node;
-    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
-                                                    &fcgid_module);
 
     if (!g_stat_pool || !procnode)
         return 0;
