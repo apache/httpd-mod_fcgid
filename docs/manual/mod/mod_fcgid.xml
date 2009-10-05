@@ -609,6 +609,85 @@
   </directivesynopsis>
 
   <directivesynopsis>
+    <name>FCGIDCmdOptions</name>
+    <description>Set processing options for a FastCGI
+    command</description>
+    <syntax>FCGIDCmdOptions <em>command</em> <em>option</em>
+    [<em>option</em>] ...</syntax>
+    <contextlist><context>server config</context> <context>virtual host</context></contextlist>
+    <usage>
+      <p>This directive allows processing options to be specified for
+      a specific command spawned by mod_fcgid.  Each option for the
+      command corresponds to another directive that normally applies to
+      all commands started within a particular context.  If a
+      particular option is not specified on this directive, the
+      default will be used.</p>
+
+      <p>The following table provides a list of options and
+      corresponding directives:</p>
+
+      <table border="1" style="zebra">
+        <tr><th>Option name and syntax</th><th>Corresponding directive</th></tr>
+        <tr>
+          <td><code>ConnectTimeout <em>seconds</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDIPCConnectTimeout</directive></td>
+        </tr>
+        <tr>
+          <td><code>IdleTimeout <em>seconds</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDIdleTimeout</directive></td>
+        </tr>
+        <tr>
+          <td><code>InitialEnv <em>name[=value]</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDDefaultInitEnv</directive></td>
+        </tr>
+        <tr>
+          <td><code>IOTimeout <em>seconds</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDIPCCommTimeout</directive></td>
+        </tr>
+        <tr>
+          <td><code>MaxProcesses <em>value</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDDefaultMaxClassProcessCount</directive></td>
+        </tr>
+        <tr>
+          <td><code>MaxProcessLifeTime <em>seconds</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDProcessLifeTime</directive></td>
+        </tr>
+        <tr>
+          <td><code>MaxRequestsPerProcess <em>value</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDMaxRequestsPerProcess</directive></td>
+        </tr>
+        <tr>
+          <td><code>MinProcesses <em>value</em></code></td>
+          <td><directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive></td>
+        </tr>
+      </table>
+
+      <p>Multiple environment variables are defined by repeating
+      the <code>InitialEnv</code> option.</p>
+
+      <example><title>Example</title>
+      FCGIDCmdOptions /usr/local/bin/wrapper \<br />
+      <indent>
+      InitialEnv MAX_REQUESTS=2000 \<br />
+      MaxRequestsPerProcess 2000 \<br />
+      IOTimeout 90<br />
+      </indent>
+      </example>
+
+      <p>When <code>/usr/local/bin/wrapper</code> is spawned, its initial
+      environment contains the <code>MAX_REQUESTS=2000</code>
+      environment variable setting; additionally, mod_fcgid will
+      terminate it after it has handled 2000 requests, and I/O
+      operations will time out after 90 seconds.  Directives
+      corresponding to other options, such as 
+      <directive module="mod_fcgid">FCGIDIdleTimeout</directive> or
+      <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>,
+      will be ignored for this command; defaults will be used for options
+      not specified on <directive>FCGIDCmdOptions</directive>.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
     <name>FCGIDDefaultInitEnv</name>
     <description>an environment variable name and optional value to pass to FastCGI.</description>
     <syntax>FCGIDDefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>

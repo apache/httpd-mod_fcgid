@@ -126,6 +126,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             apr_ino_t inode, apr_size_t share_grp_id)
 {
     fcgid_wrapper_conf *wrapperconf;
+    const char *cmd_to_spawn;
 
     memset(command, 0, sizeof(*command));
 
@@ -145,9 +146,13 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         command->deviceid = wrapperconf->deviceid;
         command->inode = wrapperconf->inode;
         command->share_grp_id = wrapperconf->share_group_id;
+        cmd_to_spawn = command->wrapperpath;
+    }
+    else {
+        cmd_to_spawn = command->cgipath;
     }
 
-    get_cmd_options(r, &command->cmdopts);
+    get_cmd_options(r, cmd_to_spawn, &command->cmdopts);
 }
 
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,

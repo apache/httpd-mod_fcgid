@@ -195,9 +195,9 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
             return_procnode(s, ctx->procnode,
                             1 /* communication error */ );
-        } else if (sconf->max_requests_per_process
+        } else if (ctx->procnode->cmdopts.max_requests_per_process
                    && ++ctx->procnode->requests_handled >=
-                   sconf->max_requests_per_process) {
+                   ctx->procnode->cmdopts.max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
             return_procnode(s, ctx->procnode,
                             1 /* handled all requests */ );
@@ -292,9 +292,6 @@ handle_request(request_rec * r, int role, const char *argv0,
                apr_bucket_brigade * output_brigade)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
-    server_rec *s = r->server;
-    fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
-                                                    &fcgid_module);
     fcgid_command fcgi_request;
     fcgid_bucket_ctx *bucket_ctx;
     int i, j, cond_status;
@@ -304,8 +301,6 @@ handle_request(request_rec * r, int role, const char *argv0,
     const char *location;
 
     bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
-    bucket_ctx->ipc.connect_timeout = sconf->ipc_connect_timeout;
-    bucket_ctx->ipc.communation_timeout = sconf->ipc_comm_timeout;
 
     bucket_ctx->ipc.request = r;
     apr_pool_cleanup_register(request_pool, bucket_ctx,
@@ -325,6 +320,11 @@ handle_request(request_rec * r, int role, const char *argv0,
             /* Init spawn request */
             procmgr_init_spawn_cmd(&fcgi_request, r, argv0, deviceid,
                                    inode, shareid);
+
+            bucket_ctx->ipc.connect_timeout =
+                fcgi_request.cmdopts.ipc_connect_timeout;
+            bucket_ctx->ipc.communation_timeout =
+                fcgi_request.cmdopts.ipc_comm_timeout;
 
             /* Apply a process slot */
             bucket_ctx->procnode =

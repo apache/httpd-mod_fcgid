@@ -618,6 +618,8 @@ static const command_rec fcgid_cmds[] = {
                   "scan interval for busy timeout process"),
     AP_INIT_TAKE1("FCGIDBusyTimeout", set_busy_timeout, NULL, RSRC_CONF,
                   "a fastcgi application will be killed after handling a request for BusyTimeout"),
+    AP_INIT_RAW_ARGS("FCGIDCmdOptions", set_cmd_options, NULL, RSRC_CONF,
+                     "set processing options for a FastCGI command"),
     AP_INIT_TAKE12("FCGIDDefaultInitEnv", add_default_env_vars, NULL, RSRC_CONF,
                    "an environment variable name and optional value to pass to FastCGI."),
     AP_INIT_TAKE1("FCGIDDefaultMaxClassProcessCount",

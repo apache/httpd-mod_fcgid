@@ -77,6 +77,7 @@ void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
      * config->php_fix_pathinfo_enable = 0;
      * config->*_set = 0;
      */
+    config->cmdopts_hash = apr_hash_make(p);
     config->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
     config->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
     config->max_mem_request_len = DEFAULT_MAX_MEM_REQUEST_LEN;
@@ -103,6 +104,9 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
     fcgid_server_conf *local = (fcgid_server_conf *) locv;
     fcgid_server_conf *merged =
       (fcgid_server_conf *) apr_pmemdup(p, local, sizeof(fcgid_server_conf));
+
+    merged->cmdopts_hash = apr_hash_overlay(p, local->cmdopts_hash,
+                                            base->cmdopts_hash);
 
     /* Merge environment variables */
     if (base->default_init_env == NULL) {
@@ -538,6 +542,19 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
     return NULL;
 }
 
+static void add_envvar_to_table(apr_table_t *t, apr_pool_t *p,
+                                const char *name, const char *value)
+{
+#if defined(WIN32) || defined(OS2) || defined(NETWARE)
+    /* Case insensitive environment platforms */
+    char *pstr;
+    for (name = pstr = apr_pstrdup(p, name); *pstr; ++pstr) {
+        *pstr = apr_toupper(*pstr);
+    }
+#endif
+    apr_table_set(t, name, value ? value : "");
+}
+                                
 const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
                                  const char *name, const char *value)
 {
@@ -545,15 +562,8 @@ const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
         ap_get_module_config(cmd->server->module_config, &fcgid_module);
     if (config->default_init_env == NULL)
         config->default_init_env = apr_table_make(cmd->pool, 20);
-#if defined(WIN32) || defined(OS2) || defined(NETWARE)
-    /* Case insensitive environment platforms */
-    {
-        char *pstr;
-        for (name = pstr = apr_pstrdup(cmd->pool, name); *pstr; ++pstr)
-            *pstr = apr_toupper(*pstr);
-    }
-#endif
-    apr_table_set(config->default_init_env, name, value ? value : "");
+
+    add_envvar_to_table(config->default_init_env, cmd->pool, name, value);
     return NULL;
 }
 
@@ -855,41 +865,27 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
     return NULL;
 }
 
-void get_cmd_options(request_rec *r, fcgid_cmd_options *cmdopts)
+static int set_cmd_envvars(fcgid_cmd_options *cmdopts, apr_table_t *envvars)
 {
-    fcgid_server_conf *sconf =
-        ap_get_module_config(r->server->module_config, &fcgid_module);
-    apr_table_t *initenv = sconf->default_init_env;
-    const apr_array_header_t *initenv_arr;
-    const apr_table_entry_t *initenv_entry;
+    const apr_array_header_t *envvars_arr;
+    const apr_table_entry_t *envvars_entry;
     int i;
-    
-    cmdopts->busy_timeout = sconf->busy_timeout;
-    cmdopts->idle_timeout = sconf->idle_timeout;
-    cmdopts->max_class_process_count = sconf->max_class_process_count;
-    cmdopts->min_class_process_count = sconf->min_class_process_count;
-    cmdopts->proc_lifetime = sconf->proc_lifetime;
+    int overflow = 0;
 
-    /* Environment variables */
-    if (initenv) {
-        initenv_arr = apr_table_elts(initenv);
-        initenv_entry = (apr_table_entry_t *) initenv_arr->elts;
-        if (initenv_arr->nelts > INITENV_CNT) {
-            ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
-                          "mod_fcgid: %d environment variables dropped; increase "
-                          "INITENV_CNT in fcgid_pm.h from %d to at least %d",
-                          initenv_arr->nelts - INITENV_CNT,
-                          INITENV_CNT,
-                          initenv_arr->nelts);
+    if (envvars) {
+        envvars_arr = apr_table_elts(envvars);
+        envvars_entry = (apr_table_entry_t *) envvars_arr->elts;
+        if (envvars_arr->nelts > INITENV_CNT) {
+            overflow = envvars_arr->nelts - INITENV_CNT;
         }
 
-        for (i = 0; i < initenv_arr->nelts && i < INITENV_CNT; ++i) {
-            if (initenv_entry[i].key == NULL
-                || initenv_entry[i].key[0] == '\0')
+        for (i = 0; i < envvars_arr->nelts && i < INITENV_CNT; ++i) {
+            if (envvars_entry[i].key == NULL
+                || envvars_entry[i].key[0] == '\0')
                 break;
-            apr_cpystrn(cmdopts->initenv_key[i], initenv_entry[i].key,
+            apr_cpystrn(cmdopts->initenv_key[i], envvars_entry[i].key,
                         INITENV_KEY_LEN);
-            apr_cpystrn(cmdopts->initenv_val[i], initenv_entry[i].val,
+            apr_cpystrn(cmdopts->initenv_val[i], envvars_entry[i].val,
                         INITENV_VAL_LEN);
         }
         if (i < INITENV_CNT) {
@@ -898,5 +894,196 @@ void get_cmd_options(request_rec *r, fcgid_cmd_options *cmdopts)
     }
     else {
         cmdopts->initenv_key[0][0] = '\0';
+    }
+
+    return overflow;
+}
+
+const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
+{
+    server_rec *s = cmd->server;
+    fcgid_server_conf *sconf =
+        ap_get_module_config(s->module_config, &fcgid_module);
+    const char *cmdname;
+    fcgid_cmd_options *cmdopts;
+    apr_table_t *envvars = NULL;
+    int overflow;
+    apr_finfo_t finfo;
+    apr_status_t rv;
+
+    cmdopts = apr_pcalloc(cmd->pool, sizeof *cmdopts);
+
+    cmdopts->busy_timeout = DEFAULT_BUSY_TIMEOUT;
+    cmdopts->idle_timeout = DEFAULT_IDLE_TIMEOUT;
+    cmdopts->ipc_comm_timeout = DEFAULT_IPC_COMM_TIMEOUT;
+    cmdopts->ipc_connect_timeout = DEFAULT_IPC_CONNECT_TIMEOUT;
+    cmdopts->max_class_process_count = DEFAULT_MAX_CLASS_PROCESS_COUNT;
+    cmdopts->max_requests_per_process = DEFAULT_MAX_REQUESTS_PER_PROCESS;
+    cmdopts->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
+    cmdopts->proc_lifetime = DEFAULT_PROC_LIFETIME;
+    /* via pcalloc: cmdopts->initenv_key[0][0] = '\0'; */
+    
+    cmdname = ap_getword_conf(cmd->pool, &args);
+    if (!strlen(cmdname)) {
+        return "A command must be specified for FCGIDCmdOptions";
+    }
+
+    rv = apr_stat(&finfo, cmdname, APR_FINFO_NORM, cmd->temp_pool);
+    if (rv != APR_SUCCESS) {
+        return apr_psprintf(cmd->pool,
+                            "File %s does not exist or cannot be accessed (error %d)",
+                            cmdname, rv);
+    }
+
+    if (!*args) {
+        return "At least one option must be specified for FCGIDCmdOptions";
+    }
+
+    while (*args) {
+        const char *option = ap_getword_white(cmd->pool, &args);
+        const char *val;
+
+        /* don't support BusyTimeout until BZ #47483 is fixed
+         * (The kludge in bucket_ctx_cleanup wouldn't have addressibility
+         * to the cmd-specific busy timeout setting.)
+         */
+
+        if (!strcasecmp(option, "ConnectTimeout")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "ConnectTimeout must have an argument";
+            }
+            cmdopts->ipc_connect_timeout = atoi(val);
+            continue;
+        }
+            
+        if (!strcasecmp(option, "IdleTimeout")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "IdleTimeout must have an argument";
+            }
+            cmdopts->idle_timeout = atoi(val);
+            continue;
+        }
+
+        if (!strcasecmp(option, "InitialEnv")) {
+            char *name;
+            char *eql;
+
+            name = ap_getword_white(cmd->pool, &args);
+            if (!strlen(name)) {
+                return "InitialEnv must have an argument";
+            }
+
+            eql = strchr(name, '=');
+            if (eql) {
+                *eql = '\0';
+                ++eql;
+            }
+
+            if (!envvars) {
+                envvars = apr_table_make(cmd->pool, 20);
+            }
+            add_envvar_to_table(envvars, cmd->pool, name, eql);
+            continue;
+        }
+
+        if (!strcasecmp(option, "IOTimeout")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "IOTimeout must have an argument";
+            }
+            cmdopts->ipc_comm_timeout = atoi(val);
+            continue;
+        }
+            
+        if (!strcasecmp(option, "MaxProcesses")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "MaxProcesses must have an argument";
+            }
+            cmdopts->max_class_process_count = atoi(val);
+            continue;
+        }
+
+        if (!strcasecmp(option, "MaxProcessLifetime")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "MaxProcessLifetime must have an argument";
+            }
+            cmdopts->proc_lifetime = atoi(val);
+            continue;
+        }
+
+        if (!strcasecmp(option, "MaxRequestsPerProcess")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "MaxRequestsPerProcess must have an argument";
+            }
+            cmdopts->max_requests_per_process = atoi(val);
+            continue;
+        }
+
+        if (!strcasecmp(option, "MinProcesses")) {
+            val = ap_getword_white(cmd->pool, &args);
+            if (!strlen(val)) {
+                return "MinProcesses must have an argument";
+            }
+            cmdopts->min_class_process_count = atoi(val);
+            continue;
+        }
+
+        return apr_psprintf(cmd->pool,
+                            "Invalid option for FCGIDCommandOptions: %s",
+                            option);
+    }
+
+    if ((overflow = set_cmd_envvars(cmdopts, envvars)) != 0) {
+        return apr_psprintf(cmd->pool, "mod_fcgid: environment variable table "
+                            "overflow; increase INITENV_CNT in fcgid_pm.h from"
+                            " %d to at least %d",
+                            INITENV_CNT, INITENV_CNT + overflow);
+    }
+
+    apr_hash_set(sconf->cmdopts_hash, cmdname, strlen(cmdname), cmdopts);
+
+    return NULL;
+}
+
+void get_cmd_options(request_rec *r, const char *cmdpath,
+                     fcgid_cmd_options *cmdopts)
+{
+    fcgid_server_conf *sconf =
+        ap_get_module_config(r->server->module_config, &fcgid_module);
+    fcgid_cmd_options *cmd_specific = apr_hash_get(sconf->cmdopts_hash,
+                                                   cmdpath,
+                                                   strlen(cmdpath));
+    int overflow;
+
+    if (cmd_specific) { /* ignore request context configuration */
+        *cmdopts = *cmd_specific;
+        /* pick up configuration for values that can't be configured
+         * on FCGIDCmdOptions
+         */
+        cmdopts->busy_timeout = sconf->busy_timeout;
+        return;
+    }
+
+    cmdopts->busy_timeout = sconf->busy_timeout;
+    cmdopts->idle_timeout = sconf->idle_timeout;
+    cmdopts->ipc_comm_timeout = sconf->ipc_comm_timeout;
+    cmdopts->ipc_connect_timeout = sconf->ipc_connect_timeout;
+    cmdopts->max_class_process_count = sconf->max_class_process_count;
+    cmdopts->max_requests_per_process = sconf->max_requests_per_process;
+    cmdopts->min_class_process_count = sconf->min_class_process_count;
+    cmdopts->proc_lifetime = sconf->proc_lifetime;
+
+    if ((overflow = set_cmd_envvars(cmdopts, sconf->default_init_env)) != 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                      "mod_fcgid: %d environment variables dropped; increase "
+                      "INITENV_CNT in fcgid_pm.h from %d to at least %d",
+                      overflow,
+                      INITENV_CNT,
+                      INITENV_CNT + overflow);
     }
 }

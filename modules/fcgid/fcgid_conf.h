@@ -63,6 +63,7 @@ typedef struct {
 
 typedef struct {
     /* global only */
+    apr_hash_t *cmdopts_hash;
     int busy_scan_interval;
     int error_scan_interval;
     int idle_scan_interval;
@@ -126,14 +127,19 @@ typedef struct {
     int access_authoritative_set;
 } fcgid_dir_conf;
 
-/* processing options which are sent to the PM with a spawn request */
+/* processing options which are sent to the PM with a spawn request
+ * and/or configurable via FCGIDCmdOptions
+ */
 #define INITENV_KEY_LEN 64
 #define INITENV_VAL_LEN 128
 #define INITENV_CNT 64
 typedef struct {
     int busy_timeout;
     int idle_timeout;
+    int ipc_comm_timeout;
+    int ipc_connect_timeout;
     int max_class_process_count;
+    int max_requests_per_process;
     int min_class_process_count;
     int proc_lifetime;
     char initenv_key[INITENV_CNT][INITENV_KEY_LEN];
@@ -242,7 +248,11 @@ const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
                                          const char *arg);
 
-void get_cmd_options(request_rec *r, fcgid_cmd_options *cmdopts);
+const char *set_cmd_options(cmd_parms *cmd, void *dummy,
+                            const char *arg);
+
+void get_cmd_options(request_rec *r, const char *cmdpath,
+                     fcgid_cmd_options *cmdopts);
 
 AP_MODULE_DECLARE_DATA extern module fcgid_module;
 
