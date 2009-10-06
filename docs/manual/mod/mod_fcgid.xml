@@ -283,15 +283,17 @@
     # FCGIDMaxRequestsPerProcess should be &lt;= PHP_FCGI_MAX_REQUESTS<br />
     # The example PHP wrapper script overrides the default PHP setting.<br />
     FCGIDMaxRequestsPerProcess 10000<br />
+    <br />
+    # Uncomment the following line if cgi.fix_pathinfo is set to 1 in<br />
+    # php.ini:<br />
+    # FCGIDFixPathinfo 1<br />
+    <br />
     Alias /phpapp/ /usr/local/phpapp/<br />
     &lt;Location /phpapp/&gt;<br />
     <indent>
       AddHandler fcgid-script .php<br />
       Options +ExecCGI<br />
       FCGIDWrapper /usr/local/bin/php-wrapper .php<br />
-      # Uncomment the following line if cgi.fix_pathinfo<br />
-      # is set to 1 in php.ini:<br />
-      # FCGIDFixPathinfo 1<br />
       <br />
       # Customize the next two directives for your requirements.<br />
       Order allow,deny<br />
