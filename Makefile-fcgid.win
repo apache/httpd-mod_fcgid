@@ -185,22 +185,26 @@ _install:
 !IFDEF HAVE_MOD_FCGID_H
 	copy include\mod_fcgid.h "$(INSTDIR)\include" < .y > nul
 !ENDIF
-	-awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
-	     -v LIBPATH=modules \
+	if exist "$(httpd_origconffile)" ( \
+	    awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
+		-v LIBPATH=modules \
 !IFDEF HAVE_HTTPD_FCGID_CONF
-	     -v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
+		-v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
 !ENDIF
-	     "$(httpd_origconffile)" > "$(httpd_origconffile).new" && \
-	  ( move "$(httpd_origconffile)" "$(httpd_origconffile).bak" && \
-	    move "$(httpd_origconffile).new" $(httpd_origconffile) )
-	-awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
-	     -v LIBPATH=modules \
+		"$(httpd_origconffile)" > "$(httpd_origconffile).new" && \
+	    move "$(httpd_origconffile)" "$(httpd_origconffile).bak" && \
+	    move "$(httpd_origconffile).new" $(httpd_origconffile) \
+	)
+	if exist "$(httpd_conffile)" ( \
+	    awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
+		-v LIBPATH=modules \
 !IFDEF HAVE_HTTPD_FCGID_CONF
-	     -v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
+		-v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
 !ENDIF
-	     "$(httpd_conffile)" > "$(httpd_conffile).new" && \
-	  ( move "$(httpd_conffile)" "$(httpd_conffile).bak" && \
-	    move "$(httpd_conffile).new" $(httpd_conffile) )
+		"$(httpd_conffile)" > "$(httpd_conffile).new" && \
+	    move "$(httpd_conffile)" "$(httpd_conffile).bak" && \
+	    move "$(httpd_conffile).new" $(httpd_conffile) \
+	)
 !IFDEF HAVE_HTTPD_FCGID_CONF
 	copy docs\conf\extra\httpd_fcgid.conf "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf" <.y
 	awk -f << docs\conf\extra\httpd_fcgid.conf > "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf"
