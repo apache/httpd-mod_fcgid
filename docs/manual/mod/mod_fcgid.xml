@@ -690,6 +690,11 @@
       <p>Use <directive>FCGIDInitialEnv</directive> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
+
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -702,10 +707,13 @@
     <usage>
       <p>A process class is the set of processes which were started by the same
       command, and share certain other characteristics such as virtual host and
-      identity.</p>
+      identity.  This directive sets the maximum number of processes in a class
+      that can be started.</p>
 
-      <p>This directive sets the maximum number of processes in a class that
-      can be started.</p>
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -718,10 +726,13 @@
     <usage>
       <p>A process class is the set of processes which were started by the same
       command, and share certain other characteristics such as virtual host and
-      identity.</p>
+      identity.  This directive sets the minimum number of processes in a class
+      that will be retained after finishing requests.</p>
 
-      <p>This directive sets the minimum number of processes in a class that
-      will be retained after finishing requests.</p>
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -766,6 +777,11 @@
       class exceeds
       <directive module="mod_fcgid">FCGIDMinProcessesPerClass</directive>.
       A value of <code>0</code> disables the check.</p>
+
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -784,6 +800,11 @@
       this period of time.  Increase this directive as necessary to handle
       applications which take a relatively long period of time to respond.</p>
       </note>
+
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -798,6 +819,11 @@
       while trying to connect to a FastCGI application on Windows.
       (This directive is not respected on Unix, where AF_UNIX defaults
       will apply.)</p>
+
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -868,6 +894,11 @@
       or other score-related directives to allow more frequent process
       creation.</p>
       </note>
+
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
@@ -937,6 +968,11 @@
       class exceeds
       <directive module="mod_fcgid">FCGIDMinProcessesPerClass</directive>.
       A value of <code>0</code> disables the check.</p>
+
+      <p>This setting will apply to all applications spawned for this
+      server or virtual host.  Use 
+      <directive module="mod_fcgid">FCGIDCmdOptions</directive> to apply
+      this setting to a single application.</p>
     </usage>
   </directivesynopsis>
 
