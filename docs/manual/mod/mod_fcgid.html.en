@@ -72,24 +72,24 @@
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusyscaninterval">FCGIDBusyScanInterval</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusytimeout">FCGIDBusyTimeout</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidcmdoptions">FCGIDCmdOptions</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgiddefaultmaxclassprocesscount">FCGIDDefaultMaxClassProcessCount</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidconnecttimeout">FCGIDConnectTimeout</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgiderrorscaninterval">FCGIDErrorScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidfixpathinfo">FCGIDFixPathinfo</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgididlescaninterval">FCGIDIdleScanInterval</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgididletimeout">FCGIDIdleTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidipccommtimeout">FCGIDIPCCommTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidipcconnecttimeout">FCGIDIPCConnectTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocesscount">FCGIDMaxProcessCount</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidinitialenv">FCGIDInitialEnv</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidiotimeout">FCGIDIOTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidipcdir">FCGIDIPCDir</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocesses">FCGIDMaxProcesses</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestinmem">FCGIDMaxRequestInMem</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestlen">FCGIDMaxRequestLen</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidoutputbuffersize">FCGIDOutputBufferSize</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidpassheader">FCGIDPassHeader</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidphpfixpathinfoenable">FCGIDPHPFixPathinfoEnable</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidsharemempath">FCGIDSharememPath</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidsocketpath">FCGIDSocketPath</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidprocesstablefile">FCGIDProcessTableFile</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscore">FCGIDSpawnScore</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidterminationscore">FCGIDTerminationScore</a></li>
@@ -132,15 +132,15 @@
         </tr>
 <tr>
           <td><code class="directive">DefaultInitEnv</code></td>
-          <td><code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code></td>
+          <td><code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">DefaultMaxClassProcessCount</code></td>
-          <td><code class="directive"><a href="#fcgiddefaultmaxclassprocesscount">FCGIDDefaultMaxClassProcessCount</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">DefaultMinClassProcessCount</code></td>
-          <td><code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code></td>
+          <td><code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">ErrorScanInterval</code></td>
@@ -184,15 +184,15 @@
         </tr>
 <tr class="odd">
           <td><code class="directive">IPCCommTimeout</code></td>
-          <td><code class="directive"><a href="#fcgidipccommtimeout">FCGIDIPCCommTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidiotimeout">FCGIDIOTimeout</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">IPCConnectTimeout</code></td>
-          <td><code class="directive"><a href="#fcgidipcconnecttimeout">FCGIDIPCConnectTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidconnecttimeout">FCGIDConnectTimeout</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">MaxProcessCount</code></td>
-          <td><code class="directive"><a href="#fcgidmaxprocesscount">FCGIDMaxProcessCount</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocesses">FCGIDMaxProcesses</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">MaxRequestInMem</code></td>
@@ -216,7 +216,7 @@
         </tr>
 <tr class="odd">
           <td><code class="directive">PHP_Fix_Pathinfo_Enable</code></td>
-          <td><code class="directive"><a href="#fcgidphpfixpathinfoenable">FCGIDPHPFixPathinfoEnable</a></code></td>
+          <td><code class="directive"><a href="#fcgidfixpathinfo">FCGIDFixPathinfo</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">ProcessLifeTime</code></td>
@@ -224,11 +224,11 @@
         </tr>
 <tr class="odd">
           <td><code class="directive">SharememPath</code></td>
-          <td><code class="directive"><a href="#fcgidsharemempath">FCGIDSharememPath</a></code></td>
+          <td><code class="directive"><a href="#fcgidprocesstablefile">FCGIDProcessTableFile</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">SocketPath</code></td>
-          <td><code class="directive"><a href="#fcgidsocketpath">FCGIDSocketPath</a></code></td>
+          <td><code class="directive"><a href="#fcgidipcdir">FCGIDIPCDir</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">SpawnScore</code></td>
@@ -316,7 +316,7 @@
     an appropriate place to define any environment variables required
     by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>
     or anything else.  (Environment variables can also be set with
-    <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>,
+    <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>,
     but they then apply to all applications.)</p>
 
     <p>Here is an example that uses a wrapper script to invoke PHP:</p>
@@ -341,7 +341,7 @@
       FCGIDWrapper /usr/local/bin/php-wrapper .php<br />
       # Uncomment the following line if cgi.fix_pathinfo<br />
       # is set to 1 in php.ini:<br />
-      # FCGIDPHPFixPathinfoEnable 1<br />
+      # FCGIDFixPathinfo 1<br />
       <br />
       # Customize the next two directives for your requirements.<br />
       Order allow,deny<br />
@@ -406,7 +406,7 @@
     <table class="bordered"><tr class="header"><th>Type of control</th><th>Directive</th></tr>
 <tr>
         <td>global limit on number of processes</td>
-        <td><code class="directive"><a href="#fcgidmaxprocesscount">FCGIDMaxProcessCount</a></code></td>
+        <td><code class="directive"><a href="#fcgidmaxprocesses">FCGIDMaxProcesses</a></code></td>
       </tr>
 <tr class="odd">
         <td>limit on number of processes per application</td>
@@ -439,14 +439,14 @@
 
     <div class="note"><h3>Note</h3>
     <p>Certain settings or other concepts that depend on the virtual host,
-    such as <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>
+    such as <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>
     or process classes, distinguish between virtual hosts only if they
     have distinct server names.  (See the <code class="directive">ServerName</code>
     documentation for more information.) In the case of
-    <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>, if two
+    <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>, if two
     virtual hosts have the same server name but different environments as
     defined by 
-    <code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code>, the 
+    <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>, the 
     environment used for a particular request will be that defined for the
     virtual host of the request that caused the FastCGI process to be 
     started.</p>
@@ -690,7 +690,7 @@
       <table class="bordered"><tr class="header"><th>Option name and syntax</th><th>Corresponding directive</th></tr>
 <tr>
           <td><code>ConnectTimeout <em>seconds</em></code></td>
-          <td><code class="directive"><a href="#fcgidipcconnecttimeout">FCGIDIPCConnectTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidconnecttimeout">FCGIDConnectTimeout</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>IdleTimeout <em>seconds</em></code></td>
@@ -698,15 +698,15 @@
         </tr>
 <tr>
           <td><code>InitialEnv <em>name[=value]</em></code></td>
-          <td><code class="directive"><a href="#fcgiddefaultinitenv">FCGIDDefaultInitEnv</a></code></td>
+          <td><code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>IOTimeout <em>seconds</em></code></td>
-          <td><code class="directive"><a href="#fcgidipccommtimeout">FCGIDIPCCommTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidiotimeout">FCGIDIOTimeout</a></code></td>
         </tr>
 <tr>
           <td><code>MaxProcesses <em>value</em></code></td>
-          <td><code class="directive"><a href="#fcgiddefaultmaxclassprocesscount">FCGIDDefaultMaxClassProcessCount</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>MaxProcessLifeTime <em>seconds</em></code></td>
@@ -718,7 +718,7 @@
         </tr>
 <tr class="odd">
           <td><code>MinProcesses <em>value</em></code></td>
-          <td><code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code></td>
+          <td><code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code></td>
         </tr>
 </table>
 
@@ -747,54 +747,19 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDDefaultInitEnv" id="FCGIDDefaultInitEnv">FCGIDDefaultInitEnv</a> <a name="fcgiddefaultinitenv" id="fcgiddefaultinitenv">Directive</a></h2>
+<div class="directive-section"><h2><a name="FCGIDConnectTimeout" id="FCGIDConnectTimeout">FCGIDConnectTimeout</a> <a name="fcgidconnecttimeout" id="fcgidconnecttimeout">Directive</a></h2>
 <table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>an environment variable name and optional value to pass to FastCGI.</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDDefaultInitEnv <em>name</em> [ <em>value</em> ]</code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Connect timeout to FastCGI server</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDConnectTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDConnectTimeout 3</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>Use <code class="directive">FCGIDDefaultInitEnv</code> to define environment 
-      variables to pass to the FastCGI application.  This directive can 
-      be used multiple times.</p>
-    
-</div>
-<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDDefaultMaxClassProcessCount" id="FCGIDDefaultMaxClassProcessCount">FCGIDDefaultMaxClassProcessCount</a> <a name="fcgiddefaultmaxclassprocesscount" id="fcgiddefaultmaxclassprocesscount">Directive</a></h2>
-<table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max process count of one class of FastCGI application</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDDefaultMaxClassProcessCount <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDDefaultMaxClassProcessCount 100</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
-<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
-<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
-</table>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.</p>
-
-      <p>This directive sets the maximum number of processes in a class that
-      can be started.</p>
-    
-</div>
-<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDDefaultMinClassProcessCount" id="FCGIDDefaultMinClassProcessCount">FCGIDDefaultMinClassProcessCount</a> <a name="fcgiddefaultminclassprocesscount" id="fcgiddefaultminclassprocesscount">Directive</a></h2>
-<table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Min process count of one class of FastCGI application</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDDefaultMinClassProcessCount <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDDefaultMinClassProcessCount 3</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
-<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
-<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
-</table>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.</p>
-
-      <p>This directive sets the minimum number of processes in a class that
-      will be retained after finishing requests.</p>
+      <p>This is the maximum period of time the module will wait
+      while trying to connect to a FastCGI application on Windows.
+      (This directive is not respected on Unix, where AF_UNIX defaults
+      will apply.)</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -812,6 +777,24 @@
       any processes which have exceeded 
       <code class="directive"><a href="#fcgididlescaninterval">FCGIDIdleScanInterval</a></code> or
       <code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code>.</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FCGIDFixPathinfo" id="FCGIDFixPathinfo">FCGIDFixPathinfo</a> <a name="fcgidfixpathinfo" id="fcgidfixpathinfo">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Mirror the PHP <code>cgi.fix_pathinfo</code>
+    setting</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDFixPathinfo 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDFixPathinfo 0</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>This directive enables special <code>SCRIPT_NAME</code> 
+      processing which allows PHP to provide additional path information.
+      The setting of <code class="directive">FCGIDFixPathinfo</code>
+      should mirror the <code>cgi.fix_pathinfo</code> setting in 
+      <code>php.ini</code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -843,16 +826,31 @@
       <p>Application processes which have not handled a request for this 
       period of time will be terminated, if the number of processses for the
       class exceeds
-      <code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code>.
+      <code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDIPCCommTimeout" id="FCGIDIPCCommTimeout">FCGIDIPCCommTimeout</a> <a name="fcgidipccommtimeout" id="fcgidipccommtimeout">Directive</a></h2>
+<div class="directive-section"><h2><a name="FCGIDInitialEnv" id="FCGIDInitialEnv">FCGIDInitialEnv</a> <a name="fcgidinitialenv" id="fcgidinitialenv">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>an environment variable name and optional value to pass to FastCGI.</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDInitialEnv <em>name</em> [ <em>value</em> ]</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>Use <code class="directive">FCGIDInitialEnv</code> to define environment 
+      variables to pass to the FastCGI application.  This directive can 
+      be used multiple times.</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FCGIDIOTimeout" id="FCGIDIOTimeout">FCGIDIOTimeout</a> <a name="fcgidiotimeout" id="fcgidiotimeout">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Communication timeout to FastCGI server</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIPCCommTimeout <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIPCCommTimeout 40</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIOTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIOTimeout 40</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -868,33 +866,51 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDIPCConnectTimeout" id="FCGIDIPCConnectTimeout">FCGIDIPCConnectTimeout</a> <a name="fcgidipcconnecttimeout" id="fcgidipcconnecttimeout">Directive</a></h2>
+<div class="directive-section"><h2><a name="FCGIDIPCDir" id="FCGIDIPCDir">FCGIDIPCDir</a> <a name="fcgidipcdir" id="fcgidipcdir">Directive</a></h2>
 <table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Connect timeout to FastCGI server</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIPCConnectTimeout <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIPCConnectTimeout 3</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>directory for AF_UNIX sockets (Unix) or pipes (Windows)</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIPCDir <em>pathname</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIPCDir logs/fcgidsock</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>This is the maximum period of time the module will wait
-      while trying to connect to a FastCGI application on Windows.
-      (This directive is not respected on Unix, where AF_UNIX defaults
-      will apply.)</p>
+      <p>This module uses AF_UNIX sockets or named pipes, depending on the
+      platform, to communicate with FastCGI applications.  This directive
+      specifies the directory where those sockets or named pipes will be
+      created.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMaxProcessCount" id="FCGIDMaxProcessCount">FCGIDMaxProcessCount</a> <a name="fcgidmaxprocesscount" id="fcgidmaxprocesscount">Directive</a></h2>
+<div class="directive-section"><h2><a name="FCGIDMaxProcesses" id="FCGIDMaxProcesses">FCGIDMaxProcesses</a> <a name="fcgidmaxprocesses" id="fcgidmaxprocesses">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum number of FastCGI application processes</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxProcessCount <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxProcessCount 1000</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxProcesses <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxProcesses 1000</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This directive sets the maximum number of FastCGI application
       processes which can be active at one time.</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FCGIDMaxProcessesPerClass" id="FCGIDMaxProcessesPerClass">FCGIDMaxProcessesPerClass</a> <a name="fcgidmaxprocessesperclass" id="fcgidmaxprocessesperclass">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max process count of one class of FastCGI application</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxProcessesPerClass <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxProcessesPerClass 100</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the maximum number of processes in a class that
+      can be started.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -962,6 +978,24 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FCGIDMinProcessesPerClass" id="FCGIDMinProcessesPerClass">FCGIDMinProcessesPerClass</a> <a name="fcgidminprocessesperclass" id="fcgidminprocessesperclass">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Min process count of one class of FastCGI application</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMinProcessesPerClass <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMinProcessesPerClass 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>A process class is the set of processes which were started by the same
+      command, and share certain other characteristics such as virtual host and
+      identity.</p>
+
+      <p>This directive sets the minimum number of processes in a class that
+      will be retained after finishing requests.</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="FCGIDOutputBufferSize" id="FCGIDOutputBufferSize">FCGIDOutputBufferSize</a> <a name="fcgidoutputbuffersize" id="fcgidoutputbuffersize">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>CGI output buffer size</td></tr>
@@ -1004,24 +1038,6 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDPHPFixPathinfoEnable" id="FCGIDPHPFixPathinfoEnable">FCGIDPHPFixPathinfoEnable</a> <a name="fcgidphpfixpathinfoenable" id="fcgidphpfixpathinfoenable">Directive</a></h2>
-<table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Mirror the PHP <code>cgi.fix_pathinfo</code>
-    setting</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDPHPFixPathinfoEnable 1</code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDPHPFixPathinfoEnable 0</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
-<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
-<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
-</table>
-      <p>This directive enables special <code>SCRIPT_NAME</code> 
-      processing which allows PHP to provide additional path information.
-      The setting of <code class="directive">FCGIDPHPFixPathinfoEnable</code>
-      should mirror the <code>cgi.fix_pathinfo</code> setting in 
-      <code>php.ini</code>.</p>
-    
-</div>
-<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="FCGIDProcessLifeTime" id="FCGIDProcessLifeTime">FCGIDProcessLifeTime</a> <a name="fcgidprocesslifetime" id="fcgidprocesslifetime">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum FastCGI application process lifetime</td></tr>
@@ -1034,16 +1050,16 @@
       <p>Idle application processes which have existed for greater
       than this time will be terminated, if the number of processses for the
       class exceeds
-      <code class="directive"><a href="#fcgiddefaultminclassprocesscount">FCGIDDefaultMinClassProcessCount</a></code>.
+      <code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDSharememPath" id="FCGIDSharememPath">FCGIDSharememPath</a> <a name="fcgidsharemempath" id="fcgidsharemempath">Directive</a></h2>
+<div class="directive-section"><h2><a name="FCGIDProcessTableFile" id="FCGIDProcessTableFile">FCGIDProcessTableFile</a> <a name="fcgidprocesstablefile" id="fcgidprocesstablefile">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>shared memory file path</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDSharememPath <em>pathname</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDSharememPath logs/fcgid_shm</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDProcessTableFile <em>pathname</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDProcessTableFile logs/fcgid_shm</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1051,22 +1067,6 @@
       <p>This module uses shared memory on Unix to maintain state which
       is shared between httpd processes.  This directive specifies the
       name of the shared memory file.</p>
-    
-</div>
-<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDSocketPath" id="FCGIDSocketPath">FCGIDSocketPath</a> <a name="fcgidsocketpath" id="fcgidsocketpath">Directive</a></h2>
-<table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>directory for AF_UNIX sockets (Unix) or pipes (Windows)</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDSocketPath <em>pathname</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDSocketPath logs/fcgidsock</code></td></tr>
-<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
-<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
-<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
-</table>
-      <p>This module uses AF_UNIX sockets or named pipes, depending on the
-      platform, to communicate with FastCGI applications.  This directive
-      specifies the directory where those sockets or named pipes will be
-      created.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
