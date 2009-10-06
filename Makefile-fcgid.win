@@ -80,16 +80,24 @@ MAKEOPT=-s -N
 !ENDIF
 
 _buildr: 
-	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=R LONG=Release _build
+	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=R LONG=Release _build
 
 _buildd: 
-	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=D LONG=Debug   _build
+	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=D LONG=Debug   _build
 
 installr: 
-	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=R LONG=Release _build _install
+	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=R LONG=Release _build _install
 
 installd: 
-	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=D LONG=Debug   _build _install
+	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=D LONG=Debug   _build _install
 
 clean:	_cleanr _cleand
 	-if exist Browse\. rd /s Browse < << > nul
@@ -99,49 +107,52 @@ y
 !IF $(USEMAK) == 1
 
 _cleanr:
-	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=R LONG=Release CTARGET=CLEAN _build
+	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=R LONG=Release CTARGET=CLEAN _build
 
 _cleand:  
-	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=D LONG=Debug   CTARGET=CLEAN _build
+	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=D LONG=Debug   CTARGET=CLEAN _build
 
 _build:
 	echo Building Win32 $(LONG) targets ($(SHORT) suffixes)
 	cd modules\fcgid
 	 $(MAKE) $(MAKEOPT) -f mod_fcgid.mak CFG="mod_fcgid - Win32 $(LONG)" RECURSE=0 $(CTARGET)
-!IFDEF ALL
-	 $(MAKE) $(MAKEOPT) -f mod_fcgid_example.mak CFG="mod_fcgid_example - Win32 $(LONG)" RECURSE=0 $(CTARGET)
-!ENDIF
 	cd ..\..
 
 !ELSEIF $(USESLN) == 1
 
 _cleanr:  
-	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=R LONG=Release CTARGET="/clean" _build
+	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=R LONG=Release CTARGET="/clean" _build
 
 _cleand:  
-	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=D LONG=Debug   CTARGET="/clean" _build
+	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=D LONG=Debug   CTARGET="/clean" _build
 
 _build:
 	echo Building Win32 $(LONG) targets ($(SHORT) suffixes)
 	devenv mod_fcgid.sln /useenv $(CTARGET) $(LONG) /project mod_fcgid
-!IFDEF ALL
-	devenv mod_fcgid.sln /useenv $(CTARGET) $(LONG) /project mod_fcgid_example
-!ENDIF
 
 !ELSE
 
 _cleanr:  
-	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=R LONG=Release CTARGET="/CLEAN" _build
+	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=R LONG=Release CTARGET="/CLEAN" _build
 
 _cleand:  
-	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win SHORT=D LONG=Debug   CTARGET="/CLEAN" _build
+	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
+		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		SHORT=D LONG=Debug   CTARGET="/CLEAN" _build
 
 _build:
 	@echo Building Win32 $(LONG) targets ($(SHORT) suffixes)
 	@msdev mod_fcgid.dsw /USEENV /MAKE "mod_fcgid - Win32 $(LONG)" $(CTARGET)
-!IFDEF ALL
-	@msdev mod_fcgid.dsw /USEENV /MAKE "mod_fcgid_example - Win32 $(LONG)" $(CTARGET)
-!ENDIF
 
 !ENDIF
 
@@ -164,10 +175,6 @@ _install:
 	copy README-FCGID  "$(INSTDIR)\README-FCGID.txt" <.y
 	copy modules\fcgid\$(LONG)\mod_fcgid.so  "$(INSTDIR)\modules" <.y
 	copy modules\fcgid\$(LONG)\mod_fcgid.pdb "$(INSTDIR)\modules" <.y
-!IFDEF ALL
-	copy modules\fcgid\$(LONG)\mod_fcgid_example.so  "$(INSTDIR)\modules" <.y
-	copy modules\fcgid\$(LONG)\mod_fcgid_example.pdb "$(INSTDIR)\modules" <.y
-!ENDIF
 	xcopy docs\manual      "$(INSTDIR)\manual" /s /d < .a
 !IFDEF COMPLETED
 	copy include\mod_fcgid.h "$(INSTDIR)\include" < .y > nul
