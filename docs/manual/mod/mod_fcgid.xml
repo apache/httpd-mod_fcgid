@@ -49,9 +49,10 @@
     directive (e.g., for all files in a specific directory such as cgi-bin).</p>
 
     <p>Some changes have been made in the ASF release of mod_fcgid which
-    can affect existing configurations. Especially all directives have been
-    renamed. The old names still work but are now deprecated.
-    Please read the <a href="#upgrade">Upgrade Notes</a> for details.</p>
+    can affect existing configurations.  All documentation refers to new
+    names for the directives.  (The old names still work but are now 
+    deprecated.)  Please read the <a href="#upgrade">Upgrade Notes</a> for
+    details.</p>
 
     <p>For an introduction to using CGI scripts with Apache, see
     the generic tutorial on <a href="../howto/cgi.html">Dynamic Content
@@ -69,7 +70,7 @@
       Underscores in directive names have been eliminated in favor of
       CamelCase. The old directive names will still work but are deprecated.
       To fix your configuration you can use the sed script tools/fixconf.sed.
-      The following tables contains old and new directive names:
+      The following table contains old and new directive names:
       <table border="1" style="zebra">
         <tr><th>Old Name</th><th>New Name</th></tr>
         <tr>
@@ -225,8 +226,7 @@
 
     <p>The first example is a very simple Perl FastCGI application,
     and its configuration directives.  This is typical for FastCGI
-    applications which are named in the URL and which require no
-    special configuration.</p>
+    applications which require no special configuration.</p>
 
     <example><title>Perl FastCGI application - /usr/local/apache/fcgi-bin/foo.pl</title>
     #!/usr/bin/perl<br />
@@ -354,7 +354,7 @@
       </tr>
       <tr>
         <td>limit on number of processes per application</td>
-        <td><directive module="mod_fcgid">FCGIDMaxClassProcessCount</directive></td>
+        <td><directive module="mod_fcgid">FCGIDMaxProcessesPerClass</directive></td>
       </tr>
       <tr>
         <td>limit on rate of spawning new application processes</td>
@@ -427,7 +427,7 @@
       </dl>
 
       <p>The application must output a <code>Status</code> line to indicate
-      the result of authentication.</p>
+      the result of the check.</p>
 
       <note type="warning"><title>Warning</title>
       <p>Currently, only one FastCGI application of any type (AAA or handler)
@@ -746,7 +746,7 @@
       <p>This is the interval at which the module will handle
       pending process termination.  Termination is pending for
       any processes which have exceeded 
-      <directive module="mod_fcgid">FCGIDIdleScanInterval</directive> or
+      <directive module="mod_fcgid">FCGIDIdleTimeout</directive> or
       <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
@@ -760,7 +760,7 @@
     <usage>
       <p>This is the interval at which the module will search for
       processes which have exceeded 
-      <directive module="mod_fcgid">FCGIDIdleScanInterval</directive> or
+      <directive module="mod_fcgid">FCGIDIdleTimeout</directive> or
       <directive module="mod_fcgid">FCGIDProcessLifeTime</directive>.</p>
     </usage>
   </directivesynopsis>
