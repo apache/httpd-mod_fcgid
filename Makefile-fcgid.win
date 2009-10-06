@@ -23,12 +23,13 @@
 
 INSTDIR=\Apache22
 
-!IF EXIST("httpd.vcproj") && ([devenv /help > NUL 2>&1] == 0) \
+!IF EXIST("modules\fcgid\mod_fcgid.vcproj") \
+    && ([devenv /help > NUL 2>&1] == 0) \
     && !defined(USEMAK) && !defined(USEDSW)
 USESLN=1
 USEMAK=0
 USEDSW=0
-!ELSEIF EXIST("httpd.mak") && !defined(USEDSW)
+!ELSEIF EXIST("modules\fcgid\mod_fcgid.mak") && !defined(USEDSW)
 USESLN=0
 USEMAK=1
 USEDSW=0
