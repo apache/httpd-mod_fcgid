@@ -21,7 +21,9 @@
 # so the server root should be given in forward slashes (quoted),
 # preferably with the drive designation!
 
+!IF "$(INSTDIR)" == ""
 INSTDIR=\Apache22
+!ENDIF
 
 !IF EXIST("modules\fcgid\mod_fcgid.vcproj") \
     && ([devenv /help > NUL 2>&1] == 0) \
@@ -43,11 +45,9 @@ USEDSW=1
 CTARGET=/build
 !ENDIF
 
-!IF "$(INSTDIR)" == ""
-INSTDIR=\Apache22
-!ENDIF
-
+!IF "$(APACHE2_HOME)" == ""
 APACHE2_HOME=$(INSTDIR)
+!ENDIF
 
 !IF EXIST("$(APACHE2_HOME)\lib\libapr-1.lib")
 APACHE2_APRSFX=-1
@@ -61,7 +61,8 @@ APACHE2_APRSFX=
 
 !IF "$(LONG)" == ""
 !MESSAGE
-!MESSAGE INSTDIR     = $(INSTDIR)
+!MESSAGE INSTDIR      = $(INSTDIR)
+!MESSAGE APACHE2_HOME = $(APACHE2_HOME)
 !MESSAGE
 !MESSAGE To change these options use 'nmake -f Makefile-fcgid.win [option=value]'
 !MESSAGE Example: nmake -f Makefile-fcgid.win
