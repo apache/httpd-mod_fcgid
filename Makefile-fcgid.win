@@ -1,6 +1,6 @@
-
-# Makefile for mod_fcgid for Windows NT, 2000 and beyond
-
+#
+# NMAKE Makefile for Microsoft Windows 
+#
 # Targets are:
 #   _apacher   - build Apache in Release mode
 #   _apached   - build Apache in Debug mode
@@ -156,18 +156,23 @@ _build:
 
 !ENDIF
 
+httpd_conffile=$(INSTDIR)\conf\httpd.conf
+httpd_origconffile=$(INSTDIR)\conf\original\httpd.conf
+
 _install:
 	echo Y >.y
 	echo A >.A
 	-mkdir "$(INSTDIR)"
-!IFDEF COMPLETED
 	-mkdir "$(INSTDIR)\conf"
-	-mkdir "$(INSTDIR)\conf\extra"
 	-mkdir "$(INSTDIR)\conf\original"
+!IFDEF HAVE_HTTPD_FCGID_CONF
+	-mkdir "$(INSTDIR)\conf\extra"
 	-mkdir "$(INSTDIR)\conf\original\extra"
-	-mkdir "$(INSTDIR)\manual"
+!ENDIF
+!IFDEF HAVE_MOD_FCGID_H
 	-mkdir "$(INSTDIR)\include"
 !ENDIF
+	-mkdir "$(INSTDIR)\manual"
 	-mkdir "$(INSTDIR)\modules"
 	copy CHANGES-FCGID "$(INSTDIR)\CHANGES-FCGID.txt" <.y
 	copy LICENSE-FCGID "$(INSTDIR)\LICENSE-FCGID.txt" <.y
@@ -176,12 +181,39 @@ _install:
 	copy modules\fcgid\$(LONG)\mod_fcgid.so  "$(INSTDIR)\modules" <.y
 	copy modules\fcgid\$(LONG)\mod_fcgid.pdb "$(INSTDIR)\modules" <.y
 	xcopy docs\manual      "$(INSTDIR)\manual" /s /d < .a
-!IFDEF COMPLETED
+!IFDEF HAVE_MOD_FCGID_H
 	copy include\mod_fcgid.h "$(INSTDIR)\include" < .y > nul
-#awk -v BDIR=$(APACHE2_HOME) -f build\mkconfnw.awk
-#    docs\conf\extra\httpd-fcgid.conf >$(INSTALL)\$(BASEDIR)\conf\extra\httpd-fcgid.conf
-	awk -f build\installwinconf.awk $(DOMAINNAME) $(SERVERNAME) \
-	    $(SERVERADMIN) "$(INSTDIR) " docs/conf/ 
+!ENDIF
+	-awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
+	     -v LIBPATH=modules \
+!IFDEF HAVE_HTTPD_FCGID_CONF
+	     -v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
+!ENDIF
+	     "$(httpd_origconffile)" > "$(httpd_origconffile).new" && \
+	  ( move "$(httpd_origconffile)" "$(httpd_origconffile).bak" && \
+	    move "$(httpd_origconffile).new" $(httpd_origconffile) )
+	-awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
+	     -v LIBPATH=modules \
+!IFDEF HAVE_HTTPD_FCGID_CONF
+	     -v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
+!ENDIF
+	     "$(httpd_conffile)" > "$(httpd_conffile).new" && \
+	  ( move "$(httpd_conffile)" "$(httpd_conffile).bak" && \
+	    move "$(httpd_conffile).new" $(httpd_conffile) )
+!IFDEF HAVE_HTTPD_FCGID_CONF
+	copy docs\conf\extra\httpd_fcgid.conf "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf" <.y
+	awk -f << docs\conf\extra\httpd_fcgid.conf > "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf"
+/^\#@@LoadFcgidModules@@/ { next; }
+{ sub(/@exp_runtimedir@/, "logs");
+  sub(/@exp_sysconfdir@/, "conf");
+  sub(/@rel_sysconfdir@/, "conf");
+  sub(/@rel_logfiledir@/, "logs");
+  print $0;
+}
+<<
+	if not exist "$(INSTDIR)\conf\extra\httpd_fcgid.conf" \
+	    copy "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf" \
+		 "$(INSTDIR)\conf\extra\httpd_fcgid.conf" <.y
 !ENDIF
 	del .y
 	del .a
