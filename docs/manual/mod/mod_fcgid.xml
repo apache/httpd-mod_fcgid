@@ -82,15 +82,15 @@
         </tr>
         <tr>
           <td><directive>DefaultInitEnv</directive></td>
-          <td><directive module="mod_fcgid">FCGIDDefaultInitEnv</directive></td>
+          <td><directive module="mod_fcgid">FCGIDInitialEnv</directive></td>
         </tr>
         <tr>
           <td><directive>DefaultMaxClassProcessCount</directive></td>
-          <td><directive module="mod_fcgid">FCGIDDefaultMaxClassProcessCount</directive></td>
+          <td><directive module="mod_fcgid">FCGIDMaxProcessesPerClass</directive></td>
         </tr>
         <tr>
           <td><directive>DefaultMinClassProcessCount</directive></td>
-          <td><directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive></td>
+          <td><directive module="mod_fcgid">FCGIDMinProcessesPerClass</directive></td>
         </tr>
         <tr>
           <td><directive>ErrorScanInterval</directive></td>
@@ -134,15 +134,15 @@
         </tr>
         <tr>
           <td><directive>IPCCommTimeout</directive></td>
-          <td><directive module="mod_fcgid">FCGIDIPCCommTimeout</directive></td>
+          <td><directive module="mod_fcgid">FCGIDIOTimeout</directive></td>
         </tr>
         <tr>
           <td><directive>IPCConnectTimeout</directive></td>
-          <td><directive module="mod_fcgid">FCGIDIPCConnectTimeout</directive></td>
+          <td><directive module="mod_fcgid">FCGIDConnectTimeout</directive></td>
         </tr>
         <tr>
           <td><directive>MaxProcessCount</directive></td>
-          <td><directive module="mod_fcgid">FCGIDMaxProcessCount</directive></td>
+          <td><directive module="mod_fcgid">FCGIDMaxProcesses</directive></td>
         </tr>
         <tr>
           <td><directive>MaxRequestInMem</directive></td>
@@ -166,7 +166,7 @@
         </tr>
         <tr>
           <td><directive>PHP_Fix_Pathinfo_Enable</directive></td>
-          <td><directive module="mod_fcgid">FCGIDPHPFixPathinfoEnable</directive></td>
+          <td><directive module="mod_fcgid">FCGIDFixPathinfo</directive></td>
         </tr>
         <tr>
           <td><directive>ProcessLifeTime</directive></td>
@@ -174,11 +174,11 @@
         </tr>
         <tr>
           <td><directive>SharememPath</directive></td>
-          <td><directive module="mod_fcgid">FCGIDSharememPath</directive></td>
+          <td><directive module="mod_fcgid">FCGIDProcessTableFile</directive></td>
         </tr>
         <tr>
           <td><directive>SocketPath</directive></td>
-          <td><directive module="mod_fcgid">FCGIDSocketPath</directive></td>
+          <td><directive module="mod_fcgid">FCGIDIPCDir</directive></td>
         </tr>
         <tr>
           <td><directive>SpawnScore</directive></td>
@@ -266,7 +266,7 @@
     an appropriate place to define any environment variables required
     by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>
     or anything else.  (Environment variables can also be set with
-    <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>,
+    <directive module="mod_fcgid">FCGIDInitialEnv</directive>,
     but they then apply to all applications.)</p>
 
     <p>Here is an example that uses a wrapper script to invoke PHP:</p>
@@ -291,7 +291,7 @@
       FCGIDWrapper /usr/local/bin/php-wrapper .php<br />
       # Uncomment the following line if cgi.fix_pathinfo<br />
       # is set to 1 in php.ini:<br />
-      # FCGIDPHPFixPathinfoEnable 1<br />
+      # FCGIDFixPathinfo 1<br />
       <br />
       # Customize the next two directives for your requirements.<br />
       Order allow,deny<br />
@@ -357,7 +357,7 @@
       <tr><th>Type of control</th><th>Directive</th></tr>
       <tr>
         <td>global limit on number of processes</td>
-        <td><directive module="mod_fcgid">FCGIDMaxProcessCount</directive></td>
+        <td><directive module="mod_fcgid">FCGIDMaxProcesses</directive></td>
       </tr>
       <tr>
         <td>limit on number of processes per application</td>
@@ -391,14 +391,14 @@
 
     <note type="hint"><title>Note</title>
     <p>Certain settings or other concepts that depend on the virtual host,
-    such as <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>
+    such as <directive module="mod_fcgid">FCGIDInitialEnv</directive>
     or process classes, distinguish between virtual hosts only if they
     have distinct server names.  (See the <directive>ServerName</directive>
     documentation for more information.) In the case of
-    <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>, if two
+    <directive module="mod_fcgid">FCGIDInitialEnv</directive>, if two
     virtual hosts have the same server name but different environments as
     defined by 
-    <directive module="mod_fcgid">FCGIDDefaultInitEnv</directive>, the 
+    <directive module="mod_fcgid">FCGIDInitialEnv</directive>, the 
     environment used for a particular request will be that defined for the
     virtual host of the request that caused the FastCGI process to be 
     started.</p>
@@ -630,7 +630,7 @@
         <tr><th>Option name and syntax</th><th>Corresponding directive</th></tr>
         <tr>
           <td><code>ConnectTimeout <em>seconds</em></code></td>
-          <td><directive module="mod_fcgid">FCGIDIPCConnectTimeout</directive></td>
+          <td><directive module="mod_fcgid">FCGIDConnectTimeout</directive></td>
         </tr>
         <tr>
           <td><code>IdleTimeout <em>seconds</em></code></td>
@@ -638,15 +638,15 @@
         </tr>
         <tr>
           <td><code>InitialEnv <em>name[=value]</em></code></td>
-          <td><directive module="mod_fcgid">FCGIDDefaultInitEnv</directive></td>
+          <td><directive module="mod_fcgid">FCGIDInitialEnv</directive></td>
         </tr>
         <tr>
           <td><code>IOTimeout <em>seconds</em></code></td>
-          <td><directive module="mod_fcgid">FCGIDIPCCommTimeout</directive></td>
+          <td><directive module="mod_fcgid">FCGIDIOTimeout</directive></td>
         </tr>
         <tr>
           <td><code>MaxProcesses <em>value</em></code></td>
-          <td><directive module="mod_fcgid">FCGIDDefaultMaxClassProcessCount</directive></td>
+          <td><directive module="mod_fcgid">FCGIDMaxProcessesPerClass</directive></td>
         </tr>
         <tr>
           <td><code>MaxProcessLifeTime <em>seconds</em></code></td>
@@ -658,7 +658,7 @@
         </tr>
         <tr>
           <td><code>MinProcesses <em>value</em></code></td>
-          <td><directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive></td>
+          <td><directive module="mod_fcgid">FCGIDMinProcessesPerClass</directive></td>
         </tr>
       </table>
 
@@ -688,23 +688,23 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDDefaultInitEnv</name>
+    <name>FCGIDInitialEnv</name>
     <description>an environment variable name and optional value to pass to FastCGI.</description>
-    <syntax>FCGIDDefaultInitEnv <em>name</em> [ <em>value</em> ]</syntax>
+    <syntax>FCGIDInitialEnv <em>name</em> [ <em>value</em> ]</syntax>
     <default><em>none</em></default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Use <directive>FCGIDDefaultInitEnv</directive> to define environment 
+      <p>Use <directive>FCGIDInitialEnv</directive> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDDefaultMaxClassProcessCount</name>
+    <name>FCGIDMaxProcessesPerClass</name>
     <description>Max process count of one class of FastCGI application</description>
-    <syntax>FCGIDDefaultMaxClassProcessCount <em>value</em></syntax>
-    <default>FCGIDDefaultMaxClassProcessCount 100</default>
+    <syntax>FCGIDMaxProcessesPerClass <em>value</em></syntax>
+    <default>FCGIDMaxProcessesPerClass 100</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
@@ -717,10 +717,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDDefaultMinClassProcessCount</name>
+    <name>FCGIDMinProcessesPerClass</name>
     <description>Min process count of one class of FastCGI application</description>
-    <syntax>FCGIDDefaultMinClassProcessCount <em>value</em></syntax>
-    <default>FCGIDDefaultMinClassProcessCount 3</default>
+    <syntax>FCGIDMinProcessesPerClass <em>value</em></syntax>
+    <default>FCGIDMinProcessesPerClass 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>A process class is the set of processes which were started by the same
@@ -771,16 +771,16 @@
       <p>Application processes which have not handled a request for this 
       period of time will be terminated, if the number of processses for the
       class exceeds
-      <directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive>.
+      <directive module="mod_fcgid">FCGIDMinProcessesPerClass</directive>.
       A value of <code>0</code> disables the check.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDIPCCommTimeout</name>
+    <name>FCGIDIOTimeout</name>
     <description>Communication timeout to FastCGI server</description>
-    <syntax>FCGIDIPCCommTimeout <em>seconds</em></syntax>
-    <default>FCGIDIPCCommTimeout 40</default>
+    <syntax>FCGIDIOTimeout <em>seconds</em></syntax>
+    <default>FCGIDIOTimeout 40</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This is the maximum period of time the module will wait
@@ -795,10 +795,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDIPCConnectTimeout</name>
+    <name>FCGIDConnectTimeout</name>
     <description>Connect timeout to FastCGI server</description>
-    <syntax>FCGIDIPCConnectTimeout <em>seconds</em></syntax>
-    <default>FCGIDIPCConnectTimeout 3</default>
+    <syntax>FCGIDConnectTimeout <em>seconds</em></syntax>
+    <default>FCGIDConnectTimeout 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This is the maximum period of time the module will wait
@@ -809,10 +809,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDMaxProcessCount</name>
+    <name>FCGIDMaxProcesses</name>
     <description>maximum number of FastCGI application processes</description>
-    <syntax>FCGIDMaxProcessCount <em>value</em></syntax>
-    <default>FCGIDMaxProcessCount 1000</default>
+    <syntax>FCGIDMaxProcesses <em>value</em></syntax>
+    <default>FCGIDMaxProcesses 1000</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This directive sets the maximum number of FastCGI application
@@ -917,16 +917,16 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDPHPFixPathinfoEnable</name>
+    <name>FCGIDFixPathinfo</name>
     <description>Mirror the PHP <code>cgi.fix_pathinfo</code>
     setting</description>
-    <syntax>FCGIDPHPFixPathinfoEnable 1</syntax>
-    <default>FCGIDPHPFixPathinfoEnable 0</default>
+    <syntax>FCGIDFixPathinfo 1</syntax>
+    <default>FCGIDFixPathinfo 0</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This directive enables special <code>SCRIPT_NAME</code> 
       processing which allows PHP to provide additional path information.
-      The setting of <directive>FCGIDPHPFixPathinfoEnable</directive>
+      The setting of <directive>FCGIDFixPathinfo</directive>
       should mirror the <code>cgi.fix_pathinfo</code> setting in 
       <code>php.ini</code>.</p>
     </usage>
@@ -942,16 +942,16 @@
       <p>Idle application processes which have existed for greater
       than this time will be terminated, if the number of processses for the
       class exceeds
-      <directive module="mod_fcgid">FCGIDDefaultMinClassProcessCount</directive>.
+      <directive module="mod_fcgid">FCGIDMinProcessesPerClass</directive>.
       A value of <code>0</code> disables the check.</p>
     </usage>
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDSharememPath</name>
+    <name>FCGIDProcessTableFile</name>
     <description>shared memory file path</description>
-    <syntax>FCGIDSharememPath <em>pathname</em></syntax>
-    <default>FCGIDSharememPath logs/fcgid_shm</default>
+    <syntax>FCGIDProcessTableFile <em>pathname</em></syntax>
+    <default>FCGIDProcessTableFile logs/fcgid_shm</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This module uses shared memory on Unix to maintain state which
@@ -961,10 +961,10 @@
   </directivesynopsis>
 
   <directivesynopsis>
-    <name>FCGIDSocketPath</name>
+    <name>FCGIDIPCDir</name>
     <description>directory for AF_UNIX sockets (Unix) or pipes (Windows)</description>
-    <syntax>FCGIDSocketPath <em>pathname</em></syntax>
-    <default>FCGIDSocketPath logs/fcgidsock</default>
+    <syntax>FCGIDIPCDir <em>pathname</em></syntax>
+    <default>FCGIDIPCDir logs/fcgidsock</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This module uses AF_UNIX sockets or named pipes, depending on the

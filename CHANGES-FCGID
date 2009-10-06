@@ -4,9 +4,8 @@ Changes with mod_fcgid 2.3.3
   *) Add FCGIDCmdOptions directive.  [Jeff Trawick]
 
   *) Allow/respect virtual host settings for the following directives:
-     FCGIDBusyTimeout, FCGIDDefaultMaxClassProcessCount, 
-     FCGIDDefaultMinClassProcessCount, FCGIDIdleTimeout, and 
-     FCGIDProcessLifetime.  [Jeff Trawick]
+     FCGIDBusyTimeout, FCGIDMaxProcessesPerClass, FCGIDMinProcessesPerClass,
+     FCGIDIdleTimeout, and FCGIDProcessLifetime.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.2
 
@@ -39,9 +38,9 @@ Changes with mod_fcgid 2.3.2
      ...................................................................
      BusyScanInterval                   FCGIDBusyScanInterval
      BusyTimeout                        FCGIDBusyTimeout
-     DefaultInitEnv                     FCGIDDefaultInitEnv
-     DefaultMaxClassProcessCount        FCGIDDefaultMaxClassProcessCount
-     DefaultMinClassProcessCount        FCGIDDefaultMinClassProcessCount
+     DefaultInitEnv                     FCGIDInitialEnv
+     DefaultMaxClassProcessCount        FCGIDMaxProcessesPerClass
+     DefaultMinClassProcessCount        FCGIDMinProcessesPerClass
      ErrorScanInterval                  FCGIDErrorScanInterval
      FastCgiAccessChecker               FCGIDAccessChecker
      FastCgiAccessCheckerAuthoritative  FCGIDAccessCheckerAuthoritative
@@ -52,18 +51,18 @@ Changes with mod_fcgid 2.3.2
      FCGIWrapper                        FCGIDWrapper
      IdleScanInterval                   FCGIDIdleScanInterval
      IdleTimeout                        FCGIDIdleTimeout
-     IPCCommTimeout                     FCGIDIPCCommTimeout
-     IPCConnectTimeout                  FCGIDIPCConnectTimeout
-     MaxProcessCount                    FCGIDMaxProcessCount
+     IPCCommTimeout                     FCGIDIOTimeout
+     IPCConnectTimeout                  FCGIDConnectTimeout
+     MaxProcessCount                    FCGIDMaxProcesses
      MaxRequestInMem                    FCGIDMaxRequestInMem
      MaxRequestLen                      FCGIDMaxRequestLen
      MaxRequestsPerProcess              FCGIDMaxRequestsPerProcess
      OutputBufferSize                   FCGIDOutputBufferSize
      PassHeader                         FCGIDPassHeader
-     PHP_Fix_Pathinfo_Enable            FCGIDPHPFixPathinfoEnable
+     PHP_Fix_Pathinfo_Enable            FCGIDFixPathinfo
      ProcessLifeTime                    FCGIDProcessLifeTime
-     SharememPath                       FCGIDSharememPath
-     SocketPath                         FCGIDSocketPath
+     SharememPath                       FCGIDProcessTableFile
+     SocketPath                         FCGIDIPCDir
      SpawnScore                         FCGIDSpawnScore
      SpawnScoreUpLimit                  FCGIDSpawnScoreUpLimit
      TerminationScore                   FCGIDTerminationScore
@@ -79,22 +78,22 @@ Changes with mod_fcgid 2.3.2
 
   *) Merge mod_fcgid server config/virtual host directives so that they can
      be inherited or overridden within a virtual host as expected.  Affected
-     directives: FCGIDIPCCommTimeout, FCGIDIPCConnectTimeout,
+     directives: FCGIDIOTimeout, FCGIDConnectTimeout,
      FCGIDMaxRequestInMem, FCGIDMaxRequestLen, FCGIDMaxRequestsPerProcess,
      FCGIDOutputBufferSize.  [Jeff Trawick]
 
   *) Use the virtual host settings for the request being processed instead
      of those of the first FastCGI request handled by this httpd child process.
-     Affected directives: FCGIDBusyTimeout, FCGIDIPCCommTimeout,
-     FCGIDIPCConnectTimeout, FCGIDMaxRequestsPerProcess, and FCGIDOutputBufferSize.
+     Affected directives: FCGIDBusyTimeout, FCGIDIOTimeout,
+     FCGIDConnectTimeout, FCGIDMaxRequestsPerProcess, and FCGIDOutputBufferSize.
      [Jeff Trawick]
 
   *) The following directives are no longer allowed in a virtual host
      context: FCGIDBusyScanInterval, FCGIDBusyTimeout,
-     FCGIDDefaultMaxClassProcessCount, FCGIDDefaultMinProcessCount,
+     FCGIDMaxProcessesPerClass, FCGIDDefaultMinProcessCount,
      FCGIDErrorScanInterval, FCGIDIdleScanInterval, FCGIDIdleTimeout,
-     FCGIDMaxProcessCount, FCGIDPHPFixPathinfo_Enable, FCGIDProcessLifetime,
-     FCGIDSharememPath, FCGIDSocketPath, FCGIDSpawnScore,
+     FCGIDMaxProcesses, FCGIDFixPathinfo, FCGIDProcessLifetime,
+     FCGIDProcessTableFile, FCGIDIPCDir, FCGIDSpawnScore,
      FCGIDSpawnScoreUpLimit, FCGIDTerminationScore, FCGIDTimeScore, and 
      FCGIDZombieScanInterval.  They were allowed but ignored in previous
      releases.  [Jeff Trawick]
