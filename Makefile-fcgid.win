@@ -81,22 +81,22 @@ MAKEOPT=-s -N
 
 _buildr: 
 	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=R LONG=Release _build
 
 _buildd: 
 	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=D LONG=Debug   _build
 
 installr: 
 	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=R LONG=Release _build _install
 
 installd: 
 	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=D LONG=Debug   _build _install
 
 clean:	_cleanr _cleand
@@ -108,12 +108,12 @@ y
 
 _cleanr:
 	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=R LONG=Release CTARGET=CLEAN _build
 
 _cleand:  
 	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=D LONG=Debug   CTARGET=CLEAN _build
 
 _build:
@@ -126,12 +126,12 @@ _build:
 
 _cleanr:  
 	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=R LONG=Release CTARGET="/clean" _build
 
 _cleand:  
 	$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=D LONG=Debug   CTARGET="/clean" _build
 
 _build:
@@ -142,12 +142,12 @@ _build:
 
 _cleanr:  
 	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=R LONG=Release CTARGET="/CLEAN" _build
 
 _cleand:  
 	@$(MAKE) $(MAKEOPT) -f Makefile-fcgid.win \
-		INSTDIR=$(INSTDIR) APACHE2_HOME=$(APACHE2_HOME) \
+		INSTDIR="$(INSTDIR)" APACHE2_HOME="$(APACHE2_HOME)" \
 		SHORT=D LONG=Debug   CTARGET="/CLEAN" _build
 
 _build:
