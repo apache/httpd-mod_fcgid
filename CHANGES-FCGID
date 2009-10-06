@@ -31,7 +31,7 @@ Changes with mod_fcgid 2.3.2
   *) All directives have been renamed in order to use a common prefix "FCGID".
      Underscores in directive names have been eliminated in favor of
      CamelCase. The old directive names will still work but are deprecated.
-     To fix your configuration you can use the sed script tools/fixconf.sed.
+     To fix your configuration you can use the sed script build/fixconf.sed.
      The following tables contains old and new directive names.
 
      Old Name                           New Name

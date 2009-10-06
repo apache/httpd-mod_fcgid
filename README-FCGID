@@ -49,6 +49,11 @@ to start with the apr 0.9 equivilants for httpd-2.0,
 
     # ADD LINK32 libapr.lib libaprutil.lib ...
 
+If using httpd development version 2.3 plus APR 2.0, replace both 
+of these entries with the single (combined) entry;
+
+    # ADD LINK32 libapr-2.lib ...
+
 To build on windows out-of-tree as a DSO, simply
 
     set APACHE2_HOME=c:\path\to\Apache2.2
@@ -139,7 +144,7 @@ existing configurations:
 i.   All directives have been renamed in order to use a common prefix "FCGID".
      Underscores in directive names have been eliminated in favor of
      CamelCase. The old directive names will still work but are deprecated.
-     To fix your configuration you can use the sed script tools/fixconf.sed.
+     To fix your configuration you can use the sed script build/fixconf.sed.
      A table with old and new directive names is included in CHANGES-FCGID.
 
 ii.  Some directives which could be placed inside <VirtualHost > but were

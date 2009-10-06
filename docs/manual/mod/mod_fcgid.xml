@@ -69,7 +69,7 @@
       <li>All directives have been renamed in order to use a common prefix "FCGID".
       Underscores in directive names have been eliminated in favor of
       CamelCase. The old directive names will still work but are deprecated.
-      To fix your configuration you can use the sed script tools/fixconf.sed.
+      To fix your configuration you can use the sed script build/fixconf.sed.
       The following table contains old and new directive names:
       <table border="1" style="zebra">
         <tr><th>Old Name</th><th>New Name</th></tr>
