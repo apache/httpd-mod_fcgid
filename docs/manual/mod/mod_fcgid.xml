@@ -298,15 +298,6 @@
       Allow from all<br />
     </indent>
     &lt;/Location&gt;<br />
-    <br />
-    &lt;FilesMatch /usr/local/phpapp/phpinfo.php&gt;
-    <indent>
-      # Customize the next two directives for your requirements.<br />
-      Order allow,deny<br />
-      Allow from all<br />
-    </indent>
-    &lt;/FilesMatch&gt;
-
     </example>
 
     <example><title>PHP wrapper script - /usr/local/bin/php-wrapper</title>
