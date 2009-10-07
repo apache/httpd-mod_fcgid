@@ -1,7 +1,7 @@
 ##
 ##  Makefile.apxs -- Build procedure for mod_fcgid Apache module
 ##
-##  Do not use this target; build from the mod_fcgid dir root
+##  Do not use the .apxs makefile, run ./configure.apxs and build from 'Makefile'
 ##
  
 # top_builddir and top_srcdir are misnomers, because build/*.mk scripts
