@@ -45,12 +45,13 @@ install-conf:
 	    if test -f $$i; then \
 		(awk -f $(fcgid_srcdir)/build/addloadexample.awk \
 		    -v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
-		    -v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf \
 		    $$i > $$i.new && \
 		 mv $$i $$i.bak && mv $$i.new $$i \
 	        ) || true; \
 	    fi; \
 	done
+#	Todo - add this flag to awk above, if/when this Include is distributed
+#		    -v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf
 
 install-conf-unused:
 	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_sysconfdir)/extra \
