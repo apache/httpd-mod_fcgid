@@ -426,7 +426,7 @@ handle_request(request_rec * r, int role, const char *argv0,
                                    ap_pass_brigade(r->output_filters,
                                                    brigade_stdout)) !=
         APR_SUCCESS) {
-        if (rv != APR_ECONNABORTED) {
+        if (!APR_STATUS_IS_ECONNABORTED(rv)) {
             ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                           "mod_fcgid: ap_pass_brigade failed in handle_request function");
         }
