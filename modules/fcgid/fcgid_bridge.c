@@ -426,8 +426,10 @@ handle_request(request_rec * r, int role, const char *argv0,
                                    ap_pass_brigade(r->output_filters,
                                                    brigade_stdout)) !=
         APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
-                      "mod_fcgid: ap_pass_brigade failed in handle_request function");
+        if (rv != APR_ECONNABORTED) {
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                          "mod_fcgid: ap_pass_brigade failed in handle_request function");
+        }
         return HTTP_INTERNAL_SERVER_ERROR;
     }
 
