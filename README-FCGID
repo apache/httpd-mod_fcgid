@@ -150,8 +150,13 @@ i.   All directives have been renamed in order to use a common prefix "Fcgid".
 ii.  Some directives which could be placed inside <VirtualHost > but were
      ignored before now result in configuration errors.  As before, these 
      directives must be set at global scope to have the desired effect.
-     These include FcgidMaxProcesses, FcgidFixPathinfo, and
-     others.  (Consult CHANGES-FCGID for the complete list.)
+     The directives are FcgidBusyScanInterval, FcgidBusyTimeout,
+     FcgidMaxProcessesPerClass, FcgidDefaultMinProcessCount,
+     FcgidErrorScanInterval, FcgidIdleScanInterval, FcgidIdleTimeout,
+     FcgidMaxProcesses, FcgidFixPathinfo, FcgidProcessLifetime,
+     FcgidProcessTableFile, FcgidIPCDir, FcgidSpawnScore,
+     FcgidSpawnScoreUpLimit, FcgidTerminationScore, FcgidTimeScore, and 
+     FcgidZombieScanInterval.
 
 iii. Some directives which could be placed inside <VirtualHost > but were
      ignored before are now respected.  These include FcgidIdleTimeout,
@@ -160,15 +165,17 @@ iii. Some directives which could be placed inside <VirtualHost > but were
 
 iv.  Some directives which can optionally be placed inside <VirtualHost >
      were not inherited as expected in older releases.  This has been
-     corrected, and behavior will change for some configurations.  Affected
-     directives include FcgidIOTimeout, FcgidOutputBufferSize, and others.
-     (Consult CHANGES-FCGID for the complete list.)
+     corrected, and behavior will change for some configurations.  The 
+     affected directives are FcgidIOTimeout, FcgidConnectTimeout,
+     FcgidMaxRequestInMem, FcgidMaxRequestLen, FcgidMaxRequestsPerProcess,
+     and FcgidOutputBufferSize.
 
 v.   Some directives which can be placed inside <Directory >, <Location >,
      etc. were not inherited as expected in older releases.  This has been
-     corrected, and behavior will change for some configurations.  Affected
-     directives include FcgidWrapper and the AAA-related directives.  (Consult
-     CHANGES-FCGID for the complete list.)
+     corrected, and behavior will change for some configurations.  The affected
+     directives are FcgidAccessChecker, FcgidAccessCheckerAuthoritative,
+     FcgidAuthenticator, FcgidAuthenticatorAuthoritative, FcgidAuthorizer,
+     FcgidAuthorizerAuthoritative, and FcgidWrapper.
 
 Acknowledgements
 ----------------

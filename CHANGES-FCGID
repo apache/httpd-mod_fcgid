@@ -1,7 +1,8 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.3
 
-  *) Add FcgidCmdOptions directive.  [Jeff Trawick]
+  *) Add FcgidCmdOptions directive to associate some of the existing
+     configuration settings with a specific command.  [Jeff Trawick]
 
   *) Allow/respect virtual host settings for the following directives:
      FcgidBusyTimeout, FcgidMaxProcessesPerClass, FcgidMinProcessesPerClass,
@@ -15,12 +16,6 @@ Changes with mod_fcgid 2.3.2
 
   *) Fix a mod_fcgid 2.3.1 failure with <sys/mutex.h> when building for
      httpd 2.0.x on some platforms.  [Paul Howarth <paul city-fan.org>]
-
-  *) Merge mod_fcgid per-directory directives so that they can be inherited
-     or overridden within other containers as expected.  Affected directives:
-     FcgidAccessChecker, FcgidAccessCheckerAuthoritative, FcgidAuthenticator,
-     FcgidAuthenticatorAuthoritative, FcgidAuthorizer,
-     FcgidAuthorizerAuthoritative, and FcgidWrapper.  [Jeff Trawick]
 
   *) Termination of idle processes after inactivity timeout can now be 
      disabled by setting FcgidIdleTimeout to 0.  Termination of idle 
@@ -76,11 +71,10 @@ Changes with mod_fcgid 2.3.2
   *) Fix basic implementation of FcgidMaxRequestInMem and FcgidMaxRequestLen
      directives.  [Jeff Trawick]
 
-  *) Merge mod_fcgid server config/virtual host directives so that they can
-     be inherited or overridden within a virtual host as expected.  Affected
-     directives: FcgidIOTimeout, FcgidConnectTimeout,
-     FcgidMaxRequestInMem, FcgidMaxRequestLen, FcgidMaxRequestsPerProcess,
-     FcgidOutputBufferSize.  [Jeff Trawick]
+  *) Merge per-directory directives so that they can be inherited or
+     overridden within other containers as expected.  Merge server config/
+     virtual host directives so that they can be inherited or overridden
+     within a virtual host as expected. [Jeff Trawick]
 
   *) Use the virtual host settings for the request being processed instead
      of those of the first FastCGI request handled by this httpd child process.
@@ -88,15 +82,8 @@ Changes with mod_fcgid 2.3.2
      FcgidConnectTimeout, FcgidMaxRequestsPerProcess, and FcgidOutputBufferSize.
      [Jeff Trawick]
 
-  *) The following directives are no longer allowed in a virtual host
-     context: FcgidBusyScanInterval, FcgidBusyTimeout,
-     FcgidMaxProcessesPerClass, FcgidDefaultMinProcessCount,
-     FcgidErrorScanInterval, FcgidIdleScanInterval, FcgidIdleTimeout,
-     FcgidMaxProcesses, FcgidFixPathinfo, FcgidProcessLifetime,
-     FcgidProcessTableFile, FcgidIPCDir, FcgidSpawnScore,
-     FcgidSpawnScoreUpLimit, FcgidTerminationScore, FcgidTimeScore, and 
-     FcgidZombieScanInterval.  They were allowed but ignored in previous
-     releases.  [Jeff Trawick]
+  *) Directives which previously were ignored in a virtual host context are no
+     longer allowed.  [Jeff Trawick]
 
   *) Add an optional flag "virtual" to FcgidWrapper.
      If virtual is set, the URLs passed to the wrapper are not
