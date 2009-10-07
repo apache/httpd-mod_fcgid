@@ -64,39 +64,39 @@
   </div>
 <div id="quickview"><h3 class="directives">Directives</h3>
 <ul id="toc">
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidaccesschecker">FCGIDAccessChecker</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidaccesscheckerauthoritative">FCGIDAccessCheckerAuthoritative</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthenticator">FCGIDAuthenticator</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthenticatorauthoritative">FCGIDAuthenticatorAuthoritative</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthorizer">FCGIDAuthorizer</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthorizerauthoritative">FCGIDAuthorizerAuthoritative</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusyscaninterval">FCGIDBusyScanInterval</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusytimeout">FCGIDBusyTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidcmdoptions">FCGIDCmdOptions</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidconnecttimeout">FCGIDConnectTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgiderrorscaninterval">FCGIDErrorScanInterval</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidfixpathinfo">FCGIDFixPathinfo</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgididlescaninterval">FCGIDIdleScanInterval</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgididletimeout">FCGIDIdleTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidinitialenv">FCGIDInitialEnv</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidiotimeout">FCGIDIOTimeout</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidipcdir">FCGIDIPCDir</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocesses">FCGIDMaxProcesses</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestinmem">FCGIDMaxRequestInMem</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestlen">FCGIDMaxRequestLen</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidoutputbuffersize">FCGIDOutputBufferSize</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidpassheader">FCGIDPassHeader</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidprocesstablefile">FCGIDProcessTableFile</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscore">FCGIDSpawnScore</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidterminationscore">FCGIDTerminationScore</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidtimescore">FCGIDTimeScore</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidwrapper">FCGIDWrapper</a></li>
-<li><img alt="" src="../images/down.gif" /> <a href="#fcgidzombiescaninterval">FCGIDZombieScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidaccesschecker">FcgidAccessChecker</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidaccesscheckerauthoritative">FcgidAccessCheckerAuthoritative</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthenticator">FcgidAuthenticator</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthenticatorauthoritative">FcgidAuthenticatorAuthoritative</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthorizer">FcgidAuthorizer</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidauthorizerauthoritative">FcgidAuthorizerAuthoritative</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusyscaninterval">FcgidBusyScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidbusytimeout">FcgidBusyTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidcmdoptions">FcgidCmdOptions</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidconnecttimeout">FcgidConnectTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgiderrorscaninterval">FcgidErrorScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidfixpathinfo">FcgidFixPathinfo</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgididlescaninterval">FcgidIdleScanInterval</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgididletimeout">FcgidIdleTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidinitialenv">FcgidInitialEnv</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidiotimeout">FcgidIOTimeout</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidipcdir">FcgidIPCDir</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocesses">FcgidMaxProcesses</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxprocessesperclass">FcgidMaxProcessesPerClass</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestinmem">FcgidMaxRequestInMem</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestlen">FcgidMaxRequestLen</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidmaxrequestsperprocess">FcgidMaxRequestsPerProcess</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidoutputbuffersize">FcgidOutputBufferSize</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidpassheader">FcgidPassHeader</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidprocesstablefile">FcgidProcessTableFile</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscore">FcgidSpawnScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidterminationscore">FcgidTerminationScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidtimescore">FcgidTimeScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidwrapper">FcgidWrapper</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidzombiescaninterval">FcgidZombieScanInterval</a></li>
 </ul>
 <h3>Topics</h3>
 <ul id="topics">
@@ -117,7 +117,7 @@
     and should be considered when upgrading from the original version by
     Ryan Pan (Pan Qingfeng).
     <ul>
-      <li>All directives have been renamed in order to use a common prefix "FCGID".
+      <li>All directives have been renamed in order to use a common prefix "Fcgid".
       Underscores in directive names have been eliminated in favor of
       CamelCase. The old directive names will still work but are deprecated.
       To fix your configuration you can use the sed script build/fixconf.sed.
@@ -125,131 +125,131 @@
       <table class="bordered"><tr class="header"><th>Old Name</th><th>New Name</th></tr>
 <tr>
           <td><code class="directive">BusyScanInterval</code></td>
-          <td><code class="directive"><a href="#fcgidbusyscaninterval">FCGIDBusyScanInterval</a></code></td>
+          <td><code class="directive"><a href="#fcgidbusyscaninterval">FcgidBusyScanInterval</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">BusyTimeout</code></td>
-          <td><code class="directive"><a href="#fcgidbusytimeout">FCGIDBusyTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidbusytimeout">FcgidBusyTimeout</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">DefaultInitEnv</code></td>
-          <td><code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code></td>
+          <td><code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">DefaultMaxClassProcessCount</code></td>
-          <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FcgidMaxProcessesPerClass</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">DefaultMinClassProcessCount</code></td>
-          <td><code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code></td>
+          <td><code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">ErrorScanInterval</code></td>
-          <td><code class="directive"><a href="#fcgiderrorscaninterval">FCGIDErrorScanInterval</a></code></td> 
+          <td><code class="directive"><a href="#fcgiderrorscaninterval">FcgidErrorScanInterval</a></code></td> 
         </tr>
 <tr>
           <td><code class="directive">FastCgiAccessChecker</code></td>
-          <td><code class="directive"><a href="#fcgidaccesschecker">FCGIDAccessChecker</a></code></td>
+          <td><code class="directive"><a href="#fcgidaccesschecker">FcgidAccessChecker</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">FastCgiAccessCheckerAuthoritative</code></td>
-          <td><code class="directive"><a href="#fcgidaccesscheckerauthoritative">FCGIDAccessCheckerAuthoritative</a></code></td>
+          <td><code class="directive"><a href="#fcgidaccesscheckerauthoritative">FcgidAccessCheckerAuthoritative</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">FastCgiAuthenticator</code></td>
-          <td><code class="directive"><a href="#fcgidauthenticator">FCGIDAuthenticator</a></code></td>
+          <td><code class="directive"><a href="#fcgidauthenticator">FcgidAuthenticator</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">FastCgiAuthenticatorAuthoritative</code></td>
-          <td><code class="directive"><a href="#fcgidauthenticatorauthoritative">FCGIDAuthenticatorAuthoritative</a></code></td>
+          <td><code class="directive"><a href="#fcgidauthenticatorauthoritative">FcgidAuthenticatorAuthoritative</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">FastCgiAuthorizer</code></td>
-          <td><code class="directive"><a href="#fcgidauthorizer">FCGIDAuthorizer</a></code></td>
+          <td><code class="directive"><a href="#fcgidauthorizer">FcgidAuthorizer</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">FastCgiAuthorizerAuthoritative</code></td>
-          <td><code class="directive"><a href="#fcgidauthorizerauthoritative">FCGIDAuthorizerAuthoritative</a></code></td>
+          <td><code class="directive"><a href="#fcgidauthorizerauthoritative">FcgidAuthorizerAuthoritative</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">FCGIWrapper</code></td>
-          <td><code class="directive"><a href="#fcgidwrapper">FCGIDWrapper</a></code></td>
+          <td><code class="directive"><a href="#fcgidwrapper">FcgidWrapper</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">IdleScanInterval</code></td>
-          <td><code class="directive"><a href="#fcgididlescaninterval">FCGIDIdleScanInterval</a></code></td>
+          <td><code class="directive"><a href="#fcgididlescaninterval">FcgidIdleScanInterval</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">IdleTimeout</code></td>
-          <td><code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">IPCCommTimeout</code></td>
-          <td><code class="directive"><a href="#fcgidiotimeout">FCGIDIOTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidiotimeout">FcgidIOTimeout</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">IPCConnectTimeout</code></td>
-          <td><code class="directive"><a href="#fcgidconnecttimeout">FCGIDConnectTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidconnecttimeout">FcgidConnectTimeout</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">MaxProcessCount</code></td>
-          <td><code class="directive"><a href="#fcgidmaxprocesses">FCGIDMaxProcesses</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocesses">FcgidMaxProcesses</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">MaxRequestInMem</code></td>
-          <td><code class="directive"><a href="#fcgidmaxrequestinmem">FCGIDMaxRequestInMem</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestinmem">FcgidMaxRequestInMem</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">MaxRequestLen</code></td>
-          <td><code class="directive"><a href="#fcgidmaxrequestlen">FCGIDMaxRequestLen</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestlen">FcgidMaxRequestLen</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">MaxRequestsPerProcess</code></td>
-          <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FcgidMaxRequestsPerProcess</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">OutputBufferSize</code></td>
-          <td><code class="directive"><a href="#fcgidoutputbuffersize">FCGIDOutputBufferSize</a></code></td>
+          <td><code class="directive"><a href="#fcgidoutputbuffersize">FcgidOutputBufferSize</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">PassHeader</code></td>
-          <td><code class="directive"><a href="#fcgidpassheader">FCGIDPassHeader</a></code></td>
+          <td><code class="directive"><a href="#fcgidpassheader">FcgidPassHeader</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">PHP_Fix_Pathinfo_Enable</code></td>
-          <td><code class="directive"><a href="#fcgidfixpathinfo">FCGIDFixPathinfo</a></code></td>
+          <td><code class="directive"><a href="#fcgidfixpathinfo">FcgidFixPathinfo</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">ProcessLifeTime</code></td>
-          <td><code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code></td>
+          <td><code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">SharememPath</code></td>
-          <td><code class="directive"><a href="#fcgidprocesstablefile">FCGIDProcessTableFile</a></code></td>
+          <td><code class="directive"><a href="#fcgidprocesstablefile">FcgidProcessTableFile</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">SocketPath</code></td>
-          <td><code class="directive"><a href="#fcgidipcdir">FCGIDIPCDir</a></code></td>
+          <td><code class="directive"><a href="#fcgidipcdir">FcgidIPCDir</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">SpawnScore</code></td>
-          <td><code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code></td>
+          <td><code class="directive"><a href="#fcgidspawnscore">FcgidSpawnScore</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">SpawnScoreUpLimit</code></td>
-          <td><code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code></td>
+          <td><code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">TerminationScore</code></td>
-          <td><code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code></td>
+          <td><code class="directive"><a href="#fcgidterminationscore">FcgidTerminationScore</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">TimeScore</code></td>
-          <td><code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code></td>
+          <td><code class="directive"><a href="#fcgidtimescore">FcgidTimeScore</a></code></td>
         </tr>
 <tr class="odd">
           <td><code class="directive">ZombieScanInterval</code></td>
-          <td><code class="directive"><a href="#fcgidzombiescaninterval">FCGIDZombieScanInterval</a></code></td>
+          <td><code class="directive"><a href="#fcgidzombiescaninterval">FcgidZombieScanInterval</a></code></td>
         </tr>
 </table>
       </li>
@@ -311,12 +311,12 @@
     </code></p></div>
 
     <p>PHP applications are usually configured using the
-    <code class="directive"><a href="#fcgidwrapper">FCGIDWrapper</a></code> directive
+    <code class="directive"><a href="#fcgidwrapper">FcgidWrapper</a></code> directive
     and a corresponding wrapper script.  The wrapper script can be 
     an appropriate place to define any environment variables required
     by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>
     or anything else.  (Environment variables can also be set with
-    <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>,
+    <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>,
     but they then apply to all applications.)</p>
 
     <p>Here is an example that uses a wrapper script to invoke PHP:</p>
@@ -330,20 +330,20 @@
     </code></p></div>
 
     <div class="example"><h3>Configuration directives</h3><p><code>
-    # FCGIDMaxRequestsPerProcess should be &lt;= PHP_FCGI_MAX_REQUESTS<br />
+    # FcgidMaxRequestsPerProcess should be &lt;= PHP_FCGI_MAX_REQUESTS<br />
     # The example PHP wrapper script overrides the default PHP setting.<br />
-    FCGIDMaxRequestsPerProcess 10000<br />
+    FcgidMaxRequestsPerProcess 10000<br />
     <br />
     # Uncomment the following line if cgi.fix_pathinfo is set to 1 in<br />
     # php.ini:<br />
-    # FCGIDFixPathinfo 1<br />
+    # FcgidFixPathinfo 1<br />
     <br />
     Alias /phpapp/ /usr/local/phpapp/<br />
     &lt;Location /phpapp/&gt;<br />
     <span class="indent">
       AddHandler fcgid-script .php<br />
       Options +ExecCGI<br />
-      FCGIDWrapper /usr/local/bin/php-wrapper .php<br />
+      FcgidWrapper /usr/local/bin/php-wrapper .php<br />
       <br />
       # Customize the next two directives for your requirements.<br />
       Order allow,deny<br />
@@ -375,7 +375,7 @@
     resources.  Alternatively, <code>PHP_FCGI_MAX_REQUESTS</code> can
     be set to a much higher value than the default to reduce the
     frequency of this problem.
-    <code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code>
+    <code class="directive"><a href="#fcgidmaxrequestsperprocess">FcgidMaxRequestsPerProcess</a></code>
     can be set to a value less than or equal to
     <code>PHP_FCGI_MAX_REQUESTS</code> to resolve the problem.</p>
 
@@ -399,15 +399,15 @@
     <table class="bordered"><tr class="header"><th>Type of control</th><th>Directive</th></tr>
 <tr>
         <td>global limit on number of processes</td>
-        <td><code class="directive"><a href="#fcgidmaxprocesses">FCGIDMaxProcesses</a></code></td>
+        <td><code class="directive"><a href="#fcgidmaxprocesses">FcgidMaxProcesses</a></code></td>
       </tr>
 <tr class="odd">
         <td>limit on number of processes per application</td>
-        <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></code></td>
+        <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FcgidMaxProcessesPerClass</a></code></td>
       </tr>
 <tr>
         <td>limit on rate of spawning new application processes</td>
-        <td><code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code> and
+        <td><code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code> and
         other score-related directives</td>
       </tr>
 </table>
@@ -418,28 +418,28 @@
     <table class="bordered"><tr class="header"><th>Type of control</th><th>Directive</th></tr>
 <tr>
         <td>termination after an idle period</td>
-        <td><code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code></td>
+        <td><code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code></td>
       </tr>
 <tr class="odd">
         <td>termination after it handles a certain number of requests</td>
-        <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code></td>
+        <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FcgidMaxRequestsPerProcess</a></code></td>
       </tr>
 <tr>
         <td>termination after a certain lifetime</td>
-        <td><code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifetime</a></code></td>
+        <td><code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifetime</a></code></td>
       </tr>
 </table>
 
     <div class="note"><h3>Note</h3>
     <p>Certain settings or other concepts that depend on the virtual host,
-    such as <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>
+    such as <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>
     or process classes, distinguish between virtual hosts only if they
     have distinct server names.  (See the <code class="directive">ServerName</code>
     documentation for more information.) In the case of
-    <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>, if two
+    <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>, if two
     virtual hosts have the same server name but different environments as
     defined by 
-    <code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code>, the 
+    <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>, the 
     environment used for a particular request will be that defined for the
     virtual host of the request that caused the FastCGI process to be 
     started.</p>
@@ -447,10 +447,10 @@
 
   </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDAccessChecker" id="FCGIDAccessChecker">FCGIDAccessChecker</a> <a name="fcgidaccesschecker" id="fcgidaccesschecker">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidAccessChecker" id="FcgidAccessChecker">FcgidAccessChecker</a> <a name="fcgidaccesschecker" id="fcgidaccesschecker">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>full path to FastCGI access checker</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDAccessChecker <em>command</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAccessChecker <em>command</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
@@ -482,11 +482,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDAccessCheckerAuthoritative" id="FCGIDAccessCheckerAuthoritative">FCGIDAccessCheckerAuthoritative</a> <a name="fcgidaccesscheckerauthoritative" id="fcgidaccesscheckerauthoritative">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidAccessCheckerAuthoritative" id="FcgidAccessCheckerAuthoritative">FcgidAccessCheckerAuthoritative</a> <a name="fcgidaccesscheckerauthoritative" id="fcgidaccesscheckerauthoritative">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set to 'off' to allow access control to be passed along to lower modules upon failure</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDAccessCheckerAuthoritative <em>On|Off</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDAccessCheckerAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAccessCheckerAuthoritative <em>On|Off</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidAccessCheckerAuthoritative On</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -502,10 +502,10 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDAuthenticator" id="FCGIDAuthenticator">FCGIDAuthenticator</a> <a name="fcgidauthenticator" id="fcgidauthenticator">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidAuthenticator" id="FcgidAuthenticator">FcgidAuthenticator</a> <a name="fcgidauthenticator" id="fcgidauthenticator">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>full path to FastCGI authenticator</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDAuthenticator <em>command</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAuthenticator <em>command</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
@@ -544,11 +544,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDAuthenticatorAuthoritative" id="FCGIDAuthenticatorAuthoritative">FCGIDAuthenticatorAuthoritative</a> <a name="fcgidauthenticatorauthoritative" id="fcgidauthenticatorauthoritative">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidAuthenticatorAuthoritative" id="FcgidAuthenticatorAuthoritative">FcgidAuthenticatorAuthoritative</a> <a name="fcgidauthenticatorauthoritative" id="fcgidauthenticatorauthoritative">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set to 'off' to allow authentication to be passed along to lower modules upon failure</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDAuthenticatorAuthoritative <em>On|Off</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDAuthenticatorAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAuthenticatorAuthoritative <em>On|Off</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidAuthenticatorAuthoritative On</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -564,10 +564,10 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDAuthorizer" id="FCGIDAuthorizer">FCGIDAuthorizer</a> <a name="fcgidauthorizer" id="fcgidauthorizer">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidAuthorizer" id="FcgidAuthorizer">FcgidAuthorizer</a> <a name="fcgidauthorizer" id="fcgidauthorizer">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>full path to FastCGI authorizer</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDAuthorizer <em>command</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAuthorizer <em>command</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
@@ -604,11 +604,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDAuthorizerAuthoritative" id="FCGIDAuthorizerAuthoritative">FCGIDAuthorizerAuthoritative</a> <a name="fcgidauthorizerauthoritative" id="fcgidauthorizerauthoritative">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidAuthorizerAuthoritative" id="FcgidAuthorizerAuthoritative">FcgidAuthorizerAuthoritative</a> <a name="fcgidauthorizerauthoritative" id="fcgidauthorizerauthoritative">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set to 'off' to allow authorization to be passed along to lower modules upon failure</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDAuthorizerAuthoritative <em>On|Off</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDAuthorizerAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAuthorizerAuthoritative <em>On|Off</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidAuthorizerAuthoritative On</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -624,34 +624,34 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDBusyScanInterval" id="FCGIDBusyScanInterval">FCGIDBusyScanInterval</a> <a name="fcgidbusyscaninterval" id="fcgidbusyscaninterval">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidBusyScanInterval" id="FcgidBusyScanInterval">FcgidBusyScanInterval</a> <a name="fcgidbusyscaninterval" id="fcgidbusyscaninterval">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for busy timeout process</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDBusyScanInterval <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDBusyScanInterval 120</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidBusyScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidBusyScanInterval 120</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>The module performs the 
-      <code class="directive"><a href="#fcgidbusytimeout">FCGIDBusyTimeout</a></code> check at this 
+      <code class="directive"><a href="#fcgidbusytimeout">FcgidBusyTimeout</a></code> check at this 
       interval.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDBusyTimeout" id="FCGIDBusyTimeout">FCGIDBusyTimeout</a> <a name="fcgidbusytimeout" id="fcgidbusytimeout">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidBusyTimeout" id="FcgidBusyTimeout">FcgidBusyTimeout</a> <a name="fcgidbusytimeout" id="fcgidbusytimeout">Directive</a></h2>
 <table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a FastCGI application will be killed after handling a request for FCGIDBusyTimeout</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDBusyTimeout <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDBusyTimeout 300</code></td></tr>
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>a FastCGI application will be killed after handling a request for FcgidBusyTimeout</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidBusyTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidBusyTimeout 300</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This is the maximum time limit for request handling.  If a FastCGI
-      request does not complete within FCGIDBusyTimeout seconds, it will be
+      request does not complete within FcgidBusyTimeout seconds, it will be
       subject to termination.  Because the check is performed at the
-      interval defined by <code class="directive"><a href="#fcgidbusyscaninterval">FCGIDBusyScanInterval</a></code>,
+      interval defined by <code class="directive"><a href="#fcgidbusyscaninterval">FcgidBusyScanInterval</a></code>,
       request handling may be allowed to proceed for a longer period of time.</p>
 
       <p>The purpose of this directive is to terminate hung applications.
@@ -660,11 +660,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDCmdOptions" id="FCGIDCmdOptions">FCGIDCmdOptions</a> <a name="fcgidcmdoptions" id="fcgidcmdoptions">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidCmdOptions" id="FcgidCmdOptions">FcgidCmdOptions</a> <a name="fcgidcmdoptions" id="fcgidcmdoptions">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Set processing options for a FastCGI
     command</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDCmdOptions <em>command</em> <em>option</em>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidCmdOptions <em>command</em> <em>option</em>
     [<em>option</em>] ...</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -683,35 +683,35 @@
       <table class="bordered"><tr class="header"><th>Option name and syntax</th><th>Corresponding directive</th></tr>
 <tr>
           <td><code>ConnectTimeout <em>seconds</em></code></td>
-          <td><code class="directive"><a href="#fcgidconnecttimeout">FCGIDConnectTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidconnecttimeout">FcgidConnectTimeout</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>IdleTimeout <em>seconds</em></code></td>
-          <td><code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code></td>
         </tr>
 <tr>
           <td><code>InitialEnv <em>name[=value]</em></code></td>
-          <td><code class="directive"><a href="#fcgidinitialenv">FCGIDInitialEnv</a></code></td>
+          <td><code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>IOTimeout <em>seconds</em></code></td>
-          <td><code class="directive"><a href="#fcgidiotimeout">FCGIDIOTimeout</a></code></td>
+          <td><code class="directive"><a href="#fcgidiotimeout">FcgidIOTimeout</a></code></td>
         </tr>
 <tr>
           <td><code>MaxProcesses <em>value</em></code></td>
-          <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FCGIDMaxProcessesPerClass</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxprocessesperclass">FcgidMaxProcessesPerClass</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>MaxProcessLifeTime <em>seconds</em></code></td>
-          <td><code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code></td>
+          <td><code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code></td>
         </tr>
 <tr>
           <td><code>MaxRequestsPerProcess <em>value</em></code></td>
-          <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FCGIDMaxRequestsPerProcess</a></code></td>
+          <td><code class="directive"><a href="#fcgidmaxrequestsperprocess">FcgidMaxRequestsPerProcess</a></code></td>
         </tr>
 <tr class="odd">
           <td><code>MinProcesses <em>value</em></code></td>
-          <td><code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code></td>
+          <td><code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code></td>
         </tr>
 </table>
 
@@ -719,7 +719,7 @@
       the <code>InitialEnv</code> option.</p>
 
       <div class="example"><h3>Example</h3><p><code>
-      FCGIDCmdOptions /usr/local/bin/wrapper \<br />
+      FcgidCmdOptions /usr/local/bin/wrapper \<br />
       <span class="indent">
       InitialEnv MAX_REQUESTS=2000 \<br />
       MaxRequestsPerProcess 2000 \<br />
@@ -733,18 +733,18 @@
       terminate it after it has handled 2000 requests, and I/O
       operations will time out after 90 seconds.  Directives
       corresponding to other options, such as 
-      <code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code> or
-      <code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code>,
+      <code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code> or
+      <code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code>,
       will be ignored for this command; defaults will be used for options
-      not specified on <code class="directive">FCGIDCmdOptions</code>.</p>
+      not specified on <code class="directive">FcgidCmdOptions</code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDConnectTimeout" id="FCGIDConnectTimeout">FCGIDConnectTimeout</a> <a name="fcgidconnecttimeout" id="fcgidconnecttimeout">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidConnectTimeout" id="FcgidConnectTimeout">FcgidConnectTimeout</a> <a name="fcgidconnecttimeout" id="fcgidconnecttimeout">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Connect timeout to FastCGI server</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDConnectTimeout <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDConnectTimeout 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidConnectTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidConnectTimeout 3</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -756,16 +756,16 @@
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDErrorScanInterval" id="FCGIDErrorScanInterval">FCGIDErrorScanInterval</a> <a name="fcgiderrorscaninterval" id="fcgiderrorscaninterval">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidErrorScanInterval" id="FcgidErrorScanInterval">FcgidErrorScanInterval</a> <a name="fcgiderrorscaninterval" id="fcgiderrorscaninterval">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for exited process</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDErrorScanInterval <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDErrorScanInterval 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidErrorScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidErrorScanInterval 3</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -773,50 +773,50 @@
       <p>This is the interval at which the module will handle
       pending process termination.  Termination is pending for
       any processes which have exceeded 
-      <code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code> or
-      <code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code>.</p>
+      <code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code> or
+      <code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDFixPathinfo" id="FCGIDFixPathinfo">FCGIDFixPathinfo</a> <a name="fcgidfixpathinfo" id="fcgidfixpathinfo">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidFixPathinfo" id="FcgidFixPathinfo">FcgidFixPathinfo</a> <a name="fcgidfixpathinfo" id="fcgidfixpathinfo">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Mirror the PHP <code>cgi.fix_pathinfo</code>
     setting</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDFixPathinfo 1</code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDFixPathinfo 0</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidFixPathinfo 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidFixPathinfo 0</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This directive enables special <code>SCRIPT_NAME</code> 
       processing which allows PHP to provide additional path information.
-      The setting of <code class="directive">FCGIDFixPathinfo</code>
+      The setting of <code class="directive">FcgidFixPathinfo</code>
       should mirror the <code>cgi.fix_pathinfo</code> setting in 
       <code>php.ini</code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDIdleScanInterval" id="FCGIDIdleScanInterval">FCGIDIdleScanInterval</a> <a name="fcgididlescaninterval" id="fcgididlescaninterval">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidIdleScanInterval" id="FcgidIdleScanInterval">FcgidIdleScanInterval</a> <a name="fcgididlescaninterval" id="fcgididlescaninterval">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for idle timeout process</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIdleScanInterval <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIdleScanInterval 120</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidIdleScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidIdleScanInterval 120</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This is the interval at which the module will search for
       processes which have exceeded 
-      <code class="directive"><a href="#fcgididletimeout">FCGIDIdleTimeout</a></code> or
-      <code class="directive"><a href="#fcgidprocesslifetime">FCGIDProcessLifeTime</a></code>.</p>
+      <code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code> or
+      <code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code>.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDIdleTimeout" id="FCGIDIdleTimeout">FCGIDIdleTimeout</a> <a name="fcgididletimeout" id="fcgididletimeout">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidIdleTimeout" id="FcgidIdleTimeout">FcgidIdleTimeout</a> <a name="fcgididletimeout" id="fcgididletimeout">Directive</a></h2>
 <table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>An idle FastCGI application will be killed after FCGIDIdleTimeout</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIdleTimeout <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIdleTimeout 300</code></td></tr>
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>An idle FastCGI application will be killed after FcgidIdleTimeout</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidIdleTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidIdleTimeout 300</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -824,41 +824,41 @@
       <p>Application processes which have not handled a request for this 
       period of time will be terminated, if the number of processses for the
       class exceeds
-      <code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code>.
+      <code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDInitialEnv" id="FCGIDInitialEnv">FCGIDInitialEnv</a> <a name="fcgidinitialenv" id="fcgidinitialenv">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidInitialEnv" id="FcgidInitialEnv">FcgidInitialEnv</a> <a name="fcgidinitialenv" id="fcgidinitialenv">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>an environment variable name and optional value to pass to FastCGI.</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDInitialEnv <em>name</em> [ <em>value</em> ]</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidInitialEnv <em>name</em> [ <em>value</em> ]</code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>Use <code class="directive">FCGIDInitialEnv</code> to define environment 
+      <p>Use <code class="directive">FcgidInitialEnv</code> to define environment 
       variables to pass to the FastCGI application.  This directive can 
       be used multiple times.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDIOTimeout" id="FCGIDIOTimeout">FCGIDIOTimeout</a> <a name="fcgidiotimeout" id="fcgidiotimeout">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidIOTimeout" id="FcgidIOTimeout">FcgidIOTimeout</a> <a name="fcgidiotimeout" id="fcgidiotimeout">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Communication timeout to FastCGI server</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIOTimeout <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIOTimeout 40</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidIOTimeout <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidIOTimeout 40</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -874,16 +874,16 @@
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDIPCDir" id="FCGIDIPCDir">FCGIDIPCDir</a> <a name="fcgidipcdir" id="fcgidipcdir">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidIPCDir" id="FcgidIPCDir">FcgidIPCDir</a> <a name="fcgidipcdir" id="fcgidipcdir">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>directory for AF_UNIX sockets (Unix) or pipes (Windows)</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDIPCDir <em>pathname</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDIPCDir logs/fcgidsock</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidIPCDir <em>pathname</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidIPCDir logs/fcgidsock</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -895,11 +895,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMaxProcesses" id="FCGIDMaxProcesses">FCGIDMaxProcesses</a> <a name="fcgidmaxprocesses" id="fcgidmaxprocesses">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidMaxProcesses" id="FcgidMaxProcesses">FcgidMaxProcesses</a> <a name="fcgidmaxprocesses" id="fcgidmaxprocesses">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum number of FastCGI application processes</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxProcesses <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxProcesses 1000</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidMaxProcesses <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidMaxProcesses 1000</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -909,11 +909,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMaxProcessesPerClass" id="FCGIDMaxProcessesPerClass">FCGIDMaxProcessesPerClass</a> <a name="fcgidmaxprocessesperclass" id="fcgidmaxprocessesperclass">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidMaxProcessesPerClass" id="FcgidMaxProcessesPerClass">FcgidMaxProcessesPerClass</a> <a name="fcgidmaxprocessesperclass" id="fcgidmaxprocessesperclass">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max process count of one class of FastCGI application</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxProcessesPerClass <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxProcessesPerClass 100</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidMaxProcessesPerClass <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidMaxProcessesPerClass 100</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -925,16 +925,16 @@
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMaxRequestInMem" id="FCGIDMaxRequestInMem">FCGIDMaxRequestInMem</a> <a name="fcgidmaxrequestinmem" id="fcgidmaxrequestinmem">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidMaxRequestInMem" id="FcgidMaxRequestInMem">FcgidMaxRequestInMem</a> <a name="fcgidmaxrequestinmem" id="fcgidmaxrequestinmem">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum size of a request which will be held in memory</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxRequestInMem <em>bytes</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxRequestInMem 65536</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidMaxRequestInMem <em>bytes</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidMaxRequestInMem 65536</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -942,17 +942,17 @@
       <p>This module reads the entire request body from the client
       before sending it to the application.  Normally the request body
       will be stored in memory.  Once the amount of request body read
-      from the client exceeds <code class="directive">FCGIDMaxRequestInMem</code>
+      from the client exceeds <code class="directive">FcgidMaxRequestInMem</code>
       bytes, the remainder of the request body will be stored in a 
       temporary file.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMaxRequestLen" id="FCGIDMaxRequestLen">FCGIDMaxRequestLen</a> <a name="fcgidmaxrequestlen" id="fcgidmaxrequestlen">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidMaxRequestLen" id="FcgidMaxRequestLen">FcgidMaxRequestLen</a> <a name="fcgidmaxrequestlen" id="fcgidmaxrequestlen">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum HTTP request length</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxRequestLen <em>bytes</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxRequestLen 1073741824</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidMaxRequestLen <em>bytes</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidMaxRequestLen 1073741824</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -962,11 +962,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMaxRequestsPerProcess" id="FCGIDMaxRequestsPerProcess">FCGIDMaxRequestsPerProcess</a> <a name="fcgidmaxrequestsperprocess" id="fcgidmaxrequestsperprocess">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidMaxRequestsPerProcess" id="FcgidMaxRequestsPerProcess">FcgidMaxRequestsPerProcess</a> <a name="fcgidmaxrequestsperprocess" id="fcgidmaxrequestsperprocess">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Max requests handled by each FastCGI application</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMaxRequestsPerProcess <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMaxRequestsPerProcess 0</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidMaxRequestsPerProcess <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidMaxRequestsPerProcess 0</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -987,23 +987,23 @@
       <div class="note"><h3>Note</h3>
       <p>If this is set such that frequent process creation will be
       required, you will likely need to adjust 
-      <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
+      <code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code>
       or other score-related directives to allow more frequent process
       creation.</p>
       </div>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDMinProcessesPerClass" id="FCGIDMinProcessesPerClass">FCGIDMinProcessesPerClass</a> <a name="fcgidminprocessesperclass" id="fcgidminprocessesperclass">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidMinProcessesPerClass" id="FcgidMinProcessesPerClass">FcgidMinProcessesPerClass</a> <a name="fcgidminprocessesperclass" id="fcgidminprocessesperclass">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Min process count of one class of FastCGI application</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDMinProcessesPerClass <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDMinProcessesPerClass 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidMinProcessesPerClass <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidMinProcessesPerClass 3</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1015,16 +1015,16 @@
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDOutputBufferSize" id="FCGIDOutputBufferSize">FCGIDOutputBufferSize</a> <a name="fcgidoutputbuffersize" id="fcgidoutputbuffersize">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidOutputBufferSize" id="FcgidOutputBufferSize">FcgidOutputBufferSize</a> <a name="fcgidoutputbuffersize" id="fcgidoutputbuffersize">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>CGI output buffer size</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDOutputBufferSize <em>bytes</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDOutputBufferSize 65536</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidOutputBufferSize <em>bytes</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidOutputBufferSize 65536</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1034,10 +1034,10 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDPassHeader" id="FCGIDPassHeader">FCGIDPassHeader</a> <a name="fcgidpassheader" id="fcgidpassheader">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidPassHeader" id="FcgidPassHeader">FcgidPassHeader</a> <a name="fcgidpassheader" id="fcgidpassheader">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Header name which will be passed to FastCGI as environment variable.</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDPassHeader <em>name</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidPassHeader <em>name</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -1062,11 +1062,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDProcessLifeTime" id="FCGIDProcessLifeTime">FCGIDProcessLifeTime</a> <a name="fcgidprocesslifetime" id="fcgidprocesslifetime">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidProcessLifeTime" id="FcgidProcessLifeTime">FcgidProcessLifeTime</a> <a name="fcgidprocesslifetime" id="fcgidprocesslifetime">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>maximum FastCGI application process lifetime</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDProcessLifeTime <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDProcessLifeTime 3600</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidProcessLifeTime <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidProcessLifeTime 3600</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1074,21 +1074,21 @@
       <p>Idle application processes which have existed for greater
       than this time will be terminated, if the number of processses for the
       class exceeds
-      <code class="directive"><a href="#fcgidminprocessesperclass">FCGIDMinProcessesPerClass</a></code>.
+      <code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
-      <code class="directive"><a href="#fcgidcmdoptions">FCGIDCmdOptions</a></code> to apply
+      <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDProcessTableFile" id="FCGIDProcessTableFile">FCGIDProcessTableFile</a> <a name="fcgidprocesstablefile" id="fcgidprocesstablefile">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidProcessTableFile" id="FcgidProcessTableFile">FcgidProcessTableFile</a> <a name="fcgidprocesstablefile" id="fcgidprocesstablefile">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>shared memory file path</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDProcessTableFile <em>pathname</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDProcessTableFile logs/fcgid_shm</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidProcessTableFile <em>pathname</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidProcessTableFile logs/fcgid_shm</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1099,28 +1099,28 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDSpawnScore" id="FCGIDSpawnScore">FCGIDSpawnScore</a> <a name="fcgidspawnscore" id="fcgidspawnscore">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidSpawnScore" id="FcgidSpawnScore">FcgidSpawnScore</a> <a name="fcgidspawnscore" id="fcgidspawnscore">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Each spawn adds this value to the process activity score.</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDSpawnScore <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDSpawnScore 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidSpawnScore <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidSpawnScore 1</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Lower values of this directive increase the allowed spawn rate.</p>
 
-      <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
+      <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code>
       directive for more information.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDSpawnScoreUpLimit" id="FCGIDSpawnScoreUpLimit">FCGIDSpawnScoreUpLimit</a> <a name="fcgidspawnscoreuplimit" id="fcgidspawnscoreuplimit">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidSpawnScoreUpLimit" id="FcgidSpawnScoreUpLimit">FcgidSpawnScoreUpLimit</a> <a name="fcgidspawnscoreuplimit" id="fcgidspawnscoreuplimit">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Maximum value of the process activity score which allows
     a spawn to occur</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDSpawnScoreUpLimit <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDSpawnScoreUpLimit 10</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidSpawnScoreUpLimit <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidSpawnScoreUpLimit 10</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1130,34 +1130,34 @@
       placing too much load on the system, particularly for applications that
       are repeatedly exiting abnormally.</p>
 
-      <p>The value of <code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code>
+      <p>The value of <code class="directive"><a href="#fcgidspawnscore">FcgidSpawnScore</a></code>
       is added to the score for every spawned application process.  The value of 
-      <code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code> is added
+      <code class="directive"><a href="#fcgidterminationscore">FcgidTerminationScore</a></code> is added
       to the score for every terminated application process.  The value of
-      <code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code> is subtracted
+      <code class="directive"><a href="#fcgidtimescore">FcgidTimeScore</a></code> is subtracted
       from the score every second.</p>
 
       <p>When the current score is higher than the value of
-      <code class="directive">FCGIDSpawnScoreUpLimit</code>, no additional application
+      <code class="directive">FcgidSpawnScoreUpLimit</code>, no additional application
       processes will be spawned; subsequent requests must wait until an existing 
       process is free or until the score decreases below the limit.</p>
 
       <p>If the limit is reached under normal load, it may not be sufficient to
       simply increase the limit, as that would only delay the amount of time 
       before the limit is reached again.  Decrease the value of 
-      <code class="directive"><a href="#fcgidspawnscore">FCGIDSpawnScore</a></code> and/or 
-      <code class="directive"><a href="#fcgidterminationscore">FCGIDTerminationScore</a></code>, or
-      increase the value of <code class="directive"><a href="#fcgidtimescore">FCGIDTimeScore</a></code>,
+      <code class="directive"><a href="#fcgidspawnscore">FcgidSpawnScore</a></code> and/or 
+      <code class="directive"><a href="#fcgidterminationscore">FcgidTerminationScore</a></code>, or
+      increase the value of <code class="directive"><a href="#fcgidtimescore">FcgidTimeScore</a></code>,
       to allow a higher rate of spawning.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDTerminationScore" id="FCGIDTerminationScore">FCGIDTerminationScore</a> <a name="fcgidterminationscore" id="fcgidterminationscore">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidTerminationScore" id="FcgidTerminationScore">FcgidTerminationScore</a> <a name="fcgidterminationscore" id="fcgidterminationscore">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Each terminated process adds this value to the process activity
     score.</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDTerminationScore <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDTerminationScore 2</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidTerminationScore <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidTerminationScore 2</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1166,32 +1166,32 @@
       values can be useful in some circumstances, such as allowing process 
       replacement without increasing the score.</p>
 
-      <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
+      <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code>
       directive for more information.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDTimeScore" id="FCGIDTimeScore">FCGIDTimeScore</a> <a name="fcgidtimescore" id="fcgidtimescore">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidTimeScore" id="FcgidTimeScore">FcgidTimeScore</a> <a name="fcgidtimescore" id="fcgidtimescore">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Amount subtracted from process activity score each 
     second</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDTimeScore <em>value</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDTimeScore 1</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidTimeScore <em>value</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidTimeScore 1</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Higher values of this directive increase the allowed spawn rate.</p>
 
-      <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FCGIDSpawnScoreUpLimit</a></code>
+      <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code>
       directive for more information.</p>
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDWrapper" id="FCGIDWrapper">FCGIDWrapper</a> <a name="fcgidwrapper" id="fcgidwrapper">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidWrapper" id="FcgidWrapper">FcgidWrapper</a> <a name="fcgidwrapper" id="fcgidwrapper">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>The CGI wrapper setting</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
@@ -1213,11 +1213,11 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
-<div class="directive-section"><h2><a name="FCGIDZombieScanInterval" id="FCGIDZombieScanInterval">FCGIDZombieScanInterval</a> <a name="fcgidzombiescaninterval" id="fcgidzombiescaninterval">Directive</a></h2>
+<div class="directive-section"><h2><a name="FcgidZombieScanInterval" id="FcgidZombieScanInterval">FcgidZombieScanInterval</a> <a name="fcgidzombiescaninterval" id="fcgidzombiescaninterval">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>scan interval for zombie process</td></tr>
-<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FCGIDZombieScanInterval <em>seconds</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FCGIDZombieScanInterval 3</code></td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidZombieScanInterval <em>seconds</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidZombieScanInterval 3</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
