@@ -191,7 +191,7 @@ _install:
 	    awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
 		-v LIBPATH=modules \
 !IFDEF HAVE_HTTPD_FCGID_CONF
-		-v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
+		-v EXAMPLECONF=conf/extra/httpd-fcgid.conf \
 !ENDIF
 		"$(httpd_origconffile)" > "$(httpd_origconffile).new" && \
 	    move "$(httpd_origconffile)" "$(httpd_origconffile).bak" && \
@@ -201,15 +201,15 @@ _install:
 	    awk -f build/addloadexample.awk -v MODULE=fcgid -v DSO=.so \
 		-v LIBPATH=modules \
 !IFDEF HAVE_HTTPD_FCGID_CONF
-		-v EXAMPLECONF=conf/extra/httpd_fcgid.conf \
+		-v EXAMPLECONF=conf/extra/httpd-fcgid.conf \
 !ENDIF
 		"$(httpd_conffile)" > "$(httpd_conffile).new" && \
 	    move "$(httpd_conffile)" "$(httpd_conffile).bak" && \
 	    move "$(httpd_conffile).new" $(httpd_conffile) \
 	)
 !IFDEF HAVE_HTTPD_FCGID_CONF
-	copy docs\conf\extra\httpd_fcgid.conf "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf" <.y
-	awk -f << docs\conf\extra\httpd_fcgid.conf > "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf"
+	copy docs\conf\extra\httpd-fcgid.conf "$(INSTDIR)\conf\original\extra\httpd-fcgid.conf" <.y
+	awk -f << docs\conf\extra\httpd-fcgid.conf > "$(INSTDIR)\conf\original\extra\httpd-fcgid.conf"
 /^\#@@LoadFcgidModules@@/ { next; }
 { sub(/@exp_runtimedir@/, "logs");
   sub(/@exp_sysconfdir@/, "conf");
@@ -218,9 +218,9 @@ _install:
   print $0;
 }
 <<
-	if not exist "$(INSTDIR)\conf\extra\httpd_fcgid.conf" \
-	    copy "$(INSTDIR)\conf\original\extra\httpd_fcgid.conf" \
-		 "$(INSTDIR)\conf\extra\httpd_fcgid.conf" <.y
+	if not exist "$(INSTDIR)\conf\extra\httpd-fcgid.conf" \
+	    copy "$(INSTDIR)\conf\original\extra\httpd-fcgid.conf" \
+		 "$(INSTDIR)\conf\extra\httpd-fcgid.conf" <.y
 !ENDIF
 	del .y
 	del .a
