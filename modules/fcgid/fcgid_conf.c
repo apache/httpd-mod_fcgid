@@ -374,7 +374,7 @@ const char *set_max_request_len(cmd_parms * cmd, void *dummy,
 
     if (strtoff(&config->max_request_len, arg)
         || config->max_request_len < 0) {
-        return "FCGIDMaxRequestLen requires a non-negative integer.";
+        return "FcgidMaxRequestLen requires a non-negative integer.";
     }
 
     config->max_request_len_set = 1;
@@ -536,7 +536,7 @@ const char *set_ipc_comm_timeout(cmd_parms * cmd, void *dummy,
         ap_get_module_config(s->module_config, &fcgid_module);
     config->ipc_comm_timeout = atol(arg);
     if (config->ipc_comm_timeout <= 0) {
-        return "FCGIDIOTimeout must be greater than 0";
+        return "FcgidIOTimeout must be greater than 0";
     }
     config->ipc_comm_timeout_set = 1;
     return NULL;
@@ -927,7 +927,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
     
     cmdname = ap_getword_conf(cmd->pool, &args);
     if (!strlen(cmdname)) {
-        return "A command must be specified for FCGIDCmdOptions";
+        return "A command must be specified for FcgidCmdOptions";
     }
 
     rv = apr_stat(&finfo, cmdname, APR_FINFO_NORM, cmd->temp_pool);
@@ -936,7 +936,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
     }
 
     if (!*args) {
-        return "At least one option must be specified for FCGIDCmdOptions";
+        return "At least one option must be specified for FcgidCmdOptions";
     }
 
     while (*args) {
@@ -1034,7 +1034,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         return apr_psprintf(cmd->pool,
-                            "Invalid option for FCGIDCmdOptions: %s",
+                            "Invalid option for FcgidCmdOptions: %s",
                             option);
     }
 
@@ -1063,7 +1063,7 @@ void get_cmd_options(request_rec *r, const char *cmdpath,
     if (cmd_specific) { /* ignore request context configuration */
         *cmdopts = *cmd_specific;
         /* pick up configuration for values that can't be configured
-         * on FCGIDCmdOptions
+         * on FcgidCmdOptions
          */
         cmdopts->busy_timeout = sconf->busy_timeout;
         return;

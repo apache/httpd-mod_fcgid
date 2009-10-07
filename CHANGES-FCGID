@@ -1,11 +1,11 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.3
 
-  *) Add FCGIDCmdOptions directive.  [Jeff Trawick]
+  *) Add FcgidCmdOptions directive.  [Jeff Trawick]
 
   *) Allow/respect virtual host settings for the following directives:
-     FCGIDBusyTimeout, FCGIDMaxProcessesPerClass, FCGIDMinProcessesPerClass,
-     FCGIDIdleTimeout, and FCGIDProcessLifetime.  [Jeff Trawick]
+     FcgidBusyTimeout, FcgidMaxProcessesPerClass, FcgidMinProcessesPerClass,
+     FcgidIdleTimeout, and FcgidProcessLifetime.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.2
 
@@ -18,17 +18,17 @@ Changes with mod_fcgid 2.3.2
 
   *) Merge mod_fcgid per-directory directives so that they can be inherited
      or overridden within other containers as expected.  Affected directives:
-     FCGIDAccessChecker, FCGIDAccessCheckerAuthoritative, FCGIDAuthenticator,
-     FCGIDAuthenticatorAuthoritative, FCGIDAuthorizer,
-     FCGIDAuthorizerAuthoritative, and FCGIDWrapper.  [Jeff Trawick]
+     FcgidAccessChecker, FcgidAccessCheckerAuthoritative, FcgidAuthenticator,
+     FcgidAuthenticatorAuthoritative, FcgidAuthorizer,
+     FcgidAuthorizerAuthoritative, and FcgidWrapper.  [Jeff Trawick]
 
   *) Termination of idle processes after inactivity timeout can now be 
-     disabled by setting FCGIDIdleTimeout to 0.  Termination of idle 
+     disabled by setting FcgidIdleTimeout to 0.  Termination of idle 
      processes based on the process lifetime can now be disabled by setting
-     FCGIDProcessLifeTime to 0.  FCGIDMaxRequestsPerProcess now accepts 0
+     FcgidProcessLifeTime to 0.  FcgidMaxRequestsPerProcess now accepts 0
      for unlimited.  [Ricardo Cantu <ricardo smartcsc.com>]
 
-  *) All directives have been renamed in order to use a common prefix "FCGID".
+  *) All directives have been renamed in order to use a common prefix "Fcgid".
      Underscores in directive names have been eliminated in favor of
      CamelCase. The old directive names will still work but are deprecated.
      To fix your configuration you can use the sed script build/fixconf.sed.
@@ -36,73 +36,73 @@ Changes with mod_fcgid 2.3.2
 
      Old Name                           New Name
      ...................................................................
-     BusyScanInterval                   FCGIDBusyScanInterval
-     BusyTimeout                        FCGIDBusyTimeout
-     DefaultInitEnv                     FCGIDInitialEnv
-     DefaultMaxClassProcessCount        FCGIDMaxProcessesPerClass
-     DefaultMinClassProcessCount        FCGIDMinProcessesPerClass
-     ErrorScanInterval                  FCGIDErrorScanInterval
-     FastCgiAccessChecker               FCGIDAccessChecker
-     FastCgiAccessCheckerAuthoritative  FCGIDAccessCheckerAuthoritative
-     FastCgiAuthenticator               FCGIDAuthenticator
-     FastCgiAuthenticatorAuthoritative  FCGIDAuthenticatorAuthoritative
-     FastCgiAuthorizer                  FCGIDAuthorizer
-     FastCgiAuthorizerAuthoritative     FCGIDAuthorizerAuthoritative
-     FCGIWrapper                        FCGIDWrapper
-     IdleScanInterval                   FCGIDIdleScanInterval
-     IdleTimeout                        FCGIDIdleTimeout
-     IPCCommTimeout                     FCGIDIOTimeout
-     IPCConnectTimeout                  FCGIDConnectTimeout
-     MaxProcessCount                    FCGIDMaxProcesses
-     MaxRequestInMem                    FCGIDMaxRequestInMem
-     MaxRequestLen                      FCGIDMaxRequestLen
-     MaxRequestsPerProcess              FCGIDMaxRequestsPerProcess
-     OutputBufferSize                   FCGIDOutputBufferSize
-     PassHeader                         FCGIDPassHeader
-     PHP_Fix_Pathinfo_Enable            FCGIDFixPathinfo
-     ProcessLifeTime                    FCGIDProcessLifeTime
-     SharememPath                       FCGIDProcessTableFile
-     SocketPath                         FCGIDIPCDir
-     SpawnScore                         FCGIDSpawnScore
-     SpawnScoreUpLimit                  FCGIDSpawnScoreUpLimit
-     TerminationScore                   FCGIDTerminationScore
-     TimeScore                          FCGIDTimeScore
-     ZombieScanInterval                 FCGIDZombieScanInterval
+     BusyScanInterval                   FcgidBusyScanInterval
+     BusyTimeout                        FcgidBusyTimeout
+     DefaultInitEnv                     FcgidInitialEnv
+     DefaultMaxClassProcessCount        FcgidMaxProcessesPerClass
+     DefaultMinClassProcessCount        FcgidMinProcessesPerClass
+     ErrorScanInterval                  FcgidErrorScanInterval
+     FastCgiAccessChecker               FcgidAccessChecker
+     FastCgiAccessCheckerAuthoritative  FcgidAccessCheckerAuthoritative
+     FastCgiAuthenticator               FcgidAuthenticator
+     FastCgiAuthenticatorAuthoritative  FcgidAuthenticatorAuthoritative
+     FastCgiAuthorizer                  FcgidAuthorizer
+     FastCgiAuthorizerAuthoritative     FcgidAuthorizerAuthoritative
+     FCGIWrapper                        FcgidWrapper
+     IdleScanInterval                   FcgidIdleScanInterval
+     IdleTimeout                        FcgidIdleTimeout
+     IPCCommTimeout                     FcgidIOTimeout
+     IPCConnectTimeout                  FcgidConnectTimeout
+     MaxProcessCount                    FcgidMaxProcesses
+     MaxRequestInMem                    FcgidMaxRequestInMem
+     MaxRequestLen                      FcgidMaxRequestLen
+     MaxRequestsPerProcess              FcgidMaxRequestsPerProcess
+     OutputBufferSize                   FcgidOutputBufferSize
+     PassHeader                         FcgidPassHeader
+     PHP_Fix_Pathinfo_Enable            FcgidFixPathinfo
+     ProcessLifeTime                    FcgidProcessLifeTime
+     SharememPath                       FcgidProcessTableFile
+     SocketPath                         FcgidIPCDir
+     SpawnScore                         FcgidSpawnScore
+     SpawnScoreUpLimit                  FcgidSpawnScoreUpLimit
+     TerminationScore                   FcgidTerminationScore
+     TimeScore                          FcgidTimeScore
+     ZombieScanInterval                 FcgidZombieScanInterval
 
   *) Separate classes by virtual host also on Windows.  [Rainer Jung]
 
   *) Log client IP address with many more error log messages.  [Jeff Trawick]
 
-  *) Fix basic implementation of FCGIDMaxRequestInMem and FCGIDMaxRequestLen
+  *) Fix basic implementation of FcgidMaxRequestInMem and FcgidMaxRequestLen
      directives.  [Jeff Trawick]
 
   *) Merge mod_fcgid server config/virtual host directives so that they can
      be inherited or overridden within a virtual host as expected.  Affected
-     directives: FCGIDIOTimeout, FCGIDConnectTimeout,
-     FCGIDMaxRequestInMem, FCGIDMaxRequestLen, FCGIDMaxRequestsPerProcess,
-     FCGIDOutputBufferSize.  [Jeff Trawick]
+     directives: FcgidIOTimeout, FcgidConnectTimeout,
+     FcgidMaxRequestInMem, FcgidMaxRequestLen, FcgidMaxRequestsPerProcess,
+     FcgidOutputBufferSize.  [Jeff Trawick]
 
   *) Use the virtual host settings for the request being processed instead
      of those of the first FastCGI request handled by this httpd child process.
-     Affected directives: FCGIDBusyTimeout, FCGIDIOTimeout,
-     FCGIDConnectTimeout, FCGIDMaxRequestsPerProcess, and FCGIDOutputBufferSize.
+     Affected directives: FcgidBusyTimeout, FcgidIOTimeout,
+     FcgidConnectTimeout, FcgidMaxRequestsPerProcess, and FcgidOutputBufferSize.
      [Jeff Trawick]
 
   *) The following directives are no longer allowed in a virtual host
-     context: FCGIDBusyScanInterval, FCGIDBusyTimeout,
-     FCGIDMaxProcessesPerClass, FCGIDDefaultMinProcessCount,
-     FCGIDErrorScanInterval, FCGIDIdleScanInterval, FCGIDIdleTimeout,
-     FCGIDMaxProcesses, FCGIDFixPathinfo, FCGIDProcessLifetime,
-     FCGIDProcessTableFile, FCGIDIPCDir, FCGIDSpawnScore,
-     FCGIDSpawnScoreUpLimit, FCGIDTerminationScore, FCGIDTimeScore, and 
-     FCGIDZombieScanInterval.  They were allowed but ignored in previous
+     context: FcgidBusyScanInterval, FcgidBusyTimeout,
+     FcgidMaxProcessesPerClass, FcgidDefaultMinProcessCount,
+     FcgidErrorScanInterval, FcgidIdleScanInterval, FcgidIdleTimeout,
+     FcgidMaxProcesses, FcgidFixPathinfo, FcgidProcessLifetime,
+     FcgidProcessTableFile, FcgidIPCDir, FcgidSpawnScore,
+     FcgidSpawnScoreUpLimit, FcgidTerminationScore, FcgidTimeScore, and 
+     FcgidZombieScanInterval.  They were allowed but ignored in previous
      releases.  [Jeff Trawick]
 
-  *) Add an optional flag "virtual" to FCGIDWrapper.
+  *) Add an optional flag "virtual" to FcgidWrapper.
      If virtual is set, the URLs passed to the wrapper are not
      checked, whether they resolve to a file.  [Rainer Jung]
 
-  *) Make the second argument (suffix) for FCGIDWrapper optional.
+  *) Make the second argument (suffix) for FcgidWrapper optional.
      A wrapper defined without a suffix applies to all URLs, unless
      there is another more specific wrapper with a suffix.  [Rainer Jung]
 

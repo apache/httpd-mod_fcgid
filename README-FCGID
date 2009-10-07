@@ -141,7 +141,7 @@ Incompatible configuration changes
 Some changes have been made in the ASF release of mod_fcgid which can affect
 existing configurations:
 
-i.   All directives have been renamed in order to use a common prefix "FCGID".
+i.   All directives have been renamed in order to use a common prefix "Fcgid".
      Underscores in directive names have been eliminated in favor of
      CamelCase. The old directive names will still work but are deprecated.
      To fix your configuration you can use the sed script build/fixconf.sed.
@@ -150,24 +150,24 @@ i.   All directives have been renamed in order to use a common prefix "FCGID".
 ii.  Some directives which could be placed inside <VirtualHost > but were
      ignored before now result in configuration errors.  As before, these 
      directives must be set at global scope to have the desired effect.
-     These include FCGIDMaxProcesses, FCGIDFixPathinfo, and
+     These include FcgidMaxProcesses, FcgidFixPathinfo, and
      others.  (Consult CHANGES-FCGID for the complete list.)
 
 iii. Some directives which could be placed inside <VirtualHost > but were
-     ignored before are now respected.  These include FCGIDIdleTimeout,
-     FCGIDProcessLifeTime, and others.  (Consult CHANGES-FCGID for the complete
+     ignored before are now respected.  These include FcgidIdleTimeout,
+     FcgidProcessLifeTime, and others.  (Consult CHANGES-FCGID for the complete
      list.)
 
 iv.  Some directives which can optionally be placed inside <VirtualHost >
      were not inherited as expected in older releases.  This has been
      corrected, and behavior will change for some configurations.  Affected
-     directives include FCGIDIOTimeout, FCGIDOutputBufferSize, and others.
+     directives include FcgidIOTimeout, FcgidOutputBufferSize, and others.
      (Consult CHANGES-FCGID for the complete list.)
 
 v.   Some directives which can be placed inside <Directory >, <Location >,
      etc. were not inherited as expected in older releases.  This has been
      corrected, and behavior will change for some configurations.  Affected
-     directives include FCGIDWrapper and the AAA-related directives.  (Consult
+     directives include FcgidWrapper and the AAA-related directives.  (Consult
      CHANGES-FCGID for the complete list.)
 
 Acknowledgements
