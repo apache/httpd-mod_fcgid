@@ -20,8 +20,8 @@ SUBDIRS = modules/fcgid
 CLEAN_SUBDIRS = 
 
 TARGETS         = 
-INSTALL_TARGETS = install-manual 
-## no such targets yet; install-conf install-include
+INSTALL_TARGETS = install-conf install-manual
+## no such targets yet; install-include
 DISTCLEAN_TARGETS  = config.apxs.log modules/fcgid/fcgid_config.h
 EXTRACLEAN_TARGETS = 
 
@@ -35,11 +35,25 @@ rel_libexecdir=`echo $(exp_libexecdir) | sed -e "s#^$(prefix)/##;"`
 rel_sysconfdir=`echo $(exp_sysconfdir) | sed -e "s#^$(prefix)/##;"`
 rel_logfiledir=`echo $(exp_logfiledir) | sed -e "s#^$(prefix)/##;"`
 httpd_conffile=$(exp_sysconfdir)/$(progname).conf
+httpd_origconffile=$(exp_sysconfdir)/original/$(progname).conf
 
 install-conf:
 	@echo Installing configuration files
-	@$(MKINSTALLDIRS) $(exp_sysconfdir) $(exp_sysconfdir)/extra \
-		$(exp_sysconfdir)/original $(exp_sysconfdir)/original/extra
+	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_sysconfdir) \
+			  $(DESTDIR)$(exp_sysconfdir)/original
+	for i in $(DESTDIR)$(httpd_conffile) $(DESTDIR)$(httpd_origconffile); do \
+	    if test -f $$i; then (
+		awk -f $(fcgid_srcdir)/build/addloadexample.awk \
+		    -v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
+		    -v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf \
+		    $$i > $$i.new && \
+		mv $$i $$i.bak && mv $$i.new $$i \
+	) \
+	fi;
+
+install-conf-unused:
+	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_sysconfdir)/extra \
+			  $(DESTDIR)$(exp_sysconfdir)/original/extra
 	@cd $(fcgid_srcdir)/docs/conf; \
 	for j in $(fcgid_srcdir)/docs/conf; do \
 	    cd $$j ; \
@@ -50,22 +64,16 @@ install-conf:
 	    		-e 's#@exp_sysconfdir@#$(exp_sysconfdir)#;' \
 	    		-e 's#@rel_sysconfdir@#$(rel_sysconfdir)#;' \
 	    		-e 's#@rel_logfiledir@#$(rel_logfiledir)#;' \
-	    		< $$i > $(exp_sysconfdir)/original/$$i; \
-	    	    chmod 0644 $(exp_sysconfdir)/original/$$i; \
-	    	    if test ! -f $(exp_sysconfdir)/$$i; then \
-	    		cp $(exp_sysconfdir)/original/$$i \
-			    $(exp_sysconfdir)/$$i; \
-	    		chmod 0644 $(exp_sysconfdir)/$$i; \
+	    		< $$i > $(DESTDIR)$(exp_sysconfdir)/original/$$i; \
+	    	    chmod 0644 $(DESTDIR)$(exp_sysconfdir)/original/$$i; \
+	    	    if test ! -f $(DESTDIR)$(exp_sysconfdir)/$$i; then \
+	    		cp $(DESTDIR)$(exp_sysconfdir)/original/$$i \
+			    $(DESTDIR)$(exp_sysconfdir)/$$i; \
+	    		chmod 0644 $(DESTDIR)$(exp_sysconfdir)/$$i; \
 	    	    fi; \
 	    	fi; \
 	    done ; \
 	done
-	@awk -f $(fcgid_srcdir)/build/addloadexample.awk \
-		-v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
-		-v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf \
-		$(DESTDIR)$(httpd_conffile) > $(DESTDIR)$(httpd_conffile).new && \
-	  ( mv $(DESTDIR)$(httpd_conffile) $(DESTDIR)$(httpd_conffile).bak && \
-	    mv $(DESTDIR)$(httpd_conffile).new $(DESTDIR)$(httpd_conffile) );
 
 svnroot=http://svn.apache.org/repos/asf/httpd
 manualdir=$(fcgid_srcdir)/docs/manual
@@ -105,7 +113,7 @@ install-manual:
 	    | xargs rm -rf 2>/dev/null || true; \
 	fi
 
-install-include:
+install-include-unused:
 	@echo Installing header files
 	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_includedir) && \
 	  cp $(fcgid_srcdir)/include/mod_fcgid.h $(DESTDIR)$(exp_includedir)/ && \
