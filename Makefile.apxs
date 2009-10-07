@@ -42,14 +42,14 @@ install-conf:
 	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_sysconfdir) \
 			  $(DESTDIR)$(exp_sysconfdir)/original
 	for i in $(DESTDIR)$(httpd_conffile) $(DESTDIR)$(httpd_origconffile); do \
-	    if test -f $$i; then (
+	    if test -f $$i; then \
 		awk -f $(fcgid_srcdir)/build/addloadexample.awk \
 		    -v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
 		    -v EXAMPLECONF=$(rel_sysconfdir)/extra/httpd-fcgid.conf \
 		    $$i > $$i.new && \
-		mv $$i $$i.bak && mv $$i.new $$i \
-	) \
-	fi;
+		mv $$i $$i.bak && mv $$i.new $$i; \
+	    fi; \
+	done 
 
 install-conf-unused:
 	@$(MKINSTALLDIRS) $(DESTDIR)$(exp_sysconfdir)/extra \
