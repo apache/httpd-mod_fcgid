@@ -259,6 +259,17 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
         return errno;
     }
 
+    /* IPC directory permissions are safe, but avoid confusion */
+    /* Not all flavors of unix use the current umask for AF_UNIX perms */
+
+    rv = apr_file_perms_set(unix_addr.sun_path, APR_FPROT_UREAD|APR_FPROT_UWRITE|APR_FPROT_UEXECUTE);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, rv, main_server,
+                     "mod_fcgid: Couldn't set permissions on unix domain socket %s",
+                     unix_addr.sun_path);
+        return rv;
+    }
+
     /* Listen the socket */
     if (listen(unix_socket, DEFAULT_FCGID_LISTENBACKLOG) < 0) {
         ap_log_error(APLOG_MARK, APLOG_ERR, errno, main_server,
