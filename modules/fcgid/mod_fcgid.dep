@@ -79,6 +79,7 @@
 	
 
 .\fcgid_proctbl_win.c : \
+	".\fcgid_conf.h"\
 	".\fcgid_config.h"\
 	".\fcgid_global.h"\
 	".\fcgid_proctbl.h"\
