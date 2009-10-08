@@ -827,6 +827,9 @@
       <code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
 
+      <p>This idle timeout check is performed at the frequency of the configured 
+      <code class="directive"><a href="#fcgididlescaninterval">FcgidIdleScanInterval</a></code>.</p>
+
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
@@ -1076,6 +1079,9 @@
       class exceeds
       <code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
+
+      <p>This process lifetime check is performed at the frequency of the configured 
+      <code class="directive"><a href="#fcgididlescaninterval">FcgidIdleScanInterval</a></code>.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
