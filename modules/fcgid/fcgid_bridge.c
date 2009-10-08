@@ -579,7 +579,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                     apr_file_trunc(fd, 0);
                     cur_pos = 0;
                 }
-                // Write request to tmp file
+                /* Write request to tmp file */
                 if ((rv =
                      apr_file_write_full(fd, (const void *) data, len,
                                          &wrote_len)) != APR_SUCCESS
@@ -589,7 +589,7 @@ int bridge_request(request_rec * r, int role, const char *argv0,
                                   "mod_fcgid: can't write tmp file for stdin request");
                     return HTTP_INTERNAL_SERVER_ERROR;
                 }
-                // Create file bucket
+                /* Create file bucket */
                 bucket_stdin =
                     apr_bucket_file_create(fd, cur_pos, len, r->pool,
                                            r->connection->bucket_alloc);
