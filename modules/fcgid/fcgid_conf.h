@@ -54,7 +54,8 @@ typedef struct {
 } auth_conf;
 
 typedef struct {
-    char args[_POSIX_PATH_MAX];
+    const char *exe;            /* executable file path */
+    char args[_POSIX_PATH_MAX]; /* entire command line */
     apr_ino_t inode;
     apr_dev_t deviceid;
     apr_size_t share_group_id;

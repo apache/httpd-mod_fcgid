@@ -417,7 +417,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         command->deviceid = wrapperconf->deviceid;
         command->inode = wrapperconf->inode;
         command->share_grp_id = wrapperconf->share_group_id;
-        cmd_to_spawn = command->wrapper_cmdline;
+        cmd_to_spawn = wrapperconf->exe;
     }
     else {
         cmd_to_spawn = command->cgipath;

@@ -1,7 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
-
+  *) Fix handling of FcgidCmdOptions so that it can apply to wrapper scripts
+     which were defined with command-line arguments on the FcgidWrapper
+     directive.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.4
 

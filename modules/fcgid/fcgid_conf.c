@@ -763,6 +763,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     wrapper_id_info *id_info;
     apr_size_t *wrapper_id;
     fcgid_wrapper_conf *wrapper = NULL;
+    apr_pool_t *wrapper_conf_pool = cmd->server->process->pconf; /* bad */
     fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
 
     /* Sanity checks */
@@ -809,7 +810,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                      strlen(wrapper_cmdline), wrapper_id);
     }
 
-    wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
+    wrapper = apr_pcalloc(wrapper_conf_pool, sizeof(*wrapper));
 
     /* Get wrapper path */
     tmp = wrapper_cmdline;
@@ -823,6 +824,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return missing_file_msg(cmd->pool, "Wrapper", path, rv);
     }
 
+    wrapper->exe = apr_pstrdup(wrapper_conf_pool, path);
     /* FIXME no need to embed in structure (subject to correct pool usage) */
     apr_cpystrn(wrapper->args, wrapper_cmdline, _POSIX_PATH_MAX);
     wrapper->inode = finfo.inode;
