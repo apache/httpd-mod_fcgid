@@ -748,6 +748,9 @@ typedef struct {
     apr_size_t cur_id;
 } wrapper_id_info;
 
+/* FIXME thread safety issues when FcgidWrapper is used in .htaccess;
+ * see use of pconf
+ */
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                                const char *wrapper_cmdline,
                                const char *extension,
@@ -763,9 +766,6 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
 
     /* Sanity checks */
-
-    if (wrapper_cmdline == NULL)
-        return "Invalid wrapper file";
 
     if (virtual == NULL && extension != NULL && !strcasecmp(extension, WRAPPER_FLAG_VIRTUAL)) {
         virtual = WRAPPER_FLAG_VIRTUAL;
@@ -823,6 +823,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return missing_file_msg(cmd->pool, "Wrapper", path, rv);
     }
 
+    /* FIXME no need to embed in structure (subject to correct pool usage) */
     apr_cpystrn(wrapper->args, wrapper_cmdline, _POSIX_PATH_MAX);
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
