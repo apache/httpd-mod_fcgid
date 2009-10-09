@@ -749,7 +749,7 @@ typedef struct {
 } wrapper_id_info;
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
-                               const char *wrapperpath,
+                               const char *wrapper_cmdline,
                                const char *extension,
                                const char *virtual)
 {
@@ -764,7 +764,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 
     /* Sanity checks */
 
-    if (wrapperpath == NULL)
+    if (wrapper_cmdline == NULL)
         return "Invalid wrapper file";
 
     if (virtual == NULL && extension != NULL && !strcasecmp(extension, WRAPPER_FLAG_VIRTUAL)) {
@@ -798,21 +798,21 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                               apr_pool_cleanup_null,
                               cmd->server->process->pool);
     }
-    /* Get wrapper_id for wrapperpath */
+    /* Get wrapper_id for wrapper_cmdline */
     if ((wrapper_id =
-         apr_hash_get(id_info->wrapper_id_hash, wrapperpath,
-                      strlen(wrapperpath))) == NULL) {
+         apr_hash_get(id_info->wrapper_id_hash, wrapper_cmdline,
+                      strlen(wrapper_cmdline))) == NULL) {
         wrapper_id =
             apr_pcalloc(cmd->server->process->pool, sizeof(*wrapper_id));
         *wrapper_id = id_info->cur_id++;
-        apr_hash_set(id_info->wrapper_id_hash, wrapperpath,
-                     strlen(wrapperpath), wrapper_id);
+        apr_hash_set(id_info->wrapper_id_hash, wrapper_cmdline,
+                     strlen(wrapper_cmdline), wrapper_id);
     }
 
     wrapper = apr_pcalloc(cmd->server->process->pconf, sizeof(*wrapper));
 
     /* Get wrapper path */
-    tmp = wrapperpath;
+    tmp = wrapper_cmdline;
     path = ap_getword_white(cmd->temp_pool, &tmp);
     if (path == NULL || *path == '\0')
         return "Invalid wrapper config";
@@ -823,7 +823,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return missing_file_msg(cmd->pool, "Wrapper", path, rv);
     }
 
-    apr_cpystrn(wrapper->args, wrapperpath, _POSIX_PATH_MAX);
+    apr_cpystrn(wrapper->args, wrapper_cmdline, _POSIX_PATH_MAX);
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
     wrapper->share_group_id = *wrapper_id;

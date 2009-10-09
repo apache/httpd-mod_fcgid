@@ -411,13 +411,13 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     command->virtualhost = r->server->server_hostname;
 
     /* Update fcgid_command with wrapper info */
-    command->wrapperpath[0] = '\0';
+    command->wrapper_cmdline[0] = '\0';
     if ((wrapperconf = get_wrapper_info(argv0, r))) {
-        apr_cpystrn(command->wrapperpath, wrapperconf->args, _POSIX_PATH_MAX);
+        apr_cpystrn(command->wrapper_cmdline, wrapperconf->args, _POSIX_PATH_MAX);
         command->deviceid = wrapperconf->deviceid;
         command->inode = wrapperconf->inode;
         command->share_grp_id = wrapperconf->share_group_id;
-        cmd_to_spawn = command->wrapperpath;
+        cmd_to_spawn = command->wrapper_cmdline;
     }
     else {
         cmd_to_spawn = command->cgipath;

@@ -531,9 +531,9 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     }
 
     /* Spawn the process now */
-    /* XXX Spawn uses wrapperpath, but log uses cgipath ? */
+    /* XXX Spawn uses wrapper_cmdline, but log uses cgipath ? */
     if ((rv =
-        proc_spawn_process(command->wrapperpath, &procinfo,
+        proc_spawn_process(command->wrapper_cmdline, &procinfo,
                            procnode)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: spawn process %s error",

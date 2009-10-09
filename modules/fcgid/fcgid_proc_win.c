@@ -59,7 +59,7 @@ static apr_status_t close_finish_event(void *finishevent)
     return APR_SUCCESS;
 }
 
-apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
+apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo,
                                 fcgid_procnode *procnode)
 {
     HANDLE *finish_event, listen_handle;
@@ -79,7 +79,7 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
 
     /* Build wrapper args */
     argc = 0;
-    tmp = wrapperpath;
+    tmp = wrapper_cmdline;
     while (1) {
         word = ap_getword_white(procnode->proc_pool, &tmp);
         if (word == NULL || *word == '\0')
@@ -165,7 +165,7 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
                != APR_SUCCESS
         || (rv = apr_procattr_dir_set(proc_attr,
                      ap_make_dirstr_parent(procnode->proc_pool,
-                         (wrapperpath && wrapperpath[0] != '\0') 
+                         (wrapper_cmdline && wrapper_cmdline[0] != '\0') 
                               ? wargv[0] : procinfo->cgipath))) != APR_SUCCESS
         || (rv = apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM))
                != APR_SUCCESS
@@ -184,10 +184,10 @@ apr_status_t proc_spawn_process(char *wrapperpath, fcgid_proc_info *procinfo,
     }
 
     /* fork and exec now */
-    if (wrapperpath != NULL && wrapperpath[0] != '\0') {
+    if (wrapper_cmdline != NULL && wrapper_cmdline[0] != '\0') {
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",
-                     procinfo->cgipath, wrapperpath);
+                     procinfo->cgipath, wrapper_cmdline);
         if ((rv = apr_proc_create(procnode->proc_id, wargv[0],
                                   wargv, proc_environ, proc_attr,
                                   procnode->proc_pool)) != APR_SUCCESS) {
