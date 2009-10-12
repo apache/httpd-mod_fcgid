@@ -437,38 +437,18 @@ handle_request(request_rec * r, int role, const char *argv0,
     return cond_status;
 }
 
-int bridge_request(request_rec * r, int role, const char *argv0,
-                   fcgid_wrapper_conf * wrapper_conf)
+static int add_request_body(request_rec *r, apr_pool_t *request_pool,
+                            apr_bucket_brigade *output_brigade)
 {
-    apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
-    server_rec *s = r->server;
-    fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
-                                                    &fcgid_module);
-    apr_status_t rv = APR_SUCCESS;
-    int seen_eos;
-    apr_off_t request_size = 0;
+    apr_bucket *bucket_input, *bucket_header;
     apr_file_t *fd = NULL;
-    int need_truncate = 1;
-    apr_off_t cur_pos = 0;
+    apr_off_t cur_pos = 0, request_size = 0;
+    apr_status_t rv;
     FCGI_Header *stdin_request_header;
-    apr_bucket_brigade *output_brigade;
-    apr_bucket *bucket_input, *bucket_header, *bucket_eos;
-    char **envp = ap_create_environment(request_pool,
-                                        r->subprocess_env);
-
-    /* Create brigade for the request to fastcgi server */
-    output_brigade =
-        apr_brigade_create(request_pool, r->connection->bucket_alloc);
-
-    /* Build the begin request and environ request, append them to output_brigade */
-    if (!build_begin_block
-        (role, r, r->connection->bucket_alloc, output_brigade)
-        || !build_env_block(r, envp, r->connection->bucket_alloc,
-                            output_brigade)) {
-        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
-                      "mod_fcgid: can't build begin or env request");
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
+    fcgid_server_conf *sconf = ap_get_module_config(r->server->module_config,
+                                                    &fcgid_module);
+    int seen_eos;
+    int need_truncate = 1;
 
     /* Stdin header and body */
     /* XXX HACK: I have to read all the request into memory before sending it 
@@ -639,6 +619,40 @@ int bridge_request(request_rec * r, int role, const char *argv0,
         return HTTP_INTERNAL_SERVER_ERROR;
     }
     APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_header);
+
+    return 0;
+}
+
+int bridge_request(request_rec * r, int role, const char *argv0,
+                   fcgid_wrapper_conf * wrapper_conf)
+{
+    apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
+    apr_bucket_brigade *output_brigade;
+    apr_bucket *bucket_eos;
+    char **envp = ap_create_environment(request_pool,
+                                        r->subprocess_env);
+    int rc;
+
+    /* Create brigade for the request to fastcgi server */
+    output_brigade =
+        apr_brigade_create(request_pool, r->connection->bucket_alloc);
+
+    /* Build the begin request and environ request, append them to output_brigade */
+    if (!build_begin_block
+        (role, r, r->connection->bucket_alloc, output_brigade)
+        || !build_env_block(r, envp, r->connection->bucket_alloc,
+                            output_brigade)) {
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
+                      "mod_fcgid: can't build begin or env request");
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    if (role == FCGI_RESPONDER) {
+        rc = add_request_body(r, request_pool, output_brigade);
+        if (rc) {
+            return rc;
+        }
+    }
 
     /* The eos bucket now */
     bucket_eos = apr_bucket_eos_create(r->connection->bucket_alloc);
