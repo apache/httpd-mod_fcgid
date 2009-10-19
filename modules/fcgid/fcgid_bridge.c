@@ -446,7 +446,6 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
     fcgid_server_conf *sconf = ap_get_module_config(r->server->module_config,
                                                     &fcgid_module);
     int seen_eos;
-    int need_truncate = 1;
 
     /* Stdin header and body */
     /* XXX HACK: I have to read all the request into memory before sending it 
@@ -526,6 +525,15 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                     apr_pool_userdata_get(&tmp, fd_key,
                                           r->connection->pool);
                     fd = tmp;
+
+                    if (fd != NULL) {
+                        if ((rv = apr_file_trunc(fd, 0)) != APR_SUCCESS) {
+                            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                                          "mod_fcgid: can't truncate existing "
+                                          "temporary file");
+                            return HTTP_INTERNAL_SERVER_ERROR;
+                        }
+                    }
                 }
 
                 if (fd == NULL) {
@@ -552,11 +560,8 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                     apr_pool_userdata_set((const void *) fd, fd_key,
                                           apr_pool_cleanup_null,
                                           r->connection->pool);
-                } else if (need_truncate) {
-                    need_truncate = 0;
-                    apr_file_trunc(fd, 0);
-                    cur_pos = 0;
                 }
+
                 /* Write request to tmp file */
                 if ((rv =
                      apr_file_write_full(fd, (const void *) data, len,

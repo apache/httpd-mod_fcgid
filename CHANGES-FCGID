@@ -1,6 +1,11 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Fix possible corruption or truncation of request bodies which exceed
+     FcgidMaxRequestInMem.  This is a regression since mod_fcgid 2.2, which
+     effectively ignored FcgidMaxRequestInMem if larger than 8K.  PR 48021.
+     [Jeff Trawick]
+
   *) Fix handling of the request body when a FastCGI access checker/
      authenticator/authorizer (AAA) was configured.  The body wasn't available
      for the request handler.  PR 47973.
