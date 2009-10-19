@@ -376,8 +376,6 @@ handle_request(request_rec * r, int role, const char *argv0,
     if ((rv =
          proc_write_ipc(&bucket_ctx->ipc,
                         output_brigade)) != APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
-                      "mod_fcgid: error writing data to FastCGI server");
         bucket_ctx->has_error = 1;
         return HTTP_INTERNAL_SERVER_ERROR;
     }

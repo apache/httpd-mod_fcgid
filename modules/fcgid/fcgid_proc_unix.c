@@ -758,8 +758,11 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
         apr_size_t len;
         const char* base;
         if ((rv = apr_bucket_read(e, &base, &len,
-                                  APR_BLOCK_READ)) != APR_SUCCESS)
+                                  APR_BLOCK_READ)) != APR_SUCCESS) {
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, ipc_handle->request,
+                          "mod_fcgid: can't read request from bucket");
             return rv;
+        }
 
         vec[nvec].iov_len = len;
         vec[nvec].iov_base = (char*) base;
