@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Fix a bug in fixconf.sed that resulted in a prefix of "FcgidFcgid" on the
+     updated directives.  [Dan Hulme <dhulme gmail.com>]
+
   *) Fix possible corruption or truncation of request bodies which exceed
      FcgidMaxRequestInMem.  This is a regression since mod_fcgid 2.2, which
      effectively ignored FcgidMaxRequestInMem if larger than 8K.  PR 48021.
