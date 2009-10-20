@@ -699,6 +699,37 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
         }
     }
 
+    if (APR_STATUS_IS_EAGAIN(rv)) {
+        /* socket is writable, but we can't write the entire buffer; try to write a
+         * smaller amount, and if even that fails then sleep
+         */
+        size_t to_write = vec[0].iov_len;
+        int slept = 0;
+        const apr_interval_time_t sleep_time = APR_USEC_PER_SEC / 4;
+        const int max_sleeps = 8;
+
+        do {
+            if ((retcode = write(unix_socket, vec[0].iov_base, to_write)) > 0) {
+                ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, ipc_handle->request,
+                              "wrote %d byte(s) and slept %d time(s) after EAGAIN",
+                              retcode, slept);
+                *writecnt = retcode;
+                return APR_SUCCESS;
+            }
+            if (APR_STATUS_IS_EAGAIN(errno)) {
+                if (to_write == 1) {
+                    apr_sleep(sleep_time);
+                    ++slept;
+                }
+                else {
+                    to_write /= 2;
+                }
+            }
+        } while ((APR_STATUS_IS_EINTR(errno) || APR_STATUS_IS_EAGAIN(errno))
+                 && slept < max_sleeps);
+        rv = errno;
+    }
+
     ap_log_rerror(APLOG_MARK, APLOG_INFO, rv,
                   ipc_handle->request,
                   "mod_fcgid: error writing data to FastCGI server");

@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Recover from most "Resource temporarily unavailable" errors writing the
+     request to the FastCGI application.  These were common with large request
+     bodies on Mac OS X and intermittent on Solaris.  PR 48025.  [Jeff Trawick]
+
   *) Fix a bug in fixconf.sed that resulted in a prefix of "FcgidFcgid" on the
      updated directives.  [Dan Hulme <dhulme gmail.com>]
 
