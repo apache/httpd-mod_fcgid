@@ -656,6 +656,7 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
                                   struct iovec *vec, int nvec,
                                   int *writecnt)
 {
+    apr_status_t rv;
     int retcode, unix_socket;
     fcgid_namedpipe_handle *handle_info;
     struct pollfd pollfds[1];
@@ -670,34 +671,38 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
             return APR_SUCCESS;
         }
     } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
-    if (!APR_STATUS_IS_EAGAIN(errno))
-        return errno;
+    rv = errno;
 
-    /* poll() */
-    pollfds[0].fd = unix_socket;
-    pollfds[0].events = POLLOUT;
-    do {
-        retcode = poll(pollfds, 1, ipc_handle->communation_timeout * 1000);
-    } while (retcode <= 0 && APR_STATUS_IS_EINTR(errno));
-    if (retcode == -1)
-        return errno;
+    if (APR_STATUS_IS_EAGAIN(rv)) {
+        /* poll() */
+        pollfds[0].fd = unix_socket;
+        pollfds[0].events = POLLOUT;
+        do {
+            retcode = poll(pollfds, 1, ipc_handle->communation_timeout * 1000);
+        } while (retcode < 0 && APR_STATUS_IS_EINTR(errno));
 
-    /* Write again */
-    do {
-        if ((retcode = writev(unix_socket, vec, nvec)) > 0) {
-            *writecnt = retcode;
-            return APR_SUCCESS;
+        if (retcode < 0) {
+            rv = errno;
         }
-    } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
-
-    if (retcode == -1) {
-        ap_log_rerror(APLOG_MARK, APLOG_INFO, apr_get_os_error(),
-                      ipc_handle->request,
-                      "mod_fcgid: error writing data, FastCGI server closed connection");
-        return APR_EPIPE;
+        else if (retcode == 0) {
+            rv = APR_TIMEUP;
+        }
+        else {
+            /* Write again */
+            do {
+                if ((retcode = writev(unix_socket, vec, nvec)) > 0) {
+                    *writecnt = retcode;
+                    return APR_SUCCESS;
+                }
+            } while (retcode == -1 && APR_STATUS_IS_EINTR(errno));
+            rv = errno;
+        }
     }
 
-    return errno;
+    ap_log_rerror(APLOG_MARK, APLOG_INFO, rv,
+                  ipc_handle->request,
+                  "mod_fcgid: error writing data to FastCGI server");
+    return rv;
 }
 
 static apr_status_t writev_it_all(fcgid_ipc * ipc_handle,
