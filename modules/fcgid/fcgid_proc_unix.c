@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #define CORE_PRIVATE
 #include "httpd.h"
+#include "apr_version.h"
 #include "apr_thread_proc.h"
 #include "apr_strings.h"
 #include "apr_portable.h"
@@ -47,6 +48,12 @@
 #define ap_unixd_config unixd_config
 // #define ap_unixd_setup_child unixd_setup_child
 // #define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
+#endif
+
+#if APR_MAJOR_VERSION < 1
+#define APR_FPROT_UWRITE        APR_UWRITE
+#define APR_FPROT_UREAD         APR_UREAD
+#define APR_FPROT_UEXECUTE      APR_UEXECUTE
 #endif
 
 #define DEFAULT_FCGID_LISTENBACKLOG 5
