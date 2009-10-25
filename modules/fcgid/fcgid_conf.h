@@ -129,11 +129,18 @@ typedef struct {
 } fcgid_dir_conf;
 
 /* processing options which are sent to the PM with a spawn request
- * and/or configurable via FCGIDCmdOptions
+ * and/or configurable via FCGIDCmdOptions; envvars are kept in a
+ * separate structure to keep them out of the process table in order
+ * to limit shared memory use
  */
 #define INITENV_KEY_LEN 64
 #define INITENV_VAL_LEN 128
 #define INITENV_CNT 64
+typedef struct {
+    char initenv_key[INITENV_CNT][INITENV_KEY_LEN];
+    char initenv_val[INITENV_CNT][INITENV_VAL_LEN];
+} fcgid_cmd_env;
+
 typedef struct {
     int busy_timeout;
     int idle_timeout;
@@ -143,8 +150,7 @@ typedef struct {
     int max_requests_per_process;
     int min_class_process_count;
     int proc_lifetime;
-    char initenv_key[INITENV_CNT][INITENV_KEY_LEN];
-    char initenv_val[INITENV_CNT][INITENV_VAL_LEN];
+    fcgid_cmd_env *cmdenv;
 } fcgid_cmd_options;
 
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s);
@@ -253,7 +259,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy,
                             const char *arg);
 
 void get_cmd_options(request_rec *r, const char *cmdpath,
-                     fcgid_cmd_options *cmdopts);
+                     fcgid_cmd_options *cmdopts, fcgid_cmd_env *cmdenv);
 
 AP_MODULE_DECLARE_DATA extern module fcgid_module;
 

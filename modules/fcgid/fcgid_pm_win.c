@@ -152,7 +152,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         cmd_to_spawn = command->cgipath;
     }
 
-    get_cmd_options(r, cmd_to_spawn, &command->cmdopts);
+    get_cmd_options(r, cmd_to_spawn, &command->cmdopts, &command->cmdenv);
 }
 
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,

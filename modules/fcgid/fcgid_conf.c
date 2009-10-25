@@ -870,7 +870,7 @@ fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
     return NULL;
 }
 
-static int set_cmd_envvars(fcgid_cmd_options *cmdopts, apr_table_t *envvars)
+static int set_cmd_envvars(fcgid_cmd_env *cmdenv, apr_table_t *envvars)
 {
     const apr_array_header_t *envvars_arr;
     const apr_table_entry_t *envvars_entry;
@@ -888,17 +888,17 @@ static int set_cmd_envvars(fcgid_cmd_options *cmdopts, apr_table_t *envvars)
             if (envvars_entry[i].key == NULL
                 || envvars_entry[i].key[0] == '\0')
                 break;
-            apr_cpystrn(cmdopts->initenv_key[i], envvars_entry[i].key,
+            apr_cpystrn(cmdenv->initenv_key[i], envvars_entry[i].key,
                         INITENV_KEY_LEN);
-            apr_cpystrn(cmdopts->initenv_val[i], envvars_entry[i].val,
+            apr_cpystrn(cmdenv->initenv_val[i], envvars_entry[i].val,
                         INITENV_VAL_LEN);
         }
         if (i < INITENV_CNT) {
-            cmdopts->initenv_key[i][0] = '\0';
+            cmdenv->initenv_key[i][0] = '\0';
         }
     }
     else {
-        cmdopts->initenv_key[0][0] = '\0';
+        cmdenv->initenv_key[0][0] = '\0';
     }
 
     return overflow;
@@ -917,6 +917,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
     apr_status_t rv;
 
     cmdopts = apr_pcalloc(cmd->pool, sizeof *cmdopts);
+    cmdopts->cmdenv = apr_pcalloc(cmd->pool, sizeof *cmdopts->cmdenv);
 
     cmdopts->busy_timeout = DEFAULT_BUSY_TIMEOUT;
     cmdopts->idle_timeout = DEFAULT_IDLE_TIMEOUT;
@@ -1041,7 +1042,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
                             option);
     }
 
-    if ((overflow = set_cmd_envvars(cmdopts, envvars)) != 0) {
+    if ((overflow = set_cmd_envvars(cmdopts->cmdenv, envvars)) != 0) {
         return apr_psprintf(cmd->pool, "mod_fcgid: environment variable table "
                             "overflow; increase INITENV_CNT in fcgid_pm.h from"
                             " %d to at least %d",
@@ -1054,7 +1055,8 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
 }
 
 void get_cmd_options(request_rec *r, const char *cmdpath,
-                     fcgid_cmd_options *cmdopts)
+                     fcgid_cmd_options *cmdopts,
+                     fcgid_cmd_env *cmdenv)
 {
     fcgid_server_conf *sconf =
         ap_get_module_config(r->server->module_config, &fcgid_module);
@@ -1065,6 +1067,8 @@ void get_cmd_options(request_rec *r, const char *cmdpath,
 
     if (cmd_specific) { /* ignore request context configuration */
         *cmdopts = *cmd_specific;
+        *cmdenv = *cmdopts->cmdenv;
+        cmdopts->cmdenv = NULL;
         /* pick up configuration for values that can't be configured
          * on FcgidCmdOptions
          */
@@ -1081,7 +1085,7 @@ void get_cmd_options(request_rec *r, const char *cmdpath,
     cmdopts->min_class_process_count = sconf->min_class_process_count;
     cmdopts->proc_lifetime = sconf->proc_lifetime;
 
-    if ((overflow = set_cmd_envvars(cmdopts, sconf->default_init_env)) != 0) {
+    if ((overflow = set_cmd_envvars(cmdenv, sconf->default_init_env)) != 0) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
                       "mod_fcgid: %d environment variables dropped; increase "
                       "INITENV_CNT in fcgid_pm.h from %d to at least %d",
@@ -1089,4 +1093,6 @@ void get_cmd_options(request_rec *r, const char *cmdpath,
                       INITENV_CNT,
                       INITENV_CNT + overflow);
     }
+
+    cmdopts->cmdenv = NULL;
 }

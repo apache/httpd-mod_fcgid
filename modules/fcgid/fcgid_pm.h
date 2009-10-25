@@ -30,7 +30,10 @@ typedef struct {
     uid_t uid;                  /* For suEXEC */
     gid_t gid;                  /* For suEXEC */
     int userdir;                /* For suEXEC */
-    fcgid_cmd_options cmdopts;  /* context-specific configuration */
+    fcgid_cmd_options cmdopts;  /* context-specific configuration, other than
+                                 * envvars
+                                 */
+    fcgid_cmd_env cmdenv;       /* start the command with these env settings */
 } fcgid_command;
 
 void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,

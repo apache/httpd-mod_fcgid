@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Fix startup errors creating shared memory in constrained systems, such
+     as OS X in its default configuration.  This is a regression since mod_fcgid
+     2.2.  [Jeff Trawick]
+
   *) Recover from most "Resource temporarily unavailable" errors writing the
      request to the FastCGI application.  These were common with large request
      bodies on Mac OS X and intermittent on Solaris.  PR 48025.  [Jeff Trawick]

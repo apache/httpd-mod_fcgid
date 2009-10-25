@@ -524,10 +524,10 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
      */
     default_proc_env(procinfo.proc_environ);        
     for (i = 0; i < INITENV_CNT; i++) {
-        if (command->cmdopts.initenv_key[i][0] == '\0')
+        if (command->cmdenv.initenv_key[i][0] == '\0')
             break;
-        apr_table_set(procinfo.proc_environ, command->cmdopts.initenv_key[i],
-                      command->cmdopts.initenv_val[i]);
+        apr_table_set(procinfo.proc_environ, command->cmdenv.initenv_key[i],
+                      command->cmdenv.initenv_val[i]);
     }
 
     /* Spawn the process now */
