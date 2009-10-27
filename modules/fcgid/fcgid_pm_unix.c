@@ -439,7 +439,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 
     /* Get the global mutex before posting the request */
     if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+        ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
                       "mod_fcgid: can't get pipe mutex");
         exit(0);
     }
@@ -463,7 +463,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 
     /* Release the lock */
     if ((rv = apr_global_mutex_unlock(g_pipelock)) != APR_SUCCESS) {
-        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+        ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
                       "mod_fcgid: can't release pipe mutex");
         exit(0);
     }
