@@ -77,9 +77,6 @@ apr_status_t proctable_child_init(server_rec * main_server,
 apr_status_t proctable_post_config(server_rec * main_server,
                                    apr_pool_t * pconf);
 
-apr_status_t proctable_lock_table(void);
-apr_status_t proctable_unlock_table(void);
-
 fcgid_procnode *proctable_get_free_list(void);
 fcgid_procnode *proctable_get_busy_list(void);
 fcgid_procnode *proctable_get_idle_list(void);

@@ -200,12 +200,12 @@ proctable_child_init(server_rec * main_server, apr_pool_t * configpool)
     return rv;
 }
 
-apr_status_t proctable_lock_table(void)
+static apr_status_t proctable_lock_internal(void)
 {
     return apr_global_mutex_lock(g_sharelock);
 }
 
-apr_status_t proctable_unlock_table(void)
+static apr_status_t proctable_unlock_internal(void)
 {
     return apr_global_mutex_unlock(g_sharelock);
 }
@@ -258,7 +258,7 @@ void safe_lock(server_rec * s)
     }
 
     /* Lock error is a fatal error */
-    if ((rv = proctable_lock_table()) != APR_SUCCESS) {
+    if ((rv = proctable_lock_internal()) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
                      "mod_fcgid: can't get lock in pid %" APR_PID_T_FMT,
                      getpid());
@@ -271,7 +271,7 @@ void safe_unlock(server_rec * s)
     /* Lock error is a fatal error */
     apr_status_t rv;
 
-    if ((rv = proctable_unlock_table()) != APR_SUCCESS) {
+    if ((rv = proctable_unlock_internal()) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
                      "mod_fcgid: can't unlock in pid %" APR_PID_T_FMT, 
                      getpid());
