@@ -34,10 +34,10 @@ link_node_to_list(server_rec * main_server,
                   fcgid_procnode * header,
                   fcgid_procnode * node, fcgid_procnode * table_array)
 {
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     node->next_index = header->next_index;
     header->next_index = node - table_array;
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 }
 
 static apr_time_t lastidlescan = 0;
@@ -69,7 +69,7 @@ static void scan_idlelist(server_rec * main_server)
     previous_node = proctable_get_idle_list();
     error_list_header = proctable_get_error_list();
 
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     current_node = &proc_table[previous_node->next_index];
     while (current_node != proc_table) {
         next_node = &proc_table[current_node->next_index];
@@ -101,7 +101,7 @@ static void scan_idlelist(server_rec * main_server)
 
         current_node = next_node;
     }
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 }
 
 static apr_time_t lastbusyscan = 0;
@@ -131,7 +131,7 @@ static void scan_busylist(server_rec * main_server)
     previous_node = proctable_get_busy_list();
     error_list_header = proctable_get_error_list();
 
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     current_node = &proc_table[previous_node->next_index];
     while (current_node != proc_table) {
         next_node = &proc_table[current_node->next_index];
@@ -154,7 +154,7 @@ static void scan_busylist(server_rec * main_server)
 
         current_node = next_node;
     }
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 }
 
 static apr_time_t lastzombiescan = 0;
@@ -194,7 +194,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
     error_list_header = proctable_get_error_list();
     check_list_header = &temp_header;
 
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     current_node = &proc_table[previous_node->next_index];
     while (current_node != proc_table) {
         next_node = &proc_table[current_node->next_index];
@@ -214,7 +214,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
 
         current_node = next_node;
     }
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 
     /* 
        Now check every node in check list
@@ -249,7 +249,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
        Now link the check list back to the tail of idle list 
      */
     if (check_list_header->next_index) {
-        safe_lock(main_server);
+        proctable_pm_lock(main_server);
         previous_node = proctable_get_idle_list();
         current_node = &proc_table[previous_node->next_index];
 
@@ -261,7 +261,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
 
         /* Link check list to the tail of idle list */
         previous_node->next_index = check_list_header->next_index;
-        safe_unlock(main_server);
+        proctable_pm_unlock(main_server);
     }
 }
 
@@ -291,10 +291,10 @@ static void scan_errorlist(server_rec * main_server)
 
     /* Try wait dead processes, restore to free list */
     /* Note: I can't keep the lock during the scan */
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     temp_error_header.next_index = error_list_header->next_index;
     error_list_header->next_index = 0;
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 
     previous_node = &temp_error_header;
     current_node = &proc_table[previous_node->next_index];
@@ -338,7 +338,7 @@ static void scan_errorlist(server_rec * main_server)
     }
 
     /* Link the temp error list back */
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     /* Find the tail of error list */
     previous_node = error_list_header;
     current_node = &proc_table[previous_node->next_index];
@@ -347,7 +347,7 @@ static void scan_errorlist(server_rec * main_server)
         current_node = &proc_table[current_node->next_index];
     }
     previous_node->next_index = temp_error_header.next_index;
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 }
 
 static void kill_all_subprocess(server_rec * main_server)
@@ -474,9 +474,9 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     proctable_array = proctable_get_table_array();
 
     /* Apply a slot from free list */
-    safe_lock(main_server);
+    proctable_pm_lock(main_server);
     if (free_list_header->next_index == 0) {
-        safe_unlock(main_server);
+        proctable_pm_unlock(main_server);
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
                      "mod_fcgid: too much processes, please increase FCGID_MAX_APPLICATION");
         return;
@@ -484,7 +484,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     procnode = &proctable_array[free_list_header->next_index];
     free_list_header->next_index = procnode->next_index;
     procnode->next_index = 0;
-    safe_unlock(main_server);
+    proctable_pm_unlock(main_server);
 
     /* Prepare to spawn */
     procnode->deviceid = command->deviceid;

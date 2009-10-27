@@ -245,7 +245,35 @@ size_t proctable_get_table_size(void)
     return g_table_size;
 }
 
-void safe_lock(server_rec * s)
+void proctable_lock(request_rec *r)
+{
+    /* Lock error is a fatal error */
+    apr_status_t rv;
+
+    if ((rv = proctable_lock_internal()) != APR_SUCCESS) {
+        ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
+                      "mod_fcgid: can't lock process table in pid %"
+                      APR_PID_T_FMT,
+                      getpid());
+        exit(1);
+    }
+}
+
+void proctable_unlock(request_rec *r)
+{
+    /* Lock error is a fatal error */
+    apr_status_t rv;
+
+    if ((rv = proctable_unlock_internal()) != APR_SUCCESS) {
+        ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
+                      "mod_fcgid: can't unlock process table in pid %"
+                      APR_PID_T_FMT, 
+                      getpid());
+        exit(1);
+    }
+}
+
+void proctable_pm_lock(server_rec *s)
 {
     apr_status_t rv;
 
@@ -260,20 +288,22 @@ void safe_lock(server_rec * s)
     /* Lock error is a fatal error */
     if ((rv = proctable_lock_internal()) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
-                     "mod_fcgid: can't get lock in pid %" APR_PID_T_FMT,
+                     "mod_fcgid: can't lock process table in PM, pid %"
+                     APR_PID_T_FMT,
                      getpid());
         exit(1);
     }
 }
 
-void safe_unlock(server_rec * s)
+void proctable_pm_unlock(server_rec *s)
 {
     /* Lock error is a fatal error */
     apr_status_t rv;
 
     if ((rv = proctable_unlock_internal()) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, s,
-                     "mod_fcgid: can't unlock in pid %" APR_PID_T_FMT, 
+                     "mod_fcgid: can't unlock process table in PM, pid %"
+                     APR_PID_T_FMT,
                      getpid());
         exit(1);
     }

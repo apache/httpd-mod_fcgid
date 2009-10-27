@@ -33,7 +33,7 @@
 #define FCGID_APPLY_TRY_COUNT 2
 #define FCGID_REQUEST_COUNT 32
 
-static fcgid_procnode *apply_free_procnode(server_rec * s,
+static fcgid_procnode *apply_free_procnode(request_rec *r,
                                            fcgid_command * command)
 {
     /* Scan idle list, find a node match inode, deviceid and groupid
@@ -51,7 +51,7 @@ static fcgid_procnode *apply_free_procnode(server_rec * s,
     previous_node = proctable_get_idle_list();
     busy_list_header = proctable_get_busy_list();
 
-    safe_lock(s);
+    proctable_lock(r);
     current_node = &proc_table[previous_node->next_index];
     while (current_node != proc_table) {
         next_node = &proc_table[current_node->next_index];
@@ -68,21 +68,21 @@ static fcgid_procnode *apply_free_procnode(server_rec * s,
             current_node->next_index = busy_list_header->next_index;
             busy_list_header->next_index = current_node - proc_table;
 
-            safe_unlock(s);
+            proctable_unlock(r);
             return current_node;
         } else
             previous_node = current_node;
 
         current_node = next_node;
     }
-    safe_unlock(s);
+    proctable_unlock(r);
 
     /* Found nothing */
     return NULL;
 }
 
 static void
-return_procnode(server_rec * s,
+return_procnode(request_rec *r,
                 fcgid_procnode * procnode, int communicate_error)
 {
     fcgid_procnode *previous_node, *current_node, *next_node;
@@ -91,7 +91,7 @@ return_procnode(server_rec * s,
     fcgid_procnode *idle_list_header = proctable_get_idle_list();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
 
-    safe_lock(s);
+    proctable_lock(r);
 
     /* Unlink the node from busy list first */
     previous_node = busy_list_header;
@@ -118,18 +118,18 @@ return_procnode(server_rec * s,
         idle_list_header->next_index = procnode - proc_table;
     }
 
-    safe_unlock(s);
+    proctable_unlock(r);
 }
 
 static int
-count_busy_processes(server_rec * s, fcgid_command * command)
+count_busy_processes(request_rec *r, fcgid_command * command)
 {
     int result = 0;
     fcgid_procnode *previous_node, *current_node, *next_node;
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
 
-    safe_lock(s);
+    proctable_lock(r);
 
     previous_node = busy_list_header;
     current_node = &proc_table[previous_node->next_index];
@@ -146,7 +146,7 @@ count_busy_processes(server_rec * s, fcgid_command * command)
         current_node = next_node;
     }
 
-    safe_unlock(s);
+    proctable_unlock(r);
 
     return result;
 }
@@ -193,16 +193,16 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
                           sconf->busy_timeout, dt);
         } else if (ctx->has_error) {
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
-            return_procnode(s, ctx->procnode,
+            return_procnode(r, ctx->procnode,
                             1 /* communication error */ );
         } else if (ctx->procnode->cmdopts.max_requests_per_process
                    && ++ctx->procnode->requests_handled >=
                    ctx->procnode->cmdopts.max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
-            return_procnode(s, ctx->procnode,
+            return_procnode(r, ctx->procnode,
                             1 /* handled all requests */ );
         } else
-            return_procnode(s, ctx->procnode,
+            return_procnode(r, ctx->procnode,
                             0 /* communication ok */ );
 
         ctx->procnode = NULL;
@@ -328,7 +328,7 @@ handle_request(request_rec * r, int role, const char *argv0,
 
             /* Apply a process slot */
             bucket_ctx->procnode =
-                apply_free_procnode(r->server, &fcgi_request);
+                apply_free_procnode(r, &fcgi_request);
             if (bucket_ctx->procnode)
                 break;
 
@@ -336,11 +336,11 @@ handle_request(request_rec * r, int role, const char *argv0,
                busy processes; the problem is just that we haven't spawned
                anything yet, so waiting is pointless */
             if (i > 0 || j > 0
-                || count_busy_processes(r->server, &fcgi_request)) {
+                || count_busy_processes(r, &fcgi_request)) {
                 apr_sleep(apr_time_from_sec(1));
 
                 bucket_ctx->procnode =
-                    apply_free_procnode(r->server, &fcgi_request);
+                    apply_free_procnode(r, &fcgi_request);
                 if (bucket_ctx->procnode)
                     break;
             }
@@ -355,7 +355,7 @@ handle_request(request_rec * r, int role, const char *argv0,
                                  &bucket_ctx->ipc) != APR_SUCCESS) {
                 proc_close_ipc(&bucket_ctx->ipc);
                 bucket_ctx->procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
-                return_procnode(r->server, bucket_ctx->procnode,
+                return_procnode(r, bucket_ctx->procnode,
                                 1 /* has error */ );
                 bucket_ctx->procnode = NULL;
             } else
