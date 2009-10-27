@@ -193,7 +193,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
             if ((rv =
                  apr_queue_pop(g_notifyqueue,
                                &notifybyte)) != APR_SUCCESS) {
-                apr_thread_mutex_lock(g_reqlock);
+                apr_thread_mutex_unlock(g_reqlock);
                 ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
                               "mod_fcgid: can't pop notify message");
                 return rv;
