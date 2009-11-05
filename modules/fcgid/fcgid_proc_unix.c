@@ -104,10 +104,8 @@ static apr_status_t ap_unix_create_privileged_process(apr_proc_t *newproc,
     }
 
     i = 0;
-    if (args) {
-        while (args[i]) {
-            i++;
-        }
+    while (args[i]) {
+        i++;
     }
     /* allocate space for 4 new args, the input args, and a null terminator */
     newargs = apr_palloc(p, sizeof(char *) * (i + 4));
