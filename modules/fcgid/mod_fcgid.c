@@ -243,7 +243,6 @@ static int mod_fcgid_authenticator(request_rec * r)
 {
     int res = 0;
     const char *password = NULL;
-    const char *location = NULL;
     apr_table_t *saved_subprocess_env = NULL;
     fcgid_wrapper_conf *wrapper_conf;
     auth_conf *authenticator_info;
@@ -298,7 +297,7 @@ static int mod_fcgid_authenticator(request_rec * r)
     r->subprocess_env = saved_subprocess_env;
 
     if (res == OK && r->status == 200
-        && (location = apr_table_get(r->headers_out, "Location")) == NULL)
+        && apr_table_get(r->headers_out, "Location") == NULL)
     {
         /* Pass */
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
@@ -338,7 +337,6 @@ static int mod_fcgid_authenticator(request_rec * r)
 static int mod_fcgid_authorizer(request_rec * r)
 {
     int res = 0;
-    const char *location = NULL;
     apr_table_t *saved_subprocess_env = NULL;
     fcgid_wrapper_conf *wrapper_conf;
     auth_conf *authorizer_info;
@@ -388,7 +386,7 @@ static int mod_fcgid_authorizer(request_rec * r)
     r->subprocess_env = saved_subprocess_env;
 
     if (res == OK && r->status == 200
-        && (location = apr_table_get(r->headers_out, "Location")) == NULL)
+        && apr_table_get(r->headers_out, "Location") == NULL)
     {
         /* Pass */
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
@@ -428,7 +426,6 @@ static int mod_fcgid_authorizer(request_rec * r)
 static int mod_fcgid_check_access(request_rec * r)
 {
     int res = 0;
-    const char *location = NULL;
     apr_table_t *saved_subprocess_env = NULL;
     fcgid_wrapper_conf *wrapper_conf;
     auth_conf *access_info;
@@ -479,7 +476,7 @@ static int mod_fcgid_check_access(request_rec * r)
     r->subprocess_env = saved_subprocess_env;
 
     if (res == OK && r->status == 200
-        && (location = apr_table_get(r->headers_out, "Location")) == NULL)
+        && apr_table_get(r->headers_out, "Location") == NULL)
     {
         /* Pass */
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, 0, r,
