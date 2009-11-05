@@ -286,7 +286,7 @@ static void scan_errorlist(server_rec * main_server)
         || apr_time_sec(now) - apr_time_sec(lasterrorscan) <=
         sconf->error_scan_interval)
         return;
-    lasterrorscan = now = apr_time_now();
+    lasterrorscan = now;
 
     /* Try wait dead processes, restore to free list */
     /* Note: I can't keep the lock during the scan */
