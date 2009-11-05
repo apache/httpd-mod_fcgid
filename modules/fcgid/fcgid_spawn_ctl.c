@@ -215,14 +215,13 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 
 int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
 {
-    struct fcgid_stat_node *previous_node, *current_node;
+    struct fcgid_stat_node *current_node;
 
     if (!g_stat_pool || !procnode)
         return 0;
 
     /* Can I find the node base on inode, device id and share group id? */
-    previous_node = g_stat_list_header;
-    for (current_node = previous_node;
+    for (current_node = g_stat_list_header;
          current_node != NULL; current_node = current_node->next) {
         if (current_node->inode == procnode->inode
             && current_node->deviceid == procnode->deviceid
@@ -231,7 +230,6 @@ int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
             && current_node->uid == procnode->uid
             && current_node->gid == procnode->gid)
             break;
-        previous_node = current_node;
     }
 
     if (current_node) {
