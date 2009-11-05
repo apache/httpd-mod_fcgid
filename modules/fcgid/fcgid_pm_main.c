@@ -169,7 +169,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
      */
     pid_t thepid;
     fcgid_procnode *previous_node, *current_node, *next_node;
-    fcgid_procnode *error_list_header, *check_list_header;
+    fcgid_procnode *check_list_header;
     fcgid_procnode *proc_table;
     apr_time_t last_active_time;
     apr_time_t now = apr_time_now();
@@ -191,7 +191,6 @@ static void scan_idlelist_zombie(server_rec * main_server)
      */
     proc_table = proctable_get_table_array();
     previous_node = proctable_get_idle_list();
-    error_list_header = proctable_get_error_list();
     check_list_header = &temp_header;
 
     proctable_pm_lock(main_server);
