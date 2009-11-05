@@ -240,7 +240,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
                      "mod_fcgid: Process manager %" APR_PID_T_FMT  " started", getpid());
 
         if ((rv = init_signal(main_server)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
+            ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
                          "mod_fcgid: can't install signal handler, exiting now");
             exit(1);
         }
