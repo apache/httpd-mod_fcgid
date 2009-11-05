@@ -538,7 +538,6 @@ static int
 fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
            server_rec * main_server)
 {
-    apr_proc_t *procnew;
     const char *userdata_key = "fcgid_init";
     apr_status_t rv;
     void *dummy = NULL;
@@ -553,16 +552,10 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     apr_pool_userdata_get(&dummy, userdata_key,
                           main_server->process->pool);
     if (!dummy) {
-        procnew =
-            apr_pcalloc(main_server->process->pool, sizeof(*procnew));
-        procnew->pid = -1;
-        procnew->err = procnew->in = procnew->out = NULL;
-        apr_pool_userdata_set((const void *) procnew, userdata_key,
+        apr_pool_userdata_set((const void *)1, userdata_key,
                               apr_pool_cleanup_null,
                               main_server->process->pool);
         return OK;
-    } else {
-        procnew = dummy;
     }
 
     /* Initialize share memory and share lock */
