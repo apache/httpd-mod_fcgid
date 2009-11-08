@@ -171,6 +171,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
     }
 
     proc_close_ipc(&ctx->ipc);
+    ++ctx->procnode->requests_handled;
 
     if (ctx->procnode) {
         /* FIXME See BZ #47483 */
@@ -196,7 +197,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
             return_procnode(r, ctx->procnode,
                             1 /* communication error */ );
         } else if (ctx->procnode->cmdopts.max_requests_per_process
-                   && ++ctx->procnode->requests_handled >=
+                   && ctx->procnode->requests_handled >=
                    ctx->procnode->cmdopts.max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
             return_procnode(r, ctx->procnode,
@@ -448,12 +449,11 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
     int seen_eos;
 
     /* Stdin header and body */
-    /* XXX HACK: I have to read all the request into memory before sending it 
+    /* I have to read all the request into memory before sending it 
        to fastcgi application server, this prevents slow clients from 
        keeping the server in processing too long. 
        But sometimes it's not acceptable (think about uploading a large attachment)
-       file_bucket is a better choice in this case...
-       To do, or not to do, that is the question ^_^
+       Request will be stored in tmp file if the size larger than max_mem_request_len
      */
     seen_eos = 0;
     do {
