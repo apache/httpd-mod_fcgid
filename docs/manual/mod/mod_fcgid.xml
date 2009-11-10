@@ -382,6 +382,12 @@
       </tr>
     </table>
 
+    <p>Several of the directives control processing for a <em>process 
+    class</em>.  A process class is the set of processes which were started 
+    with the same executable file and share certain other characteristics such
+    as virtual host and identity.  Two commands commands which are links to or 
+    otherwise refer to the same executable file share the same process class.</p>
+
     <note type="hint"><title>Note</title>
     <p>Certain settings or other concepts that depend on the virtual host,
     such as <directive module="mod_fcgid">FcgidInitialEnv</directive>
@@ -705,10 +711,8 @@
     <default>FcgidMaxProcessesPerClass 100</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.  This directive sets the maximum number of processes in a class
-      that can be started.</p>
+      <p>This directive sets the maximum number of processes that can be 
+      started for each process class.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
@@ -724,10 +728,8 @@
     <default>FcgidMinProcessesPerClass 3</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.  This directive sets the minimum number of processes in a class
-      that will be retained after finishing requests.</p>
+      <p>This directive sets the minimum number of processes that will be
+      retained in a process class after finishing requests.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
