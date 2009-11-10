@@ -385,8 +385,8 @@
     <p>Several of the directives control processing for a <em>process 
     class</em>.  A process class is the set of processes which were started 
     with the same executable file and share certain other characteristics such
-    as virtual host and identity.  Two commands commands which are links to or 
-    otherwise refer to the same executable file share the same process class.</p>
+    as virtual host and identity.  Two commands which are links to or otherwise
+    refer to the same executable file share the same process class.</p>
 
     <note type="hint"><title>Note</title>
     <p>Certain settings or other concepts that depend on the virtual host,
