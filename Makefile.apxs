@@ -45,7 +45,7 @@ install-conf:
 	    if test -f $$i; then \
 		(awk -f $(fcgid_srcdir)/build/addloadexample.awk \
 		    -v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
-		    $$i > $$i.new && \
+		    < $$i > $$i.new && \
 		 mv $$i $$i.bak && mv $$i.new $$i \
 	        ) || true; \
 	    fi; \

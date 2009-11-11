@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Fix compatibility of httpd.conf-editing logic with non-GNU awk.  PR 48067.
+     [Hans Werner Strube <strube physik3.gwdg.de>]
+
   *) Fix startup errors creating shared memory in constrained systems, such
      as OS X in its default configuration.  This is a regression since mod_fcgid
      2.2.  [Jeff Trawick]

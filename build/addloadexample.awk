@@ -32,7 +32,7 @@ tolower($0) ~ /^[# \t]*include[ \t]/ && $NF == EXAMPLECONF {
 
 END {
   if ( lms < 3 ) { 
-    if ( ! /^[ \t]*$/ ) print "";
+    if ( $0 !~ /^[ \t]*$/ ) print "";
     if ( lms < 2 ) { 
       print "LoadModule " MODULE "_module " LIBPATH "/mod_" MODULE DSO;
       print "";
