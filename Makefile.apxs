@@ -15,6 +15,7 @@ fcgid_builddir=.
 fcgid_srcdir=.
 builddir=.
 srcdir=.
+awk=.
 
 SUBDIRS = modules/fcgid
 CLEAN_SUBDIRS = 
@@ -43,7 +44,7 @@ install-conf:
 			  $(DESTDIR)$(exp_sysconfdir)/original
 	for i in $(DESTDIR)$(httpd_conffile) $(DESTDIR)$(httpd_origconffile); do \
 	    if test -f $$i; then \
-		(awk -f $(fcgid_srcdir)/build/addloadexample.awk \
+		($(awk) -f $(fcgid_srcdir)/build/addloadexample.awk \
 		    -v MODULE=fcgid -v DSO=.so -v LIBPATH=$(rel_libexecdir) \
 		    < $$i > $$i.new && \
 		 mv $$i $$i.bak && mv $$i.new $$i \
