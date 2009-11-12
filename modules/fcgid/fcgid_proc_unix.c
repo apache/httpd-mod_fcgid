@@ -183,8 +183,6 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     char **proc_environ;
     struct sockaddr_un unix_addr;
     apr_procattr_t *procattr = NULL;
-    char key_name[_POSIX_PATH_MAX];
-    void *dummy;
     int argc;
     const char *wargv[APACHE_ARG_MAX];
     const char *word; /* For wrapper */
@@ -808,9 +806,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
 {
     const char *diewhy = NULL;
     char signal_info[HUGE_STRING_LEN];
-    char key_name[_POSIX_PATH_MAX];
     int signum = exitcode;
-    void* tmp;
 
     memset(signal_info, 0, HUGE_STRING_LEN);
 

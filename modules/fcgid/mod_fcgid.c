@@ -287,9 +287,9 @@ static char* get_state_desc(fcgid_procnode* node)
 }
     
 /* fcgid Extension to mod_status */
-int fcgid_status_hook(request_rec *r, int flags)
+static int fcgid_status_hook(request_rec *r, int flags)
 {       
-    fcgid_procnode **ar, *current_node;
+    fcgid_procnode **ar = NULL, *current_node;
     int num_ent, index;
     apr_ino_t last_inode = 0;
     apr_dev_t last_deviceid = 0;
@@ -297,7 +297,7 @@ int fcgid_status_hook(request_rec *r, int flags)
     uid_t last_uid = 0;
     apr_size_t last_share_grp_id = 0;
     const char *last_virtualhost = NULL;
-    char* basename, *tmpbasename;
+    const char* basename, *tmpbasename;
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode *error_list_header = proctable_get_error_list();
     fcgid_procnode *idle_list_header = proctable_get_idle_list();
