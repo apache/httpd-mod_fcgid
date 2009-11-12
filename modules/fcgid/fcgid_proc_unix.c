@@ -215,7 +215,8 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
                  getpid(), g_process_counter++);
     strncpy(procnode->socket_path, unix_addr.sun_path,
             sizeof(procnode->socket_path) - 1);
-    strncpy(procnode->executable_path, (lpszwapper!=NULL && lpszwapper[0]!='\0')?wargv[0]:procinfo->cgipath,
+    strncpy(procnode->executable_path,
+            (lpszwapper != NULL && lpszwapper[0] != '\0') ? wargv[0] : procinfo->cgipath,
             sizeof(procnode->executable_path) - 1);
 
     /* Unlink the file just in case */
@@ -348,8 +349,9 @@ APR_SUCCESS
 
     /* fork and exec now */
     /* Note, don't pass &(procnode->proc_id) to fcgid_create_privileged_process(),
-    for it's a share memory address, both parent and child process may modify 
-    procnode->proc_id->pid, so sometimes it's 0 and sometimes it's >0 */
+     * for it's a share memory address, both parent and child process may modify 
+     * procnode->proc_id->pid, so sometimes it's 0 and sometimes it's >0
+     */
     if (lpszwapper != NULL && lpszwapper[0] != '\0') {
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",

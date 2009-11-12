@@ -38,8 +38,7 @@ static APR_OPTIONAL_FN_TYPE(ap_cgi_build_command) * cgi_build_command;
 static ap_filter_rec_t *fcgid_filter_handle;
 static int g_php_fix_pathinfo_enable = 0;
 
-enum fcgid_procnode_type
-{
+enum fcgid_procnode_type {
     FCGID_PROCNODE_TYPE_IDLE,
     FCGID_PROCNODE_TYPE_BUSY,
     FCGID_PROCNODE_TYPE_ERROR,
@@ -240,31 +239,31 @@ static int fcgid_handler(request_rec * r)
 static int fcgidsort(fcgid_procnode **e1, fcgid_procnode **e2)
 {
     int cmp = strcmp((*e1)->executable_path, (*e2)->executable_path);
-    if( cmp!=0 )
+
+    if (cmp != 0)
         return cmp;
-    if( (*e1)->gid!=(*e2)->gid )
-        return (*e1)->gid>(*e2)->gid?1:-1;
-    if( (*e1)->uid!=(*e2)->uid )
-        return (*e1)->uid>(*e2)->uid?1:-1;
-    if( (*e1)->share_grp_id!=(*e2)->share_grp_id )
-        return (*e1)->share_grp_id>(*e2)->share_grp_id?1:-1;
-    if( (*e1)->virtualhost!=(*e2)->virtualhost )
-        return (*e1)->virtualhost>(*e2)->virtualhost?1:-1;
-    if( (*e1)->diewhy!=(*e2)->diewhy )
-        return (*e1)->diewhy>(*e2)->diewhy?1:-1;
-    if( (*e1)->node_type!=(*e2)->node_type )
-        return (*e1)->node_type>(*e2)->node_type?1:-1;
+    if ((*e1)->gid != (*e2)->gid)
+        return (*e1)->gid > (*e2)->gid ? 1 : -1;
+    if ((*e1)->uid != (*e2)->uid)
+        return (*e1)->uid > (*e2)->uid ? 1 : -1;
+    if ((*e1)->share_grp_id != (*e2)->share_grp_id)
+        return (*e1)->share_grp_id > (*e2)->share_grp_id ? 1 : -1;
+    if ((*e1)->virtualhost != (*e2)->virtualhost)
+        return (*e1)->virtualhost > (*e2)->virtualhost ? 1 : -1;
+    if ((*e1)->diewhy != (*e2)->diewhy)
+        return (*e1)->diewhy > (*e2)->diewhy ? 1 : -1;
+    if ((*e1)->node_type != (*e2)->node_type)
+        return (*e1)->node_type > (*e2)->node_type ? 1 : -1;
     return 0;
 }
 
-static char* get_state_desc(fcgid_procnode* node)
+static char *get_state_desc(fcgid_procnode *node)
 {
-    if( node->node_type==FCGID_PROCNODE_TYPE_IDLE )
+    if (node->node_type == FCGID_PROCNODE_TYPE_IDLE)
         return "Ready";
-    else if( node->node_type==FCGID_PROCNODE_TYPE_BUSY )
+    else if (node->node_type == FCGID_PROCNODE_TYPE_BUSY)
         return "Working";
-    else
-    {
+    else {
         switch (node->diewhy) {
         case FCGID_DIE_KILLSELF:
             return "Exiting(normal exit)";
@@ -297,13 +296,13 @@ static int fcgid_status_hook(request_rec *r, int flags)
     uid_t last_uid = 0;
     apr_size_t last_share_grp_id = 0;
     const char *last_virtualhost = NULL;
-    const char* basename, *tmpbasename;
+    const char *basename, *tmpbasename;
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode *error_list_header = proctable_get_error_list();
     fcgid_procnode *idle_list_header = proctable_get_idle_list();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
         
-    if( (flags&AP_STATUS_SHORT) || (proc_table==NULL) )
+    if ((flags & AP_STATUS_SHORT) || (proc_table == NULL))
         return OK;
             
     proctable_lock(r);
@@ -311,48 +310,41 @@ static int fcgid_status_hook(request_rec *r, int flags)
     /* Get element count */
     num_ent = 0;
     current_node = &proc_table[busy_list_header->next_index];
-    while (current_node != proc_table)
-    {
+    while (current_node != proc_table) {
         num_ent++;
         current_node = &proc_table[current_node->next_index];
     }
     current_node = &proc_table[idle_list_header->next_index];
-    while (current_node != proc_table)
-    {
+    while (current_node != proc_table) {
         num_ent++;
         current_node = &proc_table[current_node->next_index];
     }
     current_node = &proc_table[error_list_header->next_index];
-    while (current_node != proc_table)
-    {
+    while (current_node != proc_table) {
         num_ent++;
         current_node = &proc_table[current_node->next_index];
     }
 
     /* Create an array for qsort() */
-    if( num_ent!=0 )
-    {   
-        ar = (fcgid_procnode **) apr_palloc(r->pool, num_ent * sizeof(fcgid_procnode*));
+    if (num_ent != 0) {
+        ar = (fcgid_procnode **)apr_palloc(r->pool, num_ent * sizeof(fcgid_procnode*));
         index = 0;
         current_node = &proc_table[busy_list_header->next_index];
-        while (current_node != proc_table)
-        {   
+        while (current_node != proc_table) {
             ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
             *ar[index] = *current_node;
             ar[index++]->node_type = FCGID_PROCNODE_TYPE_BUSY;
             current_node = &proc_table[current_node->next_index];
         }
         current_node = &proc_table[idle_list_header->next_index];
-        while (current_node != proc_table)
-        {   
+        while (current_node != proc_table) {
             ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
             *ar[index] = *current_node;
             ar[index++]->node_type = FCGID_PROCNODE_TYPE_IDLE;
             current_node = &proc_table[current_node->next_index];
         }    
         current_node = &proc_table[error_list_header->next_index];
-        while (current_node != proc_table)
-        {   
+        while (current_node != proc_table) {
             ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
             *ar[index] = *current_node;
             ar[index++]->node_type = FCGID_PROCNODE_TYPE_ERROR;
@@ -362,20 +354,19 @@ static int fcgid_status_hook(request_rec *r, int flags)
     proctable_unlock(r);
 
     /* Sort the array */
-    if( num_ent!=0 )
-        qsort((void *) ar, num_ent, sizeof(fcgid_procnode*), (int (*)(const void *, const void *)) fcgidsort);
+    if (num_ent != 0)
+        qsort((void *)ar, num_ent, sizeof(fcgid_procnode *),
+              (int (*)(const void *, const void *))fcgidsort);
     
     /* Output */
     ap_rprintf(r, "<hr />\n<h1>Total FastCGI process: %d</h1>\n", num_ent);
-    for( index=0; index<num_ent; index++ )
-    {
+    for (index = 0; index < num_ent; index++) {
     	current_node = ar[index];
-        if( current_node->inode!=last_inode || current_node->deviceid!=last_deviceid
-            || current_node->gid!=last_gid || current_node->uid!=last_uid
-            || current_node->share_grp_id!=last_share_grp_id
-            || current_node->virtualhost!=last_virtualhost )
-        {
-            if( index!=0 )
+        if (current_node->inode != last_inode || current_node->deviceid != last_deviceid
+            || current_node->gid != last_gid || current_node->uid != last_uid
+            || current_node->share_grp_id != last_share_grp_id
+            || current_node->virtualhost != last_virtualhost) {
+            if (index != 0)
                  ap_rputs("</table>\n\n", r);
            
             /* Print executable path basename */
@@ -383,7 +374,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
 	    if (tmpbasename != NULL)
                 tmpbasename++;
             basename = ap_strrchr_c(tmpbasename, '\\');
-            if( basename!=NULL )
+            if (basename != NULL)
                 basename++;
 	    else
                 basename = tmpbasename;
@@ -391,8 +382,9 @@ static int fcgid_status_hook(request_rec *r, int flags)
 
             /* Create a new table for this process info */
             ap_rputs("\n\n<table border=\"0\"><tr>"
-                 "<th>pid</th><th>Process start time</th><th>Last active time</th><th>Request handled</th><th>State</th>"
-                 "</tr>\n", r);
+                     "<th>pid</th><th>Process start time</th><th>Last active time</th>"
+                     "<th>Request handled</th><th>State</th>"
+                     "</tr>\n", r);
 
             last_inode = current_node->inode;
             last_deviceid = current_node->deviceid;
@@ -403,11 +395,12 @@ static int fcgid_status_hook(request_rec *r, int flags)
         }
 
         ap_rprintf(r, "<tr><td>%" APR_PID_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%d</td><td>%s</td></tr>",
-            current_node->proc_id.pid, apr_time_sec(current_node->start_time),
-            apr_time_sec(current_node->last_active_time), current_node->requests_handled,
-            get_state_desc(current_node));
+                   current_node->proc_id.pid, apr_time_sec(current_node->start_time),
+                   apr_time_sec(current_node->last_active_time),
+                   current_node->requests_handled,
+                   get_state_desc(current_node));
     }
-    if( num_ent!=0 )
+    if (num_ent != 0)
         ap_rputs("</table>\n\n", r);
 
     return OK;

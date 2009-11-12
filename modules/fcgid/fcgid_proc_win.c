@@ -132,8 +132,9 @@ apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo
         return APR_ENOSOCKET;
     }
     apr_cpystrn(procnode->socket_path, sock_path, sizeof(procnode->socket_path) - 1);
-    apr_cpystrn(procnode->executable_path, (wrapper_cmdline!=NULL && wrapper_cmdline[0]!='\0')?wargv[0]:procinfo->cgipath,
-            sizeof(procnode->executable_path) - 1);
+    apr_cpystrn(procnode->executable_path,
+                (wrapper_cmdline != NULL && wrapper_cmdline[0] != '\0') ? wargv[0] : procinfo->cgipath,
+                sizeof(procnode->executable_path) - 1);
 
     /* Build environment variables */
     proc_environ = ap_create_environment(procnode->proc_pool,
