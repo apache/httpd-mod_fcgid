@@ -22,6 +22,7 @@
 #include "apr_buckets.h"
 #include "apr_thread_proc.h"
 #include "mod_cgi.h"
+#include "mod_status.h"
 #include "util_script.h"
 #include "fcgid_global.h"
 #include "fcgid_pm.h"
@@ -31,10 +32,18 @@
 #include "fcgid_bridge.h"
 #include "fcgid_filter.h"
 #include "fcgid_protocol.h"
+#include "fcgid_proc.h"
 
 static APR_OPTIONAL_FN_TYPE(ap_cgi_build_command) * cgi_build_command;
 static ap_filter_rec_t *fcgid_filter_handle;
 static int g_php_fix_pathinfo_enable = 0;
+
+enum fcgid_procnode_type
+{
+    FCGID_PROCNODE_TYPE_IDLE,
+    FCGID_PROCNODE_TYPE_BUSY,
+    FCGID_PROCNODE_TYPE_ERROR,
+};
 
 /* Stolen from mod_cgi.c */
 /* KLUDGE --- for back-compatibility, we don't have to check ExecCGI
@@ -226,6 +235,182 @@ static int fcgid_handler(request_rec * r)
     http_retcode =
         bridge_request(r, FCGI_RESPONDER, command, wrapper_conf);
     return (http_retcode == HTTP_OK ? OK : http_retcode);
+}
+
+static int fcgidsort(fcgid_procnode **e1, fcgid_procnode **e2)
+{
+    int cmp = strcmp((*e1)->executable_path, (*e2)->executable_path);
+    if( cmp!=0 )
+        return cmp;
+    if( (*e1)->gid!=(*e2)->gid )
+        return (*e1)->gid>(*e2)->gid?1:-1;
+    if( (*e1)->uid!=(*e2)->uid )
+        return (*e1)->uid>(*e2)->uid?1:-1;
+    if( (*e1)->share_grp_id!=(*e2)->share_grp_id )
+        return (*e1)->share_grp_id>(*e2)->share_grp_id?1:-1;
+    if( (*e1)->virtualhost!=(*e2)->virtualhost )
+        return (*e1)->virtualhost>(*e2)->virtualhost?1:-1;
+    if( (*e1)->diewhy!=(*e2)->diewhy )
+        return (*e1)->diewhy>(*e2)->diewhy?1:-1;
+    if( (*e1)->node_type!=(*e2)->node_type )
+        return (*e1)->node_type>(*e2)->node_type?1:-1;
+    return 0;
+}
+
+static char* get_state_desc(fcgid_procnode* node)
+{
+    if( node->node_type==FCGID_PROCNODE_TYPE_IDLE )
+        return "Ready";
+    else if( node->node_type==FCGID_PROCNODE_TYPE_BUSY )
+        return "Working";
+    else
+    {
+        switch (node->diewhy) {
+        case FCGID_DIE_KILLSELF:
+            return "Exiting(normal exit)";
+        case FCGID_DIE_IDLE_TIMEOUT:
+            return "Exiting(idle timeout)";
+        case FCGID_DIE_LIFETIME_EXPIRED:
+            return "Exiting(lifetime expired)";
+        case FCGID_DIE_BUSY_TIMEOUT:
+            return "Exiting(busy timeout)";
+        case FCGID_DIE_CONNECT_ERROR:
+            return "Exiting(connect error)";
+        case FCGID_DIE_COMM_ERROR:
+            return "Exiting(communication error)";
+        case FCGID_DIE_SHUTDOWN:
+            return "Exiting(shutting down)";
+        default:
+            return "Exiting";
+        }
+    }
+}
+    
+/* fcgid Extension to mod_status */
+int fcgid_status_hook(request_rec *r, int flags)
+{       
+    fcgid_procnode **ar, *current_node;
+    int num_ent, index;
+    apr_ino_t last_inode = 0;
+    apr_dev_t last_deviceid = 0;
+    gid_t last_gid = 0;  
+    uid_t last_uid = 0;
+    apr_size_t last_share_grp_id = 0;
+    const char *last_virtualhost = NULL;
+    char* basename, *tmpbasename;
+    fcgid_procnode *proc_table = proctable_get_table_array();
+    fcgid_procnode *error_list_header = proctable_get_error_list();
+    fcgid_procnode *idle_list_header = proctable_get_idle_list();
+    fcgid_procnode *busy_list_header = proctable_get_busy_list();
+        
+    if( (flags&AP_STATUS_SHORT) || (proc_table==NULL) )
+        return OK;
+            
+    proctable_lock(r);
+        
+    /* Get element count */
+    num_ent = 0;
+    current_node = &proc_table[busy_list_header->next_index];
+    while (current_node != proc_table)
+    {
+        num_ent++;
+        current_node = &proc_table[current_node->next_index];
+    }
+    current_node = &proc_table[idle_list_header->next_index];
+    while (current_node != proc_table)
+    {
+        num_ent++;
+        current_node = &proc_table[current_node->next_index];
+    }
+    current_node = &proc_table[error_list_header->next_index];
+    while (current_node != proc_table)
+    {
+        num_ent++;
+        current_node = &proc_table[current_node->next_index];
+    }
+
+    /* Create an array for qsort() */
+    if( num_ent!=0 )
+    {   
+        ar = (fcgid_procnode **) apr_palloc(r->pool, num_ent * sizeof(fcgid_procnode*));
+        index = 0;
+        current_node = &proc_table[busy_list_header->next_index];
+        while (current_node != proc_table)
+        {   
+            ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
+            *ar[index] = *current_node;
+            ar[index++]->node_type = FCGID_PROCNODE_TYPE_BUSY;
+            current_node = &proc_table[current_node->next_index];
+        }
+        current_node = &proc_table[idle_list_header->next_index];
+        while (current_node != proc_table)
+        {   
+            ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
+            *ar[index] = *current_node;
+            ar[index++]->node_type = FCGID_PROCNODE_TYPE_IDLE;
+            current_node = &proc_table[current_node->next_index];
+        }    
+        current_node = &proc_table[error_list_header->next_index];
+        while (current_node != proc_table)
+        {   
+            ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
+            *ar[index] = *current_node;
+            ar[index++]->node_type = FCGID_PROCNODE_TYPE_ERROR;
+            current_node = &proc_table[current_node->next_index];
+        }
+    }
+    proctable_unlock(r);
+
+    /* Sort the array */
+    if( num_ent!=0 )
+        qsort((void *) ar, num_ent, sizeof(fcgid_procnode*), (int (*)(const void *, const void *)) fcgidsort);
+    
+    /* Output */
+    ap_rprintf(r, "<hr />\n<h1>Total FastCGI process: %d</h1>\n", num_ent);
+    for( index=0; index<num_ent; index++ )
+    {
+    	current_node = ar[index];
+        if( current_node->inode!=last_inode || current_node->deviceid!=last_deviceid
+            || current_node->gid!=last_gid || current_node->uid!=last_uid
+            || current_node->share_grp_id!=last_share_grp_id
+            || current_node->virtualhost!=last_virtualhost )
+        {
+            if( index!=0 )
+                 ap_rputs("</table>\n\n", r);
+           
+            /* Print executable path basename */
+	    tmpbasename = ap_strrchr_c(current_node->executable_path, '/');
+	    if (tmpbasename != NULL)
+                tmpbasename++;
+            basename = ap_strrchr_c(tmpbasename, '\\');
+            if( basename!=NULL )
+                basename++;
+	    else
+                basename = tmpbasename;
+            ap_rprintf(r, "<hr />\n<h3>Process name: %s</h3>\n", basename);
+
+            /* Create a new table for this process info */
+            ap_rputs("\n\n<table border=\"0\"><tr>"
+                 "<th>pid</th><th>Process start time</th><th>Last active time</th><th>Request handled</th><th>State</th>"
+                 "</tr>\n", r);
+
+            last_inode = current_node->inode;
+            last_deviceid = current_node->deviceid;
+            last_gid = current_node->gid;
+            last_uid = current_node->uid;
+            last_share_grp_id = current_node->share_grp_id;
+            last_virtualhost = current_node->virtualhost;
+        }
+
+        ap_rprintf(r, "<tr><td>%" APR_PID_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%d</td><td>%s</td></tr>",
+            current_node->proc_id.pid, apr_time_sec(current_node->start_time),
+            apr_time_sec(current_node->last_active_time), current_node->requests_handled,
+            get_state_desc(current_node));
+    }
+    if( num_ent!=0 )
+        ap_rputs("</table>\n\n", r);
+
+    return OK;
 }
 
 static int mod_fcgid_modify_auth_header(void *subprocess_env,
@@ -773,8 +958,17 @@ static const command_rec fcgid_cmds[] = {
     {NULL}
 };
 
+static int fcgid_pre_config(apr_pool_t *pconf, apr_pool_t *plog,
+                            apr_pool_t *ptemp)
+{                            
+    APR_OPTIONAL_HOOK(ap, status_hook, fcgid_status_hook, NULL, NULL,
+                      APR_HOOK_MIDDLE);
+    return OK;
+} 
+
 static void register_hooks(apr_pool_t * p)
 {
+    ap_hook_pre_config(fcgid_pre_config, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_post_config(fcgid_init, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_child_init(initialize_child, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_handler(fcgid_handler, NULL, NULL, APR_HOOK_MIDDLE);

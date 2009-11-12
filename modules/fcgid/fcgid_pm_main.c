@@ -226,7 +226,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
         next_node = &proc_table[current_node->next_index];
 
         /* Is it zombie process? */
-        thepid = current_node->proc_id->pid;
+        thepid = current_node->proc_id.pid;
         if (proc_wait_process(main_server, current_node) == APR_CHILD_DONE) {
             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
                          "mod_fcgid: cleanup zombie process %"
@@ -331,7 +331,7 @@ static void scan_errorlist(server_rec * main_server)
             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
                          "mod_fcgid: process %" APR_PID_T_FMT
                          " graceful kill fail, sending SIGKILL",
-                         current_node->proc_id->pid);
+                         current_node->proc_id.pid);
             proc_kill_force(current_node, main_server);
         }
     }
@@ -366,7 +366,7 @@ static void kill_all_subprocess(server_rec * main_server)
     /* Kill with SIGKILL if it doesn't work */
     for (i = 0; i < proctable_get_table_size(); i++) {
         if (proc_table[i].proc_pool) {
-            if (apr_proc_wait(proc_table[i].proc_id, &exitcode, &exitwhy,
+            if (apr_proc_wait(&(proc_table[i].proc_id), &exitcode, &exitwhy,
                               APR_NOWAIT) != APR_CHILD_NOTDONE) {
                 proc_table[i].diewhy = FCGID_DIE_SHUTDOWN;
                 proc_print_exit_info(&proc_table[i], exitcode, exitwhy,
@@ -381,7 +381,7 @@ static void kill_all_subprocess(server_rec * main_server)
     /* Wait again */
     for (i = 0; i < proctable_get_table_size(); i++) {
         if (proc_table[i].proc_pool) {
-            if (apr_proc_wait(proc_table[i].proc_id, &exitcode, &exitwhy,
+            if (apr_proc_wait(&(proc_table[i].proc_id), &exitcode, &exitwhy,
                               APR_WAIT) != APR_CHILD_NOTDONE) {
                 proc_table[i].diewhy = FCGID_DIE_SHUTDOWN;
                 proc_print_exit_info(&proc_table[i], exitcode, exitwhy,
@@ -548,7 +548,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
                           procnode, proctable_array);
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
                      "mod_fcgid: server %s:%s(%" APR_PID_T_FMT ") started",
-                     command->virtualhost, command->cgipath, procnode->proc_id->pid);
+                     command->virtualhost, command->cgipath, procnode->proc_id.pid);
         register_spawn(main_server, procnode);
     }
 }

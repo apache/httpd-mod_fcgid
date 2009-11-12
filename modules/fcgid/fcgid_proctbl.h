@@ -37,9 +37,13 @@
     4) error list: a process is associated, and killing the process now
 */
 typedef struct {
+    union {
     int next_index;             /* the next array index in the list */
+    int node_type;              /* the type of this node, used in fcgid_status_hook() only */
+    };
     apr_pool_t *proc_pool;      /* pool for process */
-    apr_proc_t *proc_id;        /* the process id */
+    apr_proc_t proc_id;        /* the process id */
+    char executable_path[_POSIX_PATH_MAX]; /* executable file path */
     char socket_path[_POSIX_PATH_MAX];  /* cgi application socket path */
     apr_ino_t inode;            /* cgi file inode */
     apr_dev_t deviceid;         /* cgi file device id */

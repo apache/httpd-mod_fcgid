@@ -63,7 +63,6 @@ typedef struct {
 } fcgid_namedpipe_handle;
 
 static int g_process_counter = 0;
-static apr_pool_t *g_inode_cginame_map = NULL;
 
 static apr_status_t ap_unix_create_privileged_process(apr_proc_t *newproc,
                                                       const char *progname,
@@ -179,6 +178,7 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
                                                     &fcgid_module);
     apr_status_t rv = APR_SUCCESS;
     apr_file_t *file;
+    apr_proc_t tmpproc;
     int omask, retcode, unix_socket;
     char **proc_environ;
     struct sockaddr_un unix_addr;
@@ -204,18 +204,6 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     }
     wargv[argc] = NULL;
 
-    /* Initialize the variables */
-    if (!g_inode_cginame_map) {
-        rv = apr_pool_create(&g_inode_cginame_map,
-                             procinfo->main_server->process->pconf);
-        if (rv != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, rv,
-                         procinfo->main_server,
-                         "mod_fcgid: can't create CGI name map table");
-            return APR_ENOMEM;
-        }
-    }
-
     /* 
        Create UNIX domain socket before spawn 
      */
@@ -229,6 +217,8 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
                  getpid(), g_process_counter++);
     strncpy(procnode->socket_path, unix_addr.sun_path,
             sizeof(procnode->socket_path) - 1);
+    strncpy(procnode->executable_path, (lpszwapper!=NULL && lpszwapper[0]!='\0')?wargv[0]:procinfo->cgipath,
+            sizeof(procnode->executable_path) - 1);
 
     /* Unlink the file just in case */
     unlink(unix_addr.sun_path);
@@ -327,8 +317,6 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     }
 
     /* Prepare the fork */
-    procnode->proc_id = apr_pcalloc(procnode->proc_pool, 
-                                    sizeof(apr_proc_t));
     if (
    (rv =
     apr_procattr_create(&procattr, procnode->proc_pool)) != APR_SUCCESS
@@ -361,12 +349,15 @@ APR_SUCCESS
     }
 
     /* fork and exec now */
+    /* Note, don't pass &(procnode->proc_id) to fcgid_create_privileged_process(),
+    for it's a share memory address, both parent and child process may modify 
+    procnode->proc_id->pid, so sometimes it's 0 and sometimes it's >0 */
     if (lpszwapper != NULL && lpszwapper[0] != '\0') {
         ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",
                      procinfo->cgipath, lpszwapper);
         if ((rv =
-             fcgid_create_privileged_process(procnode->proc_id,
+             fcgid_create_privileged_process(&tmpproc,
                                              wargv[0], wargv,
                                              (const char *const *)
                                              proc_environ, procattr,
@@ -377,13 +368,14 @@ APR_SUCCESS
                          "mod_fcgid: can't create wrapper process for %s",
                          procinfo->cgipath);
             close(unix_socket);
+            procnode->proc_id = tmpproc;
             return rv;
         }
     } else {
         argv[0] = procinfo->cgipath;
         argv[1] = NULL;
         if ((rv =
-             fcgid_create_privileged_process(procnode->proc_id,
+             fcgid_create_privileged_process(&tmpproc,
                                              procinfo->cgipath,
                                              argv,
                                              (const char *const *)
@@ -394,31 +386,14 @@ APR_SUCCESS
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                          "mod_fcgid: can't create process");
             close(unix_socket);
+            procnode->proc_id = tmpproc;
             return rv;
         }
     }
 
-    /* Set the (deviceid, inode) -> fastcgi path map for log */
-    apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-                 (unsigned long) procnode->inode,
-                 (unsigned long) procnode->deviceid);
-    dummy = NULL;
-    apr_pool_userdata_get(&dummy, key_name, g_inode_cginame_map);
-    if (!dummy) {
-        /* Insert a new item if key not found */
-        const char *put_key = apr_psprintf(g_inode_cginame_map, "%lX%lX",
-                                           (unsigned long) procnode->inode,
-                                           (unsigned long) procnode->deviceid);
-        const char *fcgipath = apr_psprintf(g_inode_cginame_map, "%s",
-                                            procinfo->cgipath);
-
-        if (put_key && fcgipath)
-            apr_pool_userdata_set(fcgipath, put_key, NULL,
-                                  g_inode_cginame_map);
-    }
-
     /* Close socket before try to connect to it */
     close(unix_socket);
+    procnode->proc_id = tmpproc;
 
     return APR_SUCCESS;
 }
@@ -436,7 +411,7 @@ proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
-    rv = apr_proc_kill(procnode->proc_id, SIGTERM);
+    rv = apr_proc_kill(&(procnode->proc_id), SIGTERM);
     if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0)
     {
         kill(getpid(), SIGTERM);
@@ -456,7 +431,7 @@ apr_status_t proc_kill_force(fcgid_procnode * procnode,
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
-    rv = apr_proc_kill(procnode->proc_id, SIGKILL);
+    rv = apr_proc_kill(&(procnode->proc_id), SIGKILL);
     if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0)
     {
         kill(getpid(), SIGTERM);
@@ -472,7 +447,7 @@ proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
     int exitcode;
     apr_exit_why_e exitwhy;
 
-    rv = apr_proc_wait(procnode->proc_id, &exitcode, &exitwhy, APR_NOWAIT);
+    rv = apr_proc_wait(&(procnode->proc_id), &exitcode, &exitwhy, APR_NOWAIT);
     if (rv == APR_CHILD_DONE || rv == APR_EGENERAL) {
         /* Log why and how it die */
         proc_print_exit_info(procnode, exitcode, exitwhy, main_server);
@@ -831,7 +806,6 @@ void
 proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
                      apr_exit_why_e exitwhy, server_rec * main_server)
 {
-    const char *cgipath = NULL;
     const char *diewhy = NULL;
     char signal_info[HUGE_STRING_LEN];
     char key_name[_POSIX_PATH_MAX];
@@ -839,14 +813,6 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     void* tmp;
 
     memset(signal_info, 0, HUGE_STRING_LEN);
-
-    /* Get the file name infomation base on inode and deviceid */
-    apr_snprintf(key_name, _POSIX_PATH_MAX, "%lX%lX",
-                 (unsigned long) procnode->inode,
-                 (unsigned long) procnode->deviceid);
-    apr_pool_userdata_get(&tmp, key_name,
-                          g_inode_cginame_map);
-    cgipath = tmp;
 
     /* Reasons to exit */
     switch (procnode->diewhy) {
@@ -905,12 +871,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     }
 
     /* Print log now */
-    if (cgipath)
-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
-                     "mod_fcgid: process %s(%" APR_PID_T_FMT ") exit(%s), %s",
-                     cgipath, procnode->proc_id->pid, diewhy, signal_info);
-    else
-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
-                     "mod_fcgid: can't get CGI name while exiting, exitcode: %d",
-                     exitcode);
+    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
+                 "mod_fcgid: process %s(%" APR_PID_T_FMT ") exit(%s), %s",
+                 procnode->executable_path, procnode->proc_id.pid, diewhy, signal_info);
 }
