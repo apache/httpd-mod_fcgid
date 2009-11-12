@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Display information about active processes in the server-status page.
+     [Ryan Pan]
+
   *) Fix compatibility of httpd.conf-editing logic with non-GNU awk.  PR 48067.
      [Hans Werner Strube <strube physik3.gwdg.de>]
 
