@@ -40,17 +40,8 @@ rel_sysconfdir=`$APXS -q exp_sysconfdir | sed -e "s#^$rel_fix_prefix/##;"`
 rel_logfiledir=`$APXS -q exp_logfiledir | sed -e "s#^$rel_fix_prefix/##;"`
 httpd_conffile=`$APXS -q exp_sysconfdir`/`$APXS -q progname`.conf
 
-echo "Selecting a suitable awk"
-# find the most suitable awk, allowing user to override with AWK
-for a in gawk mawk /usr/xpg4/bin/awk nawk; do
-    if test -z "$AWK"; then
-        if $a '{print}' <$0 >/dev/null 2>&1; then
-            AWK=$a
-        fi
-    fi
-done
 if test -z "$AWK"; then
-    AWK=awk
+    AWK=`$APXS -q AWK`
 fi
 
 for i in Makefile build/Makefile modules/fcgid/Makefile modules/fcgid/modules.mk; do
