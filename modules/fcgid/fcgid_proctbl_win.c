@@ -17,7 +17,6 @@
 
 #include "fcgid_proctbl.h"
 #include "apr_shm.h"
-#include "apr_global_mutex.h"
 #include "fcgid_global.h"
 
 static apr_thread_mutex_t *g_sharelock = NULL;

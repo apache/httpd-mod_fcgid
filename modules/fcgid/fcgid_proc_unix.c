@@ -46,8 +46,6 @@
 
 #if MODULE_MAGIC_NUMBER_MAJOR < 20081201
 #define ap_unixd_config unixd_config
-// #define ap_unixd_setup_child unixd_setup_child
-// #define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
 #endif
 
 #if APR_MAJOR_VERSION < 1
