@@ -47,6 +47,8 @@ apr_status_t procmgr_finish_notify(server_rec * main_server);
 
 apr_status_t procmgr_child_init(server_rec * main_server,
                                 apr_pool_t * pchild);
+apr_status_t procmgr_pre_config(apr_pool_t *p, apr_pool_t *plog,
+                                apr_pool_t *ptemp);
 apr_status_t procmgr_post_config(server_rec * main_server,
                                  apr_pool_t * pconf);
 

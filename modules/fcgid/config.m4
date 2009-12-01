@@ -29,6 +29,7 @@ fcgid_pm_unix.lo dnl
 fcgid_proc_unix.lo dnl
 fcgid_bucket.lo dnl
 fcgid_filter.lo dnl
+fcgid_mutex_unix.lo dnl
 "
 
 APACHE_MODULE(fcgid, [FastCGI support (mod_fcgid)], $fcigd_objs, , no, [

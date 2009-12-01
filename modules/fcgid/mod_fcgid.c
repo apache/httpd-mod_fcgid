@@ -953,9 +953,22 @@ static const command_rec fcgid_cmds[] = {
 
 static int fcgid_pre_config(apr_pool_t *pconf, apr_pool_t *plog,
                             apr_pool_t *ptemp)
-{                            
+{
+    apr_status_t rv;
+
     APR_OPTIONAL_HOOK(ap, status_hook, fcgid_status_hook, NULL, NULL,
                       APR_HOOK_MIDDLE);
+
+    rv = procmgr_pre_config(pconf, plog, ptemp);
+    if (rv != APR_SUCCESS) {
+        return rv;
+    }
+
+    rv = proctable_pre_config(pconf, plog, ptemp);
+    if (rv != APR_SUCCESS) {
+        return rv;
+    }
+
     return OK;
 } 
 

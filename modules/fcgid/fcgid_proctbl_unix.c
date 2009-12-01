@@ -21,16 +21,13 @@
 #include "apr_global_mutex.h"
 #include "fcgid_global.h"
 #include "fcgid_conf.h"
-#include "unixd.h"
+#include "fcgid_mutex.h"
 #include <unistd.h>
-
-#if MODULE_MAGIC_NUMBER_MAJOR < 20081201
-#define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
-#endif
 
 static apr_shm_t *g_sharemem = NULL;
 static apr_global_mutex_t *g_sharelock = NULL;
-char g_sharelock_name[L_tmpnam];
+static const char *g_sharelock_name;
+static const char *g_sharelock_mutex_type = "fcgid-proctbl";
 static fcgid_procnode *g_proc_array = NULL; /* Contain all process slot */
 static fcgid_procnode *g_free_list_header = NULL;   /* Attach to no process list */
 static fcgid_procnode *g_busy_list_header = NULL;   /* Attach to a working process list */
@@ -123,6 +120,12 @@ static apr_status_t apr_shm_remove(const char *filename, apr_pool_t * pool)
 }
 #endif                          /* APR_MAJOR_VERSION<1 */
 
+apr_status_t proctable_pre_config(apr_pool_t *p, apr_pool_t *plog,
+                                  apr_pool_t *ptemp)
+{
+    return fcgid_mutex_register(g_sharelock_mutex_type, p);
+}
+
 apr_status_t
 proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
 {
@@ -148,18 +151,10 @@ proctable_post_config(server_rec * main_server, apr_pool_t * configpool)
     _global_memory = apr_shm_baseaddr_get(g_sharemem);
 
     /* Create global mutex */
-    if ((rv =
-         apr_global_mutex_create(&g_sharelock, tmpnam(g_sharelock_name),
-                                 APR_LOCK_DEFAULT,
-                                 main_server->process->pconf)) !=
-        APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't create global mutex");
-        exit(1);
-    }
-    if ((rv = ap_unixd_set_global_mutex_perms(g_sharelock)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't set global mutex perms");
+    rv = fcgid_mutex_create(&g_sharelock, &g_sharelock_name,
+                            g_sharelock_mutex_type,
+                            main_server->process->pconf, main_server);
+    if (rv != APR_SUCCESS) {
         exit(1);
     }
 

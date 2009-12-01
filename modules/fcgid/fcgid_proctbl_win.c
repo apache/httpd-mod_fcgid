@@ -30,6 +30,12 @@ static fcgid_share *_global_memory = NULL;
 static fcgid_global_share *g_global_share = NULL;   /* global information */
 static size_t g_table_size = FCGID_PROC_TABLE_SIZE;
 
+apr_status_t proctable_pre_config(apr_pool_t *p, apr_pool_t *plog,
+                                  apr_pool_t *ptemp)
+{
+    return APR_SUCCESS;
+}
+
 apr_status_t
 proctable_post_config(server_rec * main_server, apr_pool_t * pconf)
 {

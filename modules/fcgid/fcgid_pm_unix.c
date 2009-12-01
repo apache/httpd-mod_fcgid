@@ -28,6 +28,7 @@
 #include "fcgid_conf.h"
 #include "fcgid_proctbl.h"
 #include "fcgid_spawn_ctl.h"
+#include "fcgid_mutex.h"
 #include <unistd.h>
 
 #if MODULE_MAGIC_NUMBER_MAJOR >= 20090209
@@ -37,7 +38,6 @@
 #if MODULE_MAGIC_NUMBER_MAJOR < 20081201
 #define ap_unixd_config unixd_config
 #define ap_unixd_setup_child unixd_setup_child
-#define ap_unixd_set_global_mutex_perms unixd_set_global_mutex_perms
 #endif
 
 static apr_status_t create_process_manager(server_rec * main_server,
@@ -50,7 +50,8 @@ static apr_file_t *g_pm_write_pipe = NULL;
 static apr_file_t *g_ap_write_pipe = NULL;
 static apr_file_t *g_ap_read_pipe = NULL;
 static apr_global_mutex_t *g_pipelock = NULL;
-char g_pipelock_name[L_tmpnam];
+static const char *g_pipelock_name;
+static const char *g_pipelock_mutex_type = "fcgid-pipe";
 
 static int volatile g_caughtSigTerm = 0;
 static pid_t g_pm_pid;
@@ -301,6 +302,12 @@ procmgr_child_init(server_rec * main_server, apr_pool_t * configpool)
     return APR_SUCCESS;
 }
 
+apr_status_t procmgr_pre_config(apr_pool_t *p, apr_pool_t *plog,
+                                apr_pool_t *ptemp)
+{
+    return fcgid_mutex_register(g_pipelock_mutex_type, p);
+}
+
 apr_status_t
 procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 {
@@ -364,18 +371,10 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
     }
 
     /* Create mutex for pipe reading and writing */
-    if ((rv =
-         apr_global_mutex_create(&g_pipelock, tmpnam(g_pipelock_name),
-                                 APR_LOCK_DEFAULT,
-                                 main_server->process->pconf)) !=
-        APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't create global pipe mutex");
-        exit(1);
-    }
-    if ((rv = ap_unixd_set_global_mutex_perms(g_pipelock)) != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
-                     "mod_fcgid: Can't set global pipe mutex perms");
+    rv = fcgid_mutex_create(&g_pipelock, &g_pipelock_name,
+                            g_pipelock_mutex_type,
+                            main_server->process->pconf, main_server);
+    if (rv != APR_SUCCESS) {
         exit(1);
     }
 

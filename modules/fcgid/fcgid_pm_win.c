@@ -59,6 +59,12 @@ static void *APR_THREAD_FUNC worker_thread(apr_thread_t * thd, void *data)
     return NULL;
 }
 
+apr_status_t procmgr_pre_config(apr_pool_t *p, apr_pool_t *plog,
+                                apr_pool_t *ptemp)
+{
+    return APR_SUCCESS;
+}
+
 apr_status_t
 procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 {

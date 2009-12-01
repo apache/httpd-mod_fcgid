@@ -77,6 +77,8 @@ typedef struct {
 
 apr_status_t proctable_child_init(server_rec * main_server,
                                   apr_pool_t * pchild);
+apr_status_t proctable_pre_config(apr_pool_t *p, apr_pool_t *plog,
+                                  apr_pool_t *ptemp);
 apr_status_t proctable_post_config(server_rec * main_server,
                                    apr_pool_t * pconf);
 
