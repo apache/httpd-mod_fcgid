@@ -54,6 +54,8 @@ apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
 
 #else
 
+#include "ap_mpm.h"
+
 #if AP_NEED_SET_MUTEX_PERMS
 #include "unixd.h"
 #endif
@@ -68,6 +70,30 @@ apr_status_t fcgid_mutex_register(const char *mutex_type,
     return APR_SUCCESS;
 }
 
+static apr_lockmech_e pick_mutex_mechanism(void)
+{
+    apr_lockmech_e mechanism = APR_LOCK_DEFAULT;
+
+#if defined(SOLARIS2) && APR_USE_FCNTL_SERIALIZE
+    /* default is fcntl(), which isn't thread-aware on Solaris; fcgid will
+     * exit with EDEADLK errors if it is used with a threaded MPM
+     */
+    int threaded;
+    apr_status_t rv;
+
+    rv = ap_mpm_query(AP_MPMQ_IS_THREADED, &threaded);
+    if (rv == APR_SUCCESS && threaded) {
+#if APR_HAS_PROC_PTHREAD_SERIALIZE
+        mechanism = APR_LOCK_PROC_PTHREAD;
+#elif APR_HAS_SYSVSEM_SERIALIZE
+        mechanism = APR_LOCK_SYSVSEM;
+#endif
+    }
+#endif
+
+    return mechanism;
+}
+
 apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
                                 const char **lockfilep,
                                 const char *mutex_type,
@@ -75,7 +101,7 @@ apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
                                 server_rec *s)
 {
     apr_status_t rv;
-    apr_lockmech_e mechanism = APR_LOCK_DEFAULT;
+    apr_lockmech_e mechanism = pick_mutex_mechanism();
     char *lockfile;
 
     lockfile = apr_palloc(pconf, L_tmpnam);
