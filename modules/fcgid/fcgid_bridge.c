@@ -171,9 +171,10 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
     }
 
     proc_close_ipc(&ctx->ipc);
-    ++ctx->procnode->requests_handled;
 
     if (ctx->procnode) {
+        ++ctx->procnode->requests_handled;
+
         /* FIXME See BZ #47483 */
         /* Return procnode
            I will return this slot to idle(or error) list except:
