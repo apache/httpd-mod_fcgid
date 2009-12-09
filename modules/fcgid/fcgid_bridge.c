@@ -33,7 +33,7 @@
 #define FCGID_APPLY_TRY_COUNT 2
 #define FCGID_REQUEST_COUNT 32
 
-static fcgid_procnode *apply_free_procnode(request_rec *r,
+static fcgid_procnode *apply_free_procnode(request_rec * r,
                                            fcgid_command * command)
 {
     /* Scan idle list, find a node match inode, deviceid and groupid
@@ -70,7 +70,8 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
 
             proctable_unlock(r);
             return current_node;
-        } else
+        }
+        else
             previous_node = current_node;
 
         current_node = next_node;
@@ -82,7 +83,7 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
 }
 
 static void
-return_procnode(request_rec *r,
+return_procnode(request_rec * r,
                 fcgid_procnode * procnode, int communicate_error)
 {
     fcgid_procnode *previous_node, *current_node, *next_node;
@@ -102,7 +103,8 @@ return_procnode(request_rec *r,
             /* Unlink from busy list */
             previous_node->next_index = current_node->next_index;
             break;
-        } else
+        }
+        else
             previous_node = current_node;
         current_node = next_node;
     }
@@ -112,7 +114,8 @@ return_procnode(request_rec *r,
         /* Link to error list */
         procnode->next_index = error_list_header->next_index;
         error_list_header->next_index = procnode - proc_table;
-    } else {
+    }
+    else {
         /* Link to idle list */
         procnode->next_index = idle_list_header->next_index;
         idle_list_header->next_index = procnode - proc_table;
@@ -121,8 +124,7 @@ return_procnode(request_rec *r,
     proctable_unlock(r);
 }
 
-static int
-count_busy_processes(request_rec *r, fcgid_command * command)
+static int count_busy_processes(request_rec * r, fcgid_command * command)
 {
     int result = 0;
     fcgid_procnode *previous_node, *current_node, *next_node;
@@ -177,35 +179,23 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 
         /* FIXME See BZ #47483 */
         /* Return procnode
-           I will return this slot to idle(or error) list except:
-           I take too much time on this request( greater than BusyTimeout) ),
-           so the process manager may have put this slot from busy list to error
-           list, and the contain of this slot may have been modified
-           In this case I will do nothing and return, let the process manager 
-           do the job   
+           I will return this slot to idle(or error) list
          */
-        int dt = (int)
-            (apr_time_sec(apr_time_now()) - apr_time_sec(ctx->active_time));
-        if (dt > sconf->busy_timeout) { /* can't reference from procnode->cmdopts
-                                         * because procnode could have been reused
-                                         */
-            /* Do nothing but print log */
-            ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
-                          "mod_fcgid: process busy timeout (%d), took %d seconds for this request",
-                          sconf->busy_timeout, dt);
-        } else if (ctx->has_error) {
+        if (ctx->procnode->diewhy == FCGID_DIE_BUSY_TIMEOUT) {
+            return_procnode(r, ctx->procnode, 1 /* busy timeout */ );
+        }
+        else if (ctx->has_error) {
             ctx->procnode->diewhy = FCGID_DIE_COMM_ERROR;
-            return_procnode(r, ctx->procnode,
-                            1 /* communication error */ );
-        } else if (ctx->procnode->cmdopts.max_requests_per_process
-                   && ctx->procnode->requests_handled >=
-                   ctx->procnode->cmdopts.max_requests_per_process) {
+            return_procnode(r, ctx->procnode, 1 /* communication error */ );
+        }
+        else if (ctx->procnode->cmdopts.max_requests_per_process
+                 && ctx->procnode->requests_handled >=
+                 ctx->procnode->cmdopts.max_requests_per_process) {
             ctx->procnode->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
-            return_procnode(r, ctx->procnode,
-                            1 /* handled all requests */ );
-        } else
-            return_procnode(r, ctx->procnode,
-                            0 /* communication ok */ );
+            return_procnode(r, ctx->procnode, 1 /* handled all requests */ );
+        }
+        else
+            return_procnode(r, ctx->procnode, 0 /* communication ok */ );
 
         ctx->procnode = NULL;
     }
@@ -216,7 +206,7 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
 static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 {
     apr_bucket_brigade *bb = (apr_bucket_brigade *) arg;
-    const char *dst_end = buf + len - 1;    /* leave room for terminating null */
+    const char *dst_end = buf + len - 1;        /* leave room for terminating null */
     char *dst = buf;
     apr_bucket *e = APR_BRIGADE_FIRST(bb);
     apr_status_t rv;
@@ -263,7 +253,8 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
                 done = 1;
                 getColon = 0;
                 break;
-            } else if (getLF && (*src == ' ' || *src == '\t')) {
+            }
+            else if (getLF && (*src == ' ' || *src == '\t')) {
                 *dst++ = '\r';
                 *dst++ = '\n';
                 getLF = 0;
@@ -271,7 +262,8 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 
             if (*src == '\n') {
                 getLF = 1;
-            } else if (*src != '\r') {
+            }
+            else if (*src != '\r') {
                 *dst++ = *src;
             }
             src++;
@@ -329,20 +321,17 @@ handle_request(request_rec * r, int role, const char *argv0,
                 fcgi_request.cmdopts.ipc_comm_timeout;
 
             /* Apply a process slot */
-            bucket_ctx->procnode =
-                apply_free_procnode(r, &fcgi_request);
+            bucket_ctx->procnode = apply_free_procnode(r, &fcgi_request);
             if (bucket_ctx->procnode)
                 break;
 
             /* Avoid sleeping the very first time through if there are no
                busy processes; the problem is just that we haven't spawned
                anything yet, so waiting is pointless */
-            if (i > 0 || j > 0
-                || count_busy_processes(r, &fcgi_request)) {
+            if (i > 0 || j > 0 || count_busy_processes(r, &fcgi_request)) {
                 apr_sleep(apr_time_from_sec(1));
 
-                bucket_ctx->procnode =
-                    apply_free_procnode(r, &fcgi_request);
+                bucket_ctx->procnode = apply_free_procnode(r, &fcgi_request);
                 if (bucket_ctx->procnode)
                     break;
             }
@@ -357,10 +346,10 @@ handle_request(request_rec * r, int role, const char *argv0,
                                  &bucket_ctx->ipc) != APR_SUCCESS) {
                 proc_close_ipc(&bucket_ctx->ipc);
                 bucket_ctx->procnode->diewhy = FCGID_DIE_CONNECT_ERROR;
-                return_procnode(r, bucket_ctx->procnode,
-                                1 /* has error */ );
+                return_procnode(r, bucket_ctx->procnode, 1 /* has error */ );
                 bucket_ctx->procnode = NULL;
-            } else
+            }
+            else
                 break;
         }
     }
@@ -373,11 +362,11 @@ handle_request(request_rec * r, int role, const char *argv0,
     }
     bucket_ctx->active_time = bucket_ctx->procnode->last_active_time =
         apr_time_now();
+    bucket_ctx->procnode->diewhy = FCGID_DIE_KILLSELF;
 
     /* Write output_brigade to fastcgi server */
     if ((rv =
-         proc_write_ipc(&bucket_ctx->ipc,
-                        output_brigade)) != APR_SUCCESS) {
+         proc_write_ipc(&bucket_ctx->ipc, output_brigade)) != APR_SUCCESS) {
         bucket_ctx->has_error = 1;
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -414,7 +403,8 @@ handle_request(request_rec * r, int role, const char *argv0,
 
         ap_internal_redirect_handler(location, r);
         return HTTP_OK;
-    } else if (location && r->status == 200) {
+    }
+    else if (location && r->status == 200) {
         /* XX Note that if a script wants to produce its own Redirect 
          * body, it now has to explicitly *say* "Status: 302" 
          */
@@ -437,8 +427,8 @@ handle_request(request_rec * r, int role, const char *argv0,
     return cond_status;
 }
 
-static int add_request_body(request_rec *r, apr_pool_t *request_pool,
-                            apr_bucket_brigade *output_brigade)
+static int add_request_body(request_rec * r, apr_pool_t * request_pool,
+                            apr_bucket_brigade * output_brigade)
 {
     apr_bucket *bucket_input, *bucket_header;
     apr_file_t *fd = NULL;
@@ -458,9 +448,9 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
      */
     seen_eos = 0;
     do {
-        apr_bucket_brigade *input_brigade =
-            apr_brigade_create(request_pool,
-                               r->connection->bucket_alloc);
+        apr_bucket_brigade *input_brigade = apr_brigade_create(request_pool,
+                                                               r->connection->
+                                                               bucket_alloc);
 
         if ((rv = ap_get_brigade(r->input_filters, input_brigade,
                                  AP_MODE_READBYTES,
@@ -510,10 +500,10 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
             request_size += len;
             if (request_size > sconf->max_request_len) {
                 ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
-                              "mod_fcgid: HTTP request length %" APR_OFF_T_FMT 
-                              " (so far) exceeds MaxRequestLen (%" APR_OFF_T_FMT
-                              ")",
-                             request_size, sconf->max_request_len);
+                              "mod_fcgid: HTTP request length %" APR_OFF_T_FMT
+                              " (so far) exceeds MaxRequestLen (%"
+                              APR_OFF_T_FMT ")", request_size,
+                              sconf->max_request_len);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
 
@@ -521,10 +511,9 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                 apr_size_t wrote_len;
                 static const char *fd_key = "fcgid_fd";
 
-                if (fd == NULL){
+                if (fd == NULL) {
                     void *tmp;
-                    apr_pool_userdata_get(&tmp, fd_key,
-                                          r->connection->pool);
+                    apr_pool_userdata_get(&tmp, fd_key, r->connection->pool);
                     fd = tmp;
 
                     if (fd != NULL) {
@@ -578,7 +567,8 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                     apr_bucket_file_create(fd, cur_pos, len, r->pool,
                                            r->connection->bucket_alloc);
                 cur_pos += len;
-            } else {
+            }
+            else {
                 if (APR_BUCKET_IS_HEAP(bucket_input))
                     apr_bucket_copy(bucket_input, &bucket_stdin);
                 else {
@@ -589,8 +579,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                     bucket_stdin =
                         apr_bucket_heap_create(pcopydata, len,
                                                apr_bucket_free,
-                                               r->connection->
-                                               bucket_alloc);
+                                               r->connection->bucket_alloc);
                 }
             }
 
@@ -615,8 +604,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
     bucket_header =
         apr_bucket_heap_create((const char *) stdin_request_header,
                                sizeof(*stdin_request_header),
-                               apr_bucket_free,
-                               r->connection->bucket_alloc);
+                               apr_bucket_free, r->connection->bucket_alloc);
     if (!init_header(FCGI_STDIN, 1, 0, 0, stdin_request_header)) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
                       "mod_fcgid: header overflow");

@@ -54,8 +54,9 @@ static void scan_idlelist(server_rec * main_server)
     apr_time_t last_active_time, start_time;
     apr_time_t now = apr_time_now();
     int idle_timeout, proc_lifetime;
-    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
-                                                    &fcgid_module);
+    fcgid_server_conf *sconf =
+        ap_get_module_config(main_server->module_config,
+                             &fcgid_module);
 
     /* Should I check the idle list now? */
     if (procmgr_must_exit()
@@ -77,17 +78,21 @@ static void scan_idlelist(server_rec * main_server)
         start_time = current_node->start_time;
         idle_timeout = current_node->cmdopts.idle_timeout;
         proc_lifetime = current_node->cmdopts.proc_lifetime;
-        if (((idle_timeout && 
-              (apr_time_sec(now) - apr_time_sec(last_active_time) > idle_timeout))
-             || (proc_lifetime && 
-              (apr_time_sec(now) - apr_time_sec(start_time) > proc_lifetime)))
+        if (((idle_timeout &&
+              (apr_time_sec(now) - apr_time_sec(last_active_time) >
+               idle_timeout))
+             || (proc_lifetime
+                 && (apr_time_sec(now) - apr_time_sec(start_time) >
+                     proc_lifetime)))
             && is_kill_allowed(main_server, current_node)) {
             /* Set die reason for log */
             if (idle_timeout &&
-                (apr_time_sec(now) - apr_time_sec(last_active_time) > idle_timeout))
+                (apr_time_sec(now) - apr_time_sec(last_active_time) >
+                 idle_timeout))
                 current_node->diewhy = FCGID_DIE_IDLE_TIMEOUT;
-            else if (proc_lifetime && 
-                     (apr_time_sec(now) - apr_time_sec(start_time) > proc_lifetime))
+            else if (proc_lifetime &&
+                     (apr_time_sec(now) - apr_time_sec(start_time) >
+                      proc_lifetime))
                 current_node->diewhy = FCGID_DIE_LIFETIME_EXPIRED;
 
             /* Unlink from idle list */
@@ -96,7 +101,8 @@ static void scan_idlelist(server_rec * main_server)
             /* Link to error list */
             current_node->next_index = error_list_header->next_index;
             error_list_header->next_index = current_node - proc_table;
-        } else
+        }
+        else
             previous_node = current_node;
 
         current_node = next_node;
@@ -107,17 +113,13 @@ static void scan_idlelist(server_rec * main_server)
 static apr_time_t lastbusyscan = 0;
 static void scan_busylist(server_rec * main_server)
 {
-    /*
-       Scan the busy list
-       1. move all expired node to error list
-     */
-    fcgid_procnode *previous_node, *current_node, *next_node;
-    fcgid_procnode *error_list_header;
+    fcgid_procnode *current_node;
     fcgid_procnode *proc_table;
     apr_time_t last_active_time;
     apr_time_t now = apr_time_now();
-    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
-                                                    &fcgid_module);
+    fcgid_server_conf *sconf =
+        ap_get_module_config(main_server->module_config,
+                             &fcgid_module);
 
     /* Should I check the busy list? */
     if (procmgr_must_exit()
@@ -126,33 +128,28 @@ static void scan_busylist(server_rec * main_server)
         return;
     lastbusyscan = now;
 
-    /* Check the list */
+    /* Check busy list */
     proc_table = proctable_get_table_array();
-    previous_node = proctable_get_busy_list();
-    error_list_header = proctable_get_error_list();
 
     proctable_pm_lock(main_server);
-    current_node = &proc_table[previous_node->next_index];
+    current_node = &proc_table[proctable_get_busy_list()->next_index];
     while (current_node != proc_table) {
-        next_node = &proc_table[current_node->next_index];
-
         last_active_time = current_node->last_active_time;
-        /* FIXME See BZ #47483 */
         if (apr_time_sec(now) - apr_time_sec(last_active_time) >
-            (current_node->cmdopts.busy_timeout + 10)) {
-            /* Set dir reason for log */
-            current_node->diewhy = FCGID_DIE_BUSY_TIMEOUT;
-
-            /* Unlink from busy list */
-            previous_node->next_index = current_node->next_index;
-
-            /* Link to error list */
-            current_node->next_index = error_list_header->next_index;
-            error_list_header->next_index = current_node - proc_table;
-        } else
-            previous_node = current_node;
-
-        current_node = next_node;
+            (current_node->cmdopts.busy_timeout)) {
+            /* Protocol: 
+               1. diewhy init with FCGID_DIE_KILLSELF
+               2. Process manager set diewhy to FCGID_DIE_BUSY_TIMEOUT and gracefully kill process while busy timeout
+               3. Process manager forced kill process while busy timeout and diewhy is FCGID_DIE_BUSY_TIMEOUT
+             */
+            if (current_node->diewhy == FCGID_DIE_BUSY_TIMEOUT)
+                proc_kill_force(current_node, main_server);
+            else {
+                current_node->diewhy = FCGID_DIE_BUSY_TIMEOUT;
+                proc_kill_gracefully(current_node, main_server);
+            }
+        }
+        current_node = &proc_table[current_node->next_index];
     }
     proctable_pm_unlock(main_server);
 }
@@ -174,8 +171,9 @@ static void scan_idlelist_zombie(server_rec * main_server)
     apr_time_t last_active_time;
     apr_time_t now = apr_time_now();
     fcgid_procnode temp_header;
-    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
-                                                    &fcgid_module);
+    fcgid_server_conf *sconf =
+        ap_get_module_config(main_server->module_config,
+                             &fcgid_module);
 
     memset(&temp_header, 0, sizeof(temp_header));
 
@@ -208,7 +206,8 @@ static void scan_idlelist_zombie(server_rec * main_server)
             /* Link to check list */
             current_node->next_index = check_list_header->next_index;
             check_list_header->next_index = current_node - proc_table;
-        } else
+        }
+        else
             previous_node = current_node;
 
         current_node = next_node;
@@ -238,7 +237,8 @@ static void scan_idlelist_zombie(server_rec * main_server)
             /* Link to free list */
             link_node_to_list(main_server, proctable_get_free_list(),
                               current_node, proc_table);
-        } else
+        }
+        else
             previous_node = current_node;
 
         current_node = next_node;
@@ -278,8 +278,9 @@ static void scan_errorlist(server_rec * main_server)
     fcgid_procnode *free_list_header = proctable_get_free_list();
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode temp_error_header;
-    fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
-                                                    &fcgid_module);
+    fcgid_server_conf *sconf =
+        ap_get_module_config(main_server->module_config,
+                             &fcgid_module);
 
     /* Should I check the busy list? */
     if (procmgr_must_exit()
@@ -300,15 +301,15 @@ static void scan_errorlist(server_rec * main_server)
     while (current_node != proc_table) {
         next_node = &proc_table[current_node->next_index];
 
-        if (proc_wait_process(main_server, current_node) !=
-            APR_CHILD_NOTDONE) {
+        if (proc_wait_process(main_server, current_node) != APR_CHILD_NOTDONE) {
             /* Unlink from error list */
             previous_node->next_index = current_node->next_index;
 
             /* Link to free list */
             current_node->next_index = free_list_header->next_index;
             free_list_header->next_index = current_node - proc_table;
-        } else
+        }
+        else
             previous_node = current_node;
 
         current_node = next_node;
@@ -327,7 +328,8 @@ static void scan_errorlist(server_rec * main_server)
             apr_pool_userdata_set("set", HAS_GRACEFUL_KILL,
                                   apr_pool_cleanup_null,
                                   current_node->proc_pool);
-        } else {
+        }
+        else {
             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
                          "mod_fcgid: process %" APR_PID_T_FMT
                          " graceful kill fail, sending SIGKILL",
@@ -373,7 +375,8 @@ static void kill_all_subprocess(server_rec * main_server)
                                      main_server);
                 apr_pool_destroy(proc_table[i].proc_pool);
                 proc_table[i].proc_pool = NULL;
-            } else
+            }
+            else
                 proc_kill_force(&proc_table[i], main_server);
         }
     }
@@ -397,7 +400,7 @@ static void kill_all_subprocess(server_rec * main_server)
  * either in the arch/ platform-specific modules or util_script.c from whence
  * it came.
  */
-static void default_proc_env(apr_table_t *e)
+static void default_proc_env(apr_table_t * e)
 {
     const char *env_temp;
 
@@ -456,6 +459,7 @@ static void default_proc_env(apr_table_t *e)
     }
 #endif
 }
+
 /* End of common to util_script.c */
 
 static void
@@ -504,7 +508,8 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     procinfo.uid = command->uid;
     procinfo.gid = command->gid;
     procinfo.userdir = command->userdir;
-    if ((rv = apr_pool_create(&procnode->proc_pool, configpool)) != APR_SUCCESS
+    if ((rv =
+         apr_pool_create(&procnode->proc_pool, configpool)) != APR_SUCCESS
         || (procinfo.proc_environ =
             apr_table_make(procnode->proc_pool, INITENV_CNT)) == NULL) {
         /* Link the node back to free list in this case */
@@ -521,7 +526,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
      * request-by-request variables, so if any are overriden, they preempt
      * any system default assumptions
      */
-    default_proc_env(procinfo.proc_environ);        
+    default_proc_env(procinfo.proc_environ);
     for (i = 0; i < INITENV_CNT; i++) {
         if (command->cmdenv.initenv_key[i][0] == '\0')
             break;
@@ -532,23 +537,24 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     /* Spawn the process now */
     /* XXX Spawn uses wrapper_cmdline, but log uses cgipath ? */
     if ((rv =
-        proc_spawn_process(command->wrapper_cmdline, &procinfo,
-                           procnode)) != APR_SUCCESS) {
+         proc_spawn_process(command->wrapper_cmdline, &procinfo,
+                            procnode)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
-                     "mod_fcgid: spawn process %s error",
-                     command->cgipath);
+                     "mod_fcgid: spawn process %s error", command->cgipath);
 
         apr_pool_destroy(procnode->proc_pool);
         link_node_to_list(main_server, free_list_header,
                           procnode, proctable_array);
         return;
-    } else {
+    }
+    else {
         /* The job done */
         link_node_to_list(main_server, idle_list_header,
                           procnode, proctable_array);
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
                      "mod_fcgid: server %s:%s(%" APR_PID_T_FMT ") started",
-                     command->virtualhost, command->cgipath, procnode->proc_id.pid);
+                     command->virtualhost, command->cgipath,
+                     procnode->proc_id.pid);
         register_spawn(main_server, procnode);
     }
 }
