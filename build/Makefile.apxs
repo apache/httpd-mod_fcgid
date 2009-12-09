@@ -58,14 +58,14 @@ conftest_foofn.c:
 	@echo "int main() { return foofn(2, 0644); }" >> $@
 
 conftest_sys_file_h.c:
-	@echo "#include <sys/file.h>" >> $@
+	@echo "#include <sys/file.h>" > $@
 
 conftest_sys_mman_h.c:
-	@echo "#include <sys/mman.h>" >> $@
+	@echo "#include <sys/mman.h>" > $@
 
 conftest_sys_mutex_h.c:
-	@echo "#include <sys/mutex.h>" >> $@
+	@echo "#include <sys/mutex.h>" > $@
 
 conftest_sys_shm_h.c:
-	@echo "#include <sys/shm.h>" >> $@
+	@echo "#include <sys/shm.h>" > $@
 
