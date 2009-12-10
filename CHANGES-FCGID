@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Respect DEFAULT_REL_RUNTIMEDIR for default values of FcgidIPCDir and 
+     FcgidProcessTableFile.  [Jeff Trawick]
+
   *) Resolve fatal EDEADLK errors with threaded MPMs on Solaris.  [Jeff Trawick]
 
   *) Display information about active processes in the server-status page.

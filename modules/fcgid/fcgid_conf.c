@@ -28,6 +28,10 @@
 #include "fcgid_global.h"
 #include "fcgid_conf.h"
 
+#ifndef DEFAULT_REL_RUNTIMEDIR /* Win32, etc. */
+#define DEFAULT_REL_RUNTIMEDIR "logs"
+#endif
+
 #define DEFAULT_IDLE_TIMEOUT 300
 #define DEFAULT_IDLE_SCAN_INTERVAL 120
 #define DEFAULT_BUSY_TIMEOUT 300
@@ -35,8 +39,8 @@
 #define DEFAULT_ERROR_SCAN_INTERVAL 3
 #define DEFAULT_ZOMBIE_SCAN_INTERVAL 3
 #define DEFAULT_PROC_LIFETIME (60*60)
-#define DEFAULT_SOCKET_PREFIX "logs/fcgidsock"
-#define DEFAULT_SHM_PATH "logs/fcgid_shm"
+#define DEFAULT_SOCKET_PREFIX DEFAULT_REL_RUNTIMEDIR "/fcgidsock"
+#define DEFAULT_SHM_PATH      DEFAULT_REL_RUNTIMEDIR "/fcgid_shm"
 #define DEFAULT_SPAWNSOCRE_UPLIMIT 10
 #define DEFAULT_SPAWN_SCORE 1
 #define DEFAULT_TERMINATION_SCORE 2
