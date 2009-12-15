@@ -178,6 +178,11 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
            I will return this slot to idle(or error) list
          */
         if (ctx->procnode->diewhy == FCGID_DIE_BUSY_TIMEOUT) {
+            ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r,
+                          "mod_fcgid: %s took longer than busy timeout "
+                          "(%d secs)",
+                          r->uri,
+                          ctx->procnode->cmdopts.busy_timeout);
             return_procnode(r, ctx->procnode, 1 /* busy timeout */ );
         }
         else if (ctx->has_error) {
