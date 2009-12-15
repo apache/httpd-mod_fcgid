@@ -33,7 +33,7 @@
 #define FCGID_APPLY_TRY_COUNT 2
 #define FCGID_REQUEST_COUNT 32
 
-static fcgid_procnode *apply_free_procnode(request_rec * r,
+static fcgid_procnode *apply_free_procnode(request_rec *r,
                                            fcgid_command * command)
 {
     /* Scan idle list, find a node match inode, deviceid and groupid
@@ -83,8 +83,8 @@ static fcgid_procnode *apply_free_procnode(request_rec * r,
 }
 
 static void
-return_procnode(request_rec * r,
-                fcgid_procnode * procnode, int communicate_error)
+return_procnode(request_rec *r,
+                fcgid_procnode *procnode, int communicate_error)
 {
     fcgid_procnode *previous_node, *current_node, *next_node;
     fcgid_procnode *proc_table = proctable_get_table_array();
@@ -124,7 +124,7 @@ return_procnode(request_rec * r,
     proctable_unlock(r);
 }
 
-static int count_busy_processes(request_rec * r, fcgid_command * command)
+static int count_busy_processes(request_rec *r, fcgid_command *command)
 {
     int result = 0;
     fcgid_procnode *previous_node, *current_node, *next_node;
@@ -423,8 +423,8 @@ handle_request(request_rec * r, int role, const char *argv0,
     return cond_status;
 }
 
-static int add_request_body(request_rec * r, apr_pool_t * request_pool,
-                            apr_bucket_brigade * output_brigade)
+static int add_request_body(request_rec *r, apr_pool_t *request_pool,
+                            apr_bucket_brigade *output_brigade)
 {
     apr_bucket *bucket_input, *bucket_header;
     apr_file_t *fd = NULL;
