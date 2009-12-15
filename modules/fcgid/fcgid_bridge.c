@@ -162,9 +162,6 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
      */
     fcgid_bucket_ctx *ctx = (fcgid_bucket_ctx *) thectx;
     request_rec *r = ctx->ipc.request;
-    server_rec *s = r->server;
-    fcgid_server_conf *sconf = ap_get_module_config(s->module_config,
-                                                    &fcgid_module);
 
     /* Free bucket buffer */
     if (ctx->buffer) {
