@@ -951,9 +951,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         const char *option = ap_getword_white(cmd->pool, &args);
         const char *val;
 
-        /* don't support BusyTimeout until BZ #47483 is fixed
-         * (The kludge in bucket_ctx_cleanup wouldn't have addressibility
-         * to the cmd-specific busy timeout setting.)
+        /* TODO: Consider supporting BusyTimeout.
          */
 
         if (!strcasecmp(option, "ConnectTimeout")) {
