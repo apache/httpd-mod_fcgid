@@ -174,7 +174,6 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
     if (ctx->procnode) {
         ++ctx->procnode->requests_handled;
 
-        /* FIXME See BZ #47483 */
         /* Return procnode
            I will return this slot to idle(or error) list
          */
