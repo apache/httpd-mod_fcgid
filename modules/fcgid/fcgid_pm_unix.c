@@ -219,7 +219,7 @@ static int suexec_setup_child(void)
     /* Only try to switch if we're running as root */
     if (!geteuid() && (seteuid(ap_unixd_config.user_id) == -1)) {
         ap_log_error(APLOG_MARK, APLOG_ALERT, errno, NULL,
-                     "setuid: unable to change to uid: %ld",
+                     "seteuid: unable to change to uid %ld",
                      (long) ap_unixd_config.user_id);
         exit(-1);
     }
