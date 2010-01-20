@@ -359,7 +359,8 @@ static int fcgid_status_hook(request_rec *r, int flags)
               (int (*)(const void *, const void *))fcgidsort);
     
     /* Output */
-    ap_rprintf(r, "<hr />\n<h1>Total FastCGI process: %d</h1>\n", num_ent);
+    ap_rputs("<hr />\n<h1>mod_fcgid status:</h1>\n", r);
+    ap_rprintf(r, "Total FastCGI processes: %d\n", num_ent);
     for (index = 0; index < num_ent; index++) {
     	current_node = ar[index];
         if (current_node->inode != last_inode || current_node->deviceid != last_deviceid
@@ -382,8 +383,8 @@ static int fcgid_status_hook(request_rec *r, int flags)
 
             /* Create a new table for this process info */
             ap_rputs("\n\n<table border=\"0\"><tr>"
-                     "<th>pid</th><th>Process start time</th><th>Last active time</th>"
-                     "<th>Request handled</th><th>State</th>"
+                     "<th>Pid</th><th>Start time</th><th>Last active time</th>"
+                     "<th>Requests handled</th><th>State</th>"
                      "</tr>\n", r);
 
             last_inode = current_node->inode;
