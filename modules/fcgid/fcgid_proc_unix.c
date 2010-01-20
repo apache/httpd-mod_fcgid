@@ -351,7 +351,7 @@ APR_SUCCESS
      * procnode->proc_id->pid, so sometimes it's 0 and sometimes it's >0
      */
     if (lpszwapper != NULL && lpszwapper[0] != '\0') {
-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",
                      procinfo->cgipath, lpszwapper);
         if ((rv =
@@ -807,6 +807,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     const char *diewhy = NULL;
     char signal_info[HUGE_STRING_LEN];
     int signum = exitcode;
+    int loglevel = APLOG_INFO;
 
     memset(signal_info, 0, HUGE_STRING_LEN);
 
@@ -834,7 +835,8 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
         diewhy = "shutting down";
         break;
     default:
-        diewhy = "unknow";
+        loglevel = APLOG_ERR;
+        diewhy = "unknown";
     }
 
     /* Get signal info */
@@ -849,6 +851,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
             break;
 
         default:
+            loglevel = APLOG_ERR;
             if (APR_PROC_CHECK_CORE_DUMP(exitwhy)) {
                 apr_snprintf(signal_info, HUGE_STRING_LEN - 1,
                              "get signal %d, possible coredump generated",
@@ -867,7 +870,7 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
     }
 
     /* Print log now */
-    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, main_server,
+    ap_log_error(APLOG_MARK, loglevel, 0, main_server,
                  "mod_fcgid: process %s(%" APR_PID_T_FMT ") exit(%s), %s",
                  procnode->executable_path, procnode->proc_id.pid, diewhy, signal_info);
 }

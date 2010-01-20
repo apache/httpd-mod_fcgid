@@ -171,7 +171,7 @@ apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo
 
     /* fork and exec now */
     if (wrapper_cmdline != NULL && wrapper_cmdline[0] != '\0') {
-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, procinfo->main_server,
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",
                      procinfo->cgipath, wrapper_cmdline);
         if ((rv = apr_proc_create(&(procnode->proc_id), wargv[0],

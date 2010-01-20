@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.5
 
+  *) Stop using the unsuppressable "notice" log level for debug and 
+     informational messages.  PR 48536.  [Jeff Trawick]
+
   *) Respect DEFAULT_REL_RUNTIMEDIR for default values of FcgidIPCDir and 
      FcgidProcessTableFile.  [Jeff Trawick]
 
