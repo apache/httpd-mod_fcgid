@@ -104,6 +104,10 @@ apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
     apr_lockmech_e mechanism = pick_mutex_mechanism();
     char *lockfile;
 
+    /* XXX This lock file name generation is unfortunate, but defaulting
+     * to a better place would require a directive to override it.  This
+     * is resolved for httpd 2.3+ by hooking into the Mutex support.
+     */
     lockfile = apr_palloc(pconf, L_tmpnam);
     tmpnam(lockfile);
     rv = apr_global_mutex_create(mutex, lockfile, mechanism, pconf);
