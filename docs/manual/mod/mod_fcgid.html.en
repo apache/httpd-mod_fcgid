@@ -381,11 +381,18 @@
 
     <p>PHP child process management (<code>PHP_FCGI_CHILDREN</code>)
     should always be disabled with mod_fcgid, which will only route
-    requests to application processes it has spawned.  Any child
-    processes created by PHP will be unused and may not be terminated
-    properly.  By default, and with the environment variable setting 
-    <code>PHP_FCGI_CHILDREN=0</code>, PHP child process management is
-    disabled.</p>
+    one request at a time to application processes it has spawned;
+    thus, any child processes created by PHP will not be used
+    effectively.  (Additionally, the PHP child processes may not be 
+    terminated properly.) By default, and with the environment
+    variable setting <code>PHP_FCGI_CHILDREN=0</code>, PHP child
+    process management is disabled.</p>
+
+    <p>The popular APC opcode cache for PHP cannot share a cache
+    between PHP FastCGI processes unless PHP manages the child
+    processes.  Thus, the effectiveness of the cache is limited with
+    mod_fcgid; concurrent PHP requests will use different opcode
+    caches.</p>
     </div>
 
   </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -430,6 +437,12 @@
       </tr>
 </table>
 
+    <p>Several of the directives control processing for a <em>process 
+    class</em>.  A process class is the set of processes which were started 
+    with the same executable file and share certain other characteristics such
+    as virtual host and identity.  Two commands which are links to or otherwise
+    refer to the same executable file share the same process class.</p>
+
     <div class="note"><h3>Note</h3>
     <p>Certain settings or other concepts that depend on the virtual host,
     such as <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>
@@ -445,6 +458,8 @@
     started.</p>
     </div>
 
+    <p>Information about each process will be displayed in the 
+    <code class="module"><a href="../mod/mod_status.html">mod_status</a></code> server-status page.</p>
   </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="FcgidAccessChecker" id="FcgidAccessChecker">FcgidAccessChecker</a> <a name="fcgidaccesschecker" id="fcgidaccesschecker">Directive</a></h2>
@@ -921,10 +936,8 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.  This directive sets the maximum number of processes in a class
-      that can be started.</p>
+      <p>This directive sets the maximum number of processes that can be 
+      started for each process class.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
@@ -1011,10 +1024,8 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>A process class is the set of processes which were started by the same
-      command, and share certain other characteristics such as virtual host and
-      identity.  This directive sets the minimum number of processes in a class
-      that will be retained after finishing requests.</p>
+      <p>This directive sets the minimum number of processes that will be
+      retained in a process class after finishing requests.</p>
 
       <p>This setting will apply to all applications spawned for this
       server or virtual host.  Use 
@@ -1237,6 +1248,6 @@
 <div class="bottomlang">
 <p><span>Available Languages: </span><a href="../en/mod/mod_fcgid.html" title="English">&nbsp;en&nbsp;</a></p>
 </div><div id="footer">
-<p class="apache">Copyright 2009 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="apache">Copyright 2010 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="../faq/">FAQ</a> | <a href="../glossary.html">Glossary</a> | <a href="../sitemap.html">Sitemap</a></p></div>
 </body></html>
