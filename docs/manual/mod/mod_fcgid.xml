@@ -331,11 +331,18 @@
 
     <p>PHP child process management (<code>PHP_FCGI_CHILDREN</code>)
     should always be disabled with mod_fcgid, which will only route
-    requests to application processes it has spawned.  Any child
-    processes created by PHP will be unused and may not be terminated
-    properly.  By default, and with the environment variable setting 
-    <code>PHP_FCGI_CHILDREN=0</code>, PHP child process management is
-    disabled.</p>
+    one request at a time to application processes it has spawned;
+    thus, any child processes created by PHP will not be used
+    effectively.  (Additionally, the PHP child processes may not be 
+    terminated properly.) By default, and with the environment
+    variable setting <code>PHP_FCGI_CHILDREN=0</code>, PHP child
+    process management is disabled.</p>
+
+    <p>The popular APC opcode cache for PHP cannot share a cache
+    between PHP FastCGI processes unless PHP manages the child
+    processes.  Thus, the effectiveness of the cache is limited with
+    mod_fcgid; concurrent PHP requests will use different opcode
+    caches.</p>
     </note>
 
   </section>
