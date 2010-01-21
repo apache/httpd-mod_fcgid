@@ -410,6 +410,8 @@
     started.</p>
     </note>
 
+    <p>Information about each process will be displayed in the 
+    <module>mod_status</module> server-status page.</p>
   </section>
 
   <!-- References to other documents or directives -->
