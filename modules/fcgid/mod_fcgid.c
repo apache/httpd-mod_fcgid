@@ -295,6 +295,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
     gid_t last_gid = 0;  
     uid_t last_uid = 0;
     apr_size_t last_share_grp_id = 0;
+    apr_time_t now;
     const char *last_virtualhost = NULL;
     const char *basename, *tmpbasename;
     fcgid_procnode *proc_table = proctable_get_table_array();
@@ -353,6 +354,8 @@ static int fcgid_status_hook(request_rec *r, int flags)
     }
     proctable_unlock(r);
 
+    now = apr_time_now();
+
     /* Sort the array */
     if (num_ent != 0)
         qsort((void *)ar, num_ent, sizeof(fcgid_procnode *),
@@ -383,8 +386,8 @@ static int fcgid_status_hook(request_rec *r, int flags)
 
             /* Create a new table for this process info */
             ap_rputs("\n\n<table border=\"0\"><tr>"
-                     "<th>Pid</th><th>Start time</th><th>Last active time</th>"
-                     "<th>Requests handled</th><th>State</th>"
+                     "<th>Pid</th><th>Active</th><th>Idle</th>"
+                     "<th>Accesses</th><th>State</th>"
                      "</tr>\n", r);
 
             last_inode = current_node->inode;
@@ -396,13 +399,18 @@ static int fcgid_status_hook(request_rec *r, int flags)
         }
 
         ap_rprintf(r, "<tr><td>%" APR_PID_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%d</td><td>%s</td></tr>",
-                   current_node->proc_id.pid, apr_time_sec(current_node->start_time),
-                   apr_time_sec(current_node->last_active_time),
+                   current_node->proc_id.pid,
+                   apr_time_sec(now - current_node->start_time),
+                   apr_time_sec(now - current_node->last_active_time),
                    current_node->requests_handled,
                    get_state_desc(current_node));
     }
-    if (num_ent != 0)
+    if (num_ent != 0) {
         ap_rputs("</table>\n\n", r);
+        ap_rputs("<hr>\n"
+                 "<b>Active</b> and <b>Idle</b> are time active and time since\n"
+                 "last request, in seconds.\n", r);
+    }
 
     return OK;
 }
