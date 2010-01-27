@@ -639,7 +639,7 @@ const char *set_authenticator_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
-auth_conf *get_authenticator_info(request_rec * r, int *authoritative)
+fcgid_auth_conf *get_authenticator_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -687,7 +687,7 @@ const char *set_authorizer_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
-auth_conf *get_authorizer_info(request_rec * r, int *authoritative)
+fcgid_auth_conf *get_authorizer_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -734,7 +734,7 @@ const char *set_access_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
-auth_conf *get_access_info(request_rec * r, int *authoritative)
+fcgid_auth_conf *get_access_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);

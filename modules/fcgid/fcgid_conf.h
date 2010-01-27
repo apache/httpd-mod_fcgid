@@ -51,7 +51,7 @@ typedef struct {
     apr_ino_t inode;
     apr_dev_t deviceid;
     apr_size_t share_group_id;
-} auth_conf;
+} fcgid_auth_conf;
 
 typedef struct {
     const char *exe;            /* executable file path */
@@ -113,17 +113,17 @@ typedef struct {
     apr_hash_t *wrapper_info_hash;
 
     /* authenticator */
-    auth_conf *authenticator_info;
+    fcgid_auth_conf *authenticator_info;
     int authenticator_authoritative;
     int authenticator_authoritative_set;
 
     /* authorizer */
-    auth_conf *authorizer_info;
+    fcgid_auth_conf *authorizer_info;
     int authorizer_authoritative;
     int authorizer_authoritative_set;
 
     /* access check */
-    auth_conf *access_info;
+    fcgid_auth_conf *access_info;
     int access_authoritative;
     int access_authoritative_set;
 } fcgid_dir_conf;
@@ -235,19 +235,19 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
                                    const char *arg);
 const char *set_authenticator_authoritative(cmd_parms * cmd,
                                             void *config, int arg);
-auth_conf *get_authenticator_info(request_rec * r, int *authoritative);
+fcgid_auth_conf *get_authenticator_info(request_rec * r, int *authoritative);
 
 const char *set_authorizer_info(cmd_parms * cmd, void *config,
                                 const char *arg);
 const char *set_authorizer_authoritative(cmd_parms * cmd,
                                          void *config, int arg);
-auth_conf *get_authorizer_info(request_rec * r, int *authoritative);
+fcgid_auth_conf *get_authorizer_info(request_rec * r, int *authoritative);
 
 const char *set_access_info(cmd_parms * cmd, void *config,
                             const char *arg);
 const char *set_access_authoritative(cmd_parms * cmd,
                                      void *config, int arg);
-auth_conf *get_access_info(request_rec * r, int *authoritative);
+fcgid_auth_conf *get_access_info(request_rec * r, int *authoritative);
 
 const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
                                         const char *arg);

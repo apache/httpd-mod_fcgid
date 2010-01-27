@@ -432,7 +432,7 @@ static int mod_fcgid_authenticator(request_rec * r)
     const char *password = NULL;
     apr_table_t *saved_subprocess_env = NULL;
     fcgid_wrapper_conf *wrapper_conf;
-    auth_conf *authenticator_info;
+    fcgid_auth_conf *authenticator_info;
     int authoritative;
 
     authenticator_info = get_authenticator_info(r, &authoritative);
@@ -526,7 +526,7 @@ static int mod_fcgid_authorizer(request_rec * r)
     int res = 0;
     apr_table_t *saved_subprocess_env = NULL;
     fcgid_wrapper_conf *wrapper_conf;
-    auth_conf *authorizer_info;
+    fcgid_auth_conf *authorizer_info;
     int authoritative;
 
     authorizer_info = get_authorizer_info(r, &authoritative);
@@ -615,7 +615,7 @@ static int mod_fcgid_check_access(request_rec * r)
     int res = 0;
     apr_table_t *saved_subprocess_env = NULL;
     fcgid_wrapper_conf *wrapper_conf;
-    auth_conf *access_info;
+    fcgid_auth_conf *access_info;
     int authoritative;
 
     access_info = get_access_info(r, &authoritative);
