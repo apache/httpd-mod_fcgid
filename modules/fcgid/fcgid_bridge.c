@@ -283,12 +283,16 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 
 static int
 handle_request(request_rec * r, int role, const char *argv0,
+               fcgid_auth_conf * auth_conf,
                fcgid_wrapper_conf * wrapper_conf,
                apr_bucket_brigade * output_brigade)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
     fcgid_command fcgi_request;
     fcgid_bucket_ctx *bucket_ctx;
+    apr_ino_t inode;
+    apr_dev_t deviceid;
+    apr_size_t shareid;
     int i, j, cond_status;
     apr_status_t rv;
     apr_bucket_brigade *brigade_stdout;
@@ -301,17 +305,22 @@ handle_request(request_rec * r, int role, const char *argv0,
     apr_pool_cleanup_register(request_pool, bucket_ctx,
                               bucket_ctx_cleanup, apr_pool_cleanup_null);
 
+    if (role == FCGI_AUTHORIZER) {
+        argv0 = auth_conf->path;
+        inode = wrapper_conf ? wrapper_conf->inode : auth_conf->inode;
+        deviceid = wrapper_conf ? wrapper_conf->deviceid : auth_conf->deviceid;
+        shareid = wrapper_conf ? wrapper_conf->share_group_id
+                               : auth_conf->share_group_id;
+    } else {
+        inode = wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
+        deviceid = wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
+        shareid = wrapper_conf ? wrapper_conf->share_group_id : 0;
+    }
+
     /* Try to get a connected ipc handle */
     for (i = 0; i < FCGID_REQUEST_COUNT; i++) {
         /* Apply a free process slot, send a spawn request if I can't get one */
         for (j = 0; j < FCGID_APPLY_TRY_COUNT; j++) {
-            apr_ino_t inode =
-                wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
-            apr_dev_t deviceid =
-                wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
-            apr_size_t shareid =
-                wrapper_conf ? wrapper_conf->share_group_id : 0;
-
             /* Init spawn request */
             procmgr_init_spawn_cmd(&fcgi_request, r, argv0, deviceid,
                                    inode, shareid);
@@ -617,6 +626,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
 }
 
 int bridge_request(request_rec * r, int role, const char *argv0,
+                   fcgid_auth_conf * auth_conf,
                    fcgid_wrapper_conf * wrapper_conf)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
@@ -652,5 +662,6 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_eos);
 
     /* Bridge the request */
-    return handle_request(r, role, argv0, wrapper_conf, output_brigade);
+    return handle_request(r, role, argv0, auth_conf, wrapper_conf,
+                          output_brigade);
 }

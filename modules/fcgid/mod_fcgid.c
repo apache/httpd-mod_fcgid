@@ -232,7 +232,7 @@ static int fcgid_handler(request_rec * r)
                                 r->connection);
 
     http_retcode =
-        bridge_request(r, FCGI_RESPONDER, command, wrapper_conf);
+        bridge_request(r, FCGI_RESPONDER, command, NULL, wrapper_conf);
     return (http_retcode == HTTP_OK ? OK : http_retcode);
 }
 
@@ -477,7 +477,7 @@ static int mod_fcgid_authenticator(request_rec * r)
 
     /* Handle the request */
     res =
-        bridge_request(r, FCGI_AUTHORIZER, authenticator_info->path,
+        bridge_request(r, FCGI_AUTHORIZER, NULL, authenticator_info,
                        wrapper_conf);
 
     /* Restore r->subprocess_env */
@@ -566,7 +566,7 @@ static int mod_fcgid_authorizer(request_rec * r)
 
     /* Handle the request */
     res =
-        bridge_request(r, FCGI_AUTHORIZER, authorizer_info->path,
+        bridge_request(r, FCGI_AUTHORIZER, NULL, authorizer_info,
                        wrapper_conf);
 
     /* Restore r->subprocess_env */
@@ -656,7 +656,7 @@ static int mod_fcgid_check_access(request_rec * r)
 
     /* Handle the request */
     res =
-        bridge_request(r, FCGI_AUTHORIZER, access_info->path,
+        bridge_request(r, FCGI_AUTHORIZER, NULL, access_info,
                        wrapper_conf);
 
     /* Restore r->subprocess_env */
