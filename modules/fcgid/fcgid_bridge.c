@@ -311,7 +311,8 @@ handle_request(request_rec * r, int role, const char *argv0,
         deviceid = wrapper_conf ? wrapper_conf->deviceid : auth_conf->deviceid;
         shareid = wrapper_conf ? wrapper_conf->share_group_id
                                : auth_conf->share_group_id;
-    } else {
+    }
+    else {
         inode = wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
         deviceid = wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
         shareid = wrapper_conf ? wrapper_conf->share_group_id : 0;
