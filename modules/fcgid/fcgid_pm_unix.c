@@ -40,6 +40,15 @@
 #define ap_unixd_setup_child unixd_setup_child
 #endif
 
+/* The APR other-child API doesn't tell us how the daemon exited
+ * (SIGSEGV vs. exit(1)).  The other-child maintenance function
+ * needs to decide whether to restart the daemon after a failure
+ * based on whether or not it exited due to a fatal startup error
+ * or something that happened at steady-state.  This exit status
+ * is unlikely to collide with exit signals.
+ */
+#define DAEMON_STARTUP_ERROR 254
+
 static apr_status_t create_process_manager(server_rec * main_server,
                                            apr_pool_t * configpool);
 
@@ -121,18 +130,33 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
         apr_proc_other_child_unregister(data);
         if (ap_mpm_query(AP_MPMQ_MPM_STATE, &mpm_state) == APR_SUCCESS
             && mpm_state != AP_MPMQ_STOPPING) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL,
-                         "mod_fcgid: fcgid process manager died, restarting the server");
+            if (status == DAEMON_STARTUP_ERROR) {
+                ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL,
+                             "mod_fcgid: fcgid process manager failed to initialize; "
+                             "stopping httpd");
+                /* mod_fcgid requests will hang due to lack of a process manager;
+                 * try to terminate httpd
+                 */
+                kill(getpid(), SIGTERM);
+                
+            }
+            else {
+                ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL,
+                             "mod_fcgid: fcgid process manager died, restarting the server");
 
-            /* HACK: I can't just call create_process_manager() to
-               restart a process manager, because it will use the dirty
-               share memory, I have to kill myself a SIGHUP, to make
-               a clean restart */
-            if (kill(getpid(), SIGHUP) < 0) {
-                ap_log_error(APLOG_MARK, APLOG_EMERG,
-                             apr_get_os_error(), NULL,
-                             "mod_fcgid: can't send SIGHUP to self");
-                exit(0);
+                /* HACK: I can't just call create_process_manager() to
+                   restart a process manager, because it will use the dirty
+                   share memory, I have to kill myself a SIGHUP, to make
+                   a clean restart */
+                /* FIXME: This is the httpd parent; mod_fcgid is doing a hard
+                 * restart of the server!
+                 */
+                if (kill(getpid(), SIGHUP) < 0) {
+                    ap_log_error(APLOG_MARK, APLOG_EMERG,
+                                 apr_get_os_error(), NULL,
+                                 "mod_fcgid: can't send SIGHUP to self");
+                    exit(0);
+                }
             }
         }
         break;
@@ -142,6 +166,9 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
     case APR_OC_REASON_LOST:
         apr_proc_other_child_unregister(data);
         /* It hack here too, a note above */
+        /* FIXME: This is the httpd parent; mod_fcgid is doing a hard
+         * restart of the server!
+         */
         if (kill(getpid(), SIGHUP) < 0) {
             ap_log_error(APLOG_MARK, APLOG_EMERG,
                          apr_get_os_error(), NULL,
@@ -243,7 +270,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
         if ((rv = init_signal(main_server)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
                          "mod_fcgid: can't install signal handler, exiting now");
-            exit(1);
+            exit(DAEMON_STARTUP_ERROR);
         }
 
         /* if running as root, switch to configured user */
@@ -251,7 +278,7 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
             if (getuid() != 0) {
                 ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
                              "mod_fcgid: current user is not root while suexec is enabled, exiting now");
-                exit(1);
+                exit(DAEMON_STARTUP_ERROR);
             }
             suexec_setup_child();
         } else
