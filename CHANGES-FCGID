@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) Return 500 instead of segfaulting when the application returns no output.
+     [Tatsuki Sugiura <sugi nemui.org>, Jeff Trawick]
+
   *) In FCGI_AUTHORIZER role, avoid spawning a new process for every
      different HTTP request.  [Chris Darroch]
 

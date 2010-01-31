@@ -215,7 +215,7 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
     int getLF = 0;
     int getColon = 0;
 
-    while ((dst < dst_end) && !done && !APR_BUCKET_IS_EOS(e)) {
+    while ((dst < dst_end) && !done && e != APR_BRIGADE_SENTINEL(bb)) {
         const char *bucket_data;
         apr_size_t bucket_data_len;
         const char *src;
@@ -278,7 +278,7 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
         e = next;
     }
     *dst = 0;
-    return 1;
+    return done;
 }
 
 static int
