@@ -54,7 +54,15 @@ apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
 
 #else
 
+/* no support for Mutex directive and related APIs */
+
 #include "ap_mpm.h"
+
+#if MODULE_MAGIC_NUMBER_MAJOR < 20051115
+#ifndef AP_NEED_SET_MUTEX_PERMS
+#define AP_NEED_SET_MUTEX_PERMS 1
+#endif
+#endif
 
 #if AP_NEED_SET_MUTEX_PERMS
 #include "unixd.h"
