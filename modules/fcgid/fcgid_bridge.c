@@ -44,7 +44,7 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
     apr_dev_t deviceid = command->deviceid;
     uid_t uid = command->uid;
     gid_t gid = command->gid;
-    apr_size_t share_grp_id = command->share_grp_id;
+    const char *cmdline = command->cmdline;
     const char *virtualhost = command->virtualhost;
 
     proc_table = proctable_get_table_array();
@@ -58,7 +58,7 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
 
         if (current_node->inode == inode
             && current_node->deviceid == deviceid
-            && current_node->share_grp_id == share_grp_id
+            && !strcmp(current_node->cmdline, cmdline)
             && current_node->virtualhost == virtualhost
             && current_node->uid == uid && current_node->gid == gid) {
             /* Unlink from idle list */
@@ -138,7 +138,7 @@ static int count_busy_processes(request_rec *r, fcgid_command *command)
     while (current_node != proc_table) {
         if (current_node->inode == command->inode
             && current_node->deviceid == command->deviceid
-            && current_node->share_grp_id == command->share_grp_id
+            && !strcmp(current_node->cmdline, command->cmdline)
             && current_node->virtualhost == command->virtualhost
             && current_node->uid == command->uid
             && current_node->gid == command->gid) {
@@ -282,17 +282,12 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 }
 
 static int
-handle_request(request_rec * r, int role, const char *argv0,
-               fcgid_auth_conf * auth_conf,
-               fcgid_wrapper_conf * wrapper_conf,
+handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
                apr_bucket_brigade * output_brigade)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
     fcgid_command fcgi_request;
     fcgid_bucket_ctx *bucket_ctx;
-    apr_ino_t inode;
-    apr_dev_t deviceid;
-    apr_size_t shareid;
     int i, j, cond_status;
     apr_status_t rv;
     apr_bucket_brigade *brigade_stdout;
@@ -305,26 +300,12 @@ handle_request(request_rec * r, int role, const char *argv0,
     apr_pool_cleanup_register(request_pool, bucket_ctx,
                               bucket_ctx_cleanup, apr_pool_cleanup_null);
 
-    if (role == FCGI_AUTHORIZER) {
-        argv0 = auth_conf->path;
-        inode = wrapper_conf ? wrapper_conf->inode : auth_conf->inode;
-        deviceid = wrapper_conf ? wrapper_conf->deviceid : auth_conf->deviceid;
-        shareid = wrapper_conf ? wrapper_conf->share_group_id
-                               : auth_conf->share_group_id;
-    }
-    else {
-        inode = wrapper_conf ? wrapper_conf->inode : r->finfo.inode;
-        deviceid = wrapper_conf ? wrapper_conf->deviceid : r->finfo.device;
-        shareid = wrapper_conf ? wrapper_conf->share_group_id : 0;
-    }
-
     /* Try to get a connected ipc handle */
     for (i = 0; i < FCGID_REQUEST_COUNT; i++) {
         /* Apply a free process slot, send a spawn request if I can't get one */
         for (j = 0; j < FCGID_APPLY_TRY_COUNT; j++) {
             /* Init spawn request */
-            procmgr_init_spawn_cmd(&fcgi_request, r, argv0, deviceid,
-                                   inode, shareid);
+            procmgr_init_spawn_cmd(&fcgi_request, r, cmd_conf);
 
             bucket_ctx->ipc.connect_timeout =
                 fcgi_request.cmdopts.ipc_connect_timeout;
@@ -368,7 +349,8 @@ handle_request(request_rec * r, int role, const char *argv0,
     /* Now I get a connected ipc handle */
     if (!bucket_ctx->procnode) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
-                      "mod_fcgid: can't apply process slot for %s", argv0);
+                      "mod_fcgid: can't apply process slot for %s",
+                      cmd_conf->cmdline);
         return HTTP_SERVICE_UNAVAILABLE;
     }
     bucket_ctx->active_time = bucket_ctx->procnode->last_active_time =
@@ -626,9 +608,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
     return 0;
 }
 
-int bridge_request(request_rec * r, int role, const char *argv0,
-                   fcgid_auth_conf * auth_conf,
-                   fcgid_wrapper_conf * wrapper_conf)
+int bridge_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf)
 {
     apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
     apr_bucket_brigade *output_brigade;
@@ -663,6 +643,5 @@ int bridge_request(request_rec * r, int role, const char *argv0,
     APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_eos);
 
     /* Bridge the request */
-    return handle_request(r, role, argv0, auth_conf, wrapper_conf,
-                          output_brigade);
+    return handle_request(r, role, cmd_conf, output_brigade);
 }

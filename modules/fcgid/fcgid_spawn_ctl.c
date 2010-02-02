@@ -17,6 +17,9 @@
 
 #include "fcgid_spawn_ctl.h"
 #include "fcgid_conf.h"
+
+#include "apr_strings.h"
+
 #define REGISTER_LIFE 1
 #define REGISTER_DEATH 2
 
@@ -25,7 +28,7 @@ struct fcgid_stat_node {
     dev_t deviceid;
     uid_t uid;
     gid_t gid;
-    apr_size_t share_grp_id;
+    const char *cmdline;
     const char *virtualhost;
     int score;
     int process_counter;
@@ -50,13 +53,13 @@ register_life_death(server_rec * main_server,
     if (!g_stat_pool || !procnode)
         abort();
 
-    /* Can I find the node base on inode, device id and share group id? */
+    /* Can I find the node base on inode, device id and cmdline? */
     previous_node = g_stat_list_header;
     for (current_node = previous_node;
          current_node != NULL; current_node = current_node->next) {
         if (current_node->inode == procnode->inode
             && current_node->deviceid == procnode->deviceid
-            && current_node->share_grp_id == procnode->share_grp_id
+            && !strcmp(current_node->cmdline, procnode->cmdline)
             && current_node->virtualhost == procnode->virtualhost
             && current_node->uid == procnode->uid
             && current_node->gid == procnode->gid)
@@ -92,7 +95,7 @@ register_life_death(server_rec * main_server,
         current_node = apr_pcalloc(g_stat_pool, sizeof(*current_node));
         current_node->deviceid = procnode->deviceid;
         current_node->inode = procnode->inode;
-        current_node->share_grp_id = procnode->share_grp_id;
+        current_node->cmdline = apr_pstrdup(g_stat_pool, procnode->cmdline);
         current_node->virtualhost = procnode->virtualhost;
         current_node->uid = procnode->uid;
         current_node->gid = procnode->gid;
@@ -156,12 +159,12 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
     if (!command || !g_stat_pool)
         return 1;
 
-    /* Can I find the node base on inode, device id and share group id? */
+    /* Can I find the node base on inode, device id and cmdline? */
     for (current_node = g_stat_list_header;
          current_node != NULL; current_node = current_node->next) {
         if (current_node->inode == command->inode
             && current_node->deviceid == command->deviceid
-            && current_node->share_grp_id == command->share_grp_id
+            && !strcmp(current_node->cmdline, command->cmdline)
             && current_node->virtualhost == command->virtualhost
             && current_node->uid == command->uid
             && current_node->gid == command->gid)
@@ -220,12 +223,12 @@ int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
     if (!g_stat_pool || !procnode)
         return 0;
 
-    /* Can I find the node base on inode, device id and share group id? */
+    /* Can I find the node base on inode, device id and cmdline? */
     for (current_node = g_stat_list_header;
          current_node != NULL; current_node = current_node->next) {
         if (current_node->inode == procnode->inode
             && current_node->deviceid == procnode->deviceid
-            && current_node->share_grp_id == procnode->share_grp_id
+            && !strcmp(current_node->cmdline, procnode->cmdline)
             && current_node->virtualhost == procnode->virtualhost
             && current_node->uid == procnode->uid
             && current_node->gid == procnode->gid)

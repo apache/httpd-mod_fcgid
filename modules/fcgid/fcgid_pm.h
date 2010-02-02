@@ -22,10 +22,9 @@
 
 typedef struct {
     char cgipath[_POSIX_PATH_MAX];
-    char wrapper_cmdline[_POSIX_PATH_MAX];
+    char cmdline[_POSIX_PATH_MAX];
     apr_ino_t inode;
     dev_t deviceid;
-    apr_size_t share_grp_id;
     const char *virtualhost;  /* Virtualhost granularity */
     uid_t uid;                  /* For suEXEC */
     gid_t gid;                  /* For suEXEC */
@@ -37,8 +36,7 @@ typedef struct {
 } fcgid_command;
 
 void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
-                            const char *argv0, dev_t deviceid,
-                            apr_ino_t inode, apr_size_t share_grp_id);
+                            fcgid_cmd_conf *cmd_conf);
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
                                     request_rec * r);
 apr_status_t procmgr_peek_cmd(fcgid_command * command,

@@ -410,12 +410,9 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
 }
 
 void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
-                            const char *argv0, dev_t deviceid,
-                            apr_ino_t inode, apr_size_t share_grp_id)
+                            fcgid_cmd_conf *cmd_conf)
 {
     ap_unix_identity_t *ugid;
-    fcgid_wrapper_conf *wrapperconf;
-    const char *cmd_to_spawn;
 
     memset(command, 0, sizeof(*command));
 
@@ -430,26 +427,13 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         command->userdir = 0;
     }
 
-    apr_cpystrn(command->cgipath, argv0, _POSIX_PATH_MAX);
-    command->deviceid = deviceid;
-    command->inode = inode;
-    command->share_grp_id = share_grp_id;
+    apr_cpystrn(command->cgipath, cmd_conf->cgipath, _POSIX_PATH_MAX);
+    apr_cpystrn(command->cmdline, cmd_conf->cmdline, _POSIX_PATH_MAX);
+    command->deviceid = cmd_conf->deviceid;
+    command->inode = cmd_conf->inode;
     command->virtualhost = r->server->server_hostname;
 
-    /* Update fcgid_command with wrapper info */
-    command->wrapper_cmdline[0] = '\0';
-    if ((wrapperconf = get_wrapper_info(argv0, r))) {
-        apr_cpystrn(command->wrapper_cmdline, wrapperconf->args, _POSIX_PATH_MAX);
-        command->deviceid = wrapperconf->deviceid;
-        command->inode = wrapperconf->inode;
-        command->share_grp_id = wrapperconf->share_group_id;
-        cmd_to_spawn = wrapperconf->exe;
-    }
-    else {
-        cmd_to_spawn = command->cgipath;
-    }
-
-    get_cmd_options(r, cmd_to_spawn, &command->cmdopts, &command->cmdenv);
+    get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }
 
 apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,

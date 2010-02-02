@@ -47,20 +47,12 @@
 #include "fcgid_global.h"
 
 typedef struct {
-    char path[_POSIX_PATH_MAX];
+    const char *cgipath;           /* executable file path */
+    const char *cmdline; /* entire command line */
     apr_ino_t inode;
     apr_dev_t deviceid;
-    apr_size_t share_group_id;
-} fcgid_auth_conf;
-
-typedef struct {
-    const char *exe;            /* executable file path */
-    char args[_POSIX_PATH_MAX]; /* entire command line */
-    apr_ino_t inode;
-    apr_dev_t deviceid;
-    apr_size_t share_group_id;
     int virtual;
-} fcgid_wrapper_conf;
+} fcgid_cmd_conf;
 
 typedef struct {
     /* global only */
@@ -113,17 +105,17 @@ typedef struct {
     apr_hash_t *wrapper_info_hash;
 
     /* authenticator */
-    fcgid_auth_conf *authenticator_info;
+    fcgid_cmd_conf *authenticator_info;
     int authenticator_authoritative;
     int authenticator_authoritative_set;
 
     /* authorizer */
-    fcgid_auth_conf *authorizer_info;
+    fcgid_cmd_conf *authorizer_info;
     int authorizer_authoritative;
     int authorizer_authoritative_set;
 
     /* access check */
-    fcgid_auth_conf *access_info;
+    fcgid_cmd_conf *access_info;
     int access_authoritative;
     int access_authoritative_set;
 } fcgid_dir_conf;
@@ -229,25 +221,25 @@ apr_array_header_t *get_pass_headers(request_rec * r);
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dummy,
                                const char *wrapper, const char *extension, const char* virtual);
-fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r);
+fcgid_cmd_conf *get_wrapper_info(const char *cgipath, request_rec * r);
 
 const char *set_authenticator_info(cmd_parms * cmd, void *config,
                                    const char *arg);
 const char *set_authenticator_authoritative(cmd_parms * cmd,
                                             void *config, int arg);
-fcgid_auth_conf *get_authenticator_info(request_rec * r, int *authoritative);
+fcgid_cmd_conf *get_authenticator_info(request_rec * r, int *authoritative);
 
 const char *set_authorizer_info(cmd_parms * cmd, void *config,
                                 const char *arg);
 const char *set_authorizer_authoritative(cmd_parms * cmd,
                                          void *config, int arg);
-fcgid_auth_conf *get_authorizer_info(request_rec * r, int *authoritative);
+fcgid_cmd_conf *get_authorizer_info(request_rec * r, int *authoritative);
 
 const char *set_access_info(cmd_parms * cmd, void *config,
                             const char *arg);
 const char *set_access_authoritative(cmd_parms * cmd,
                                      void *config, int arg);
-fcgid_auth_conf *get_access_info(request_rec * r, int *authoritative);
+fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative);
 
 const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
                                         const char *arg);

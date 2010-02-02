@@ -20,6 +20,7 @@
 #include "http_protocol.h"
 #include "ap_mmn.h"
 #include "apr_buckets.h"
+#include "apr_strings.h"
 #include "apr_thread_proc.h"
 #include "mod_cgi.h"
 #include "mod_status.h"
@@ -146,7 +147,7 @@ static int fcgid_handler(request_rec * r)
     apr_pool_t *p;
     apr_status_t rv;
     int http_retcode;
-    fcgid_wrapper_conf *wrapper_conf;
+    fcgid_cmd_conf *wrapper_conf;
 
     if (strcmp(r->handler, "fcgid-script"))
         return DECLINED;
@@ -199,17 +200,24 @@ static int fcgid_handler(request_rec * r)
                           r->filename);
             return HTTP_INTERNAL_SERVER_ERROR;
         }
-    }
 
-    /* Check request like "http://localhost/cgi-bin/a.exe/defghi" */
-    if (!wrapper_conf && r->finfo.inode == 0 && r->finfo.device == 0) {
-        if ((rv =
-             apr_stat(&r->finfo, command, APR_FINFO_IDENT,
-                      r->pool)) != APR_SUCCESS) {
-            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
-                          "mod_fcgid: can't get %s file info", command);
-            return HTTP_NOT_FOUND;
+        /* Check request like "http://localhost/cgi-bin/a.exe/defghi" */
+        if (r->finfo.inode == 0 && r->finfo.device == 0) {
+            if ((rv =
+                 apr_stat(&r->finfo, command, APR_FINFO_IDENT,
+                          r->pool)) != APR_SUCCESS) {
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                              "mod_fcgid: can't get %s file info", command);
+                return HTTP_NOT_FOUND;
+            }
         }
+
+        wrapper_conf = apr_pcalloc(r->pool, sizeof(*wrapper_conf));
+
+        wrapper_conf->cgipath = apr_pstrdup(r->pool, command);
+        wrapper_conf->cmdline = wrapper_conf->cgipath;
+        wrapper_conf->inode = r->finfo.inode;
+        wrapper_conf->deviceid = r->finfo.device;
     }
 
     ap_add_common_vars(r);
@@ -231,8 +239,7 @@ static int fcgid_handler(request_rec * r)
     ap_add_output_filter_handle(fcgid_filter_handle, NULL, r,
                                 r->connection);
 
-    http_retcode =
-        bridge_request(r, FCGI_RESPONDER, command, NULL, wrapper_conf);
+    http_retcode = bridge_request(r, FCGI_RESPONDER, wrapper_conf);
     return (http_retcode == HTTP_OK ? OK : http_retcode);
 }
 
@@ -246,8 +253,9 @@ static int fcgidsort(fcgid_procnode **e1, fcgid_procnode **e2)
         return (*e1)->gid > (*e2)->gid ? 1 : -1;
     if ((*e1)->uid != (*e2)->uid)
         return (*e1)->uid > (*e2)->uid ? 1 : -1;
-    if ((*e1)->share_grp_id != (*e2)->share_grp_id)
-        return (*e1)->share_grp_id > (*e2)->share_grp_id ? 1 : -1;
+    cmp = strcmp((*e1)->cmdline, (*e2)->cmdline);
+    if (cmp != 0)
+        return cmp;
     if ((*e1)->virtualhost != (*e2)->virtualhost)
         return (*e1)->virtualhost > (*e2)->virtualhost ? 1 : -1;
     if ((*e1)->diewhy != (*e2)->diewhy)
@@ -294,7 +302,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
     apr_dev_t last_deviceid = 0;
     gid_t last_gid = 0;  
     uid_t last_uid = 0;
-    apr_size_t last_share_grp_id = 0;
+    const char *last_cmdline = "";
     apr_time_t now;
     const char *last_virtualhost = NULL;
     const char *basename, *tmpbasename;
@@ -368,7 +376,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
     	current_node = ar[index];
         if (current_node->inode != last_inode || current_node->deviceid != last_deviceid
             || current_node->gid != last_gid || current_node->uid != last_uid
-            || current_node->share_grp_id != last_share_grp_id
+            || strcmp(current_node->cmdline, last_cmdline)
             || current_node->virtualhost != last_virtualhost) {
             if (index != 0)
                  ap_rputs("</table>\n\n", r);
@@ -382,7 +390,8 @@ static int fcgid_status_hook(request_rec *r, int flags)
                 basename++;
 	    else
                 basename = tmpbasename;
-            ap_rprintf(r, "<hr />\n<h3>Process name: %s</h3>\n", basename);
+            ap_rprintf(r, "<hr />\n<b>Process: %s</b>&nbsp;&nbsp;(%s)<br />\n",
+                       basename, current_node->cmdline);
 
             /* Create a new table for this process info */
             ap_rputs("\n\n<table border=\"0\"><tr>"
@@ -394,7 +403,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
             last_deviceid = current_node->deviceid;
             last_gid = current_node->gid;
             last_uid = current_node->uid;
-            last_share_grp_id = current_node->share_grp_id;
+            last_cmdline = current_node->cmdline;
             last_virtualhost = current_node->virtualhost;
         }
 
@@ -431,8 +440,7 @@ static int mod_fcgid_authenticator(request_rec * r)
     int res = 0;
     const char *password = NULL;
     apr_table_t *saved_subprocess_env = NULL;
-    fcgid_wrapper_conf *wrapper_conf;
-    fcgid_auth_conf *authenticator_info;
+    fcgid_cmd_conf *authenticator_info;
     int authoritative;
 
     authenticator_info = get_authenticator_info(r, &authoritative);
@@ -440,9 +448,6 @@ static int mod_fcgid_authenticator(request_rec * r)
     /* Is authenticator enable? */
     if (authenticator_info == NULL)
         return DECLINED;
-
-    /* Check wrapper */
-    wrapper_conf = get_wrapper_info(authenticator_info->path, r);
 
     /* Get the user password */
     if ((res = ap_get_basic_auth_pw(r, &password)) != OK)
@@ -476,9 +481,7 @@ static int mod_fcgid_authenticator(request_rec * r)
     apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
 
     /* Handle the request */
-    res =
-        bridge_request(r, FCGI_AUTHORIZER, NULL, authenticator_info,
-                       wrapper_conf);
+    res = bridge_request(r, FCGI_AUTHORIZER, authenticator_info);
 
     /* Restore r->subprocess_env */
     r->subprocess_env = saved_subprocess_env;
@@ -525,8 +528,7 @@ static int mod_fcgid_authorizer(request_rec * r)
 {
     int res = 0;
     apr_table_t *saved_subprocess_env = NULL;
-    fcgid_wrapper_conf *wrapper_conf;
-    fcgid_auth_conf *authorizer_info;
+    fcgid_cmd_conf *authorizer_info;
     int authoritative;
 
     authorizer_info = get_authorizer_info(r, &authoritative);
@@ -534,9 +536,6 @@ static int mod_fcgid_authorizer(request_rec * r)
     /* Is authenticator enable? */
     if (authorizer_info == NULL)
         return DECLINED;
-
-    /* Check wrapper */
-    wrapper_conf = get_wrapper_info(authorizer_info->path, r);
 
     /* Save old process environment */
     saved_subprocess_env = apr_table_copy(r->pool, r->subprocess_env);
@@ -565,9 +564,7 @@ static int mod_fcgid_authorizer(request_rec * r)
     apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
 
     /* Handle the request */
-    res =
-        bridge_request(r, FCGI_AUTHORIZER, NULL, authorizer_info,
-                       wrapper_conf);
+    res = bridge_request(r, FCGI_AUTHORIZER, authorizer_info);
 
     /* Restore r->subprocess_env */
     r->subprocess_env = saved_subprocess_env;
@@ -614,8 +611,7 @@ static int mod_fcgid_check_access(request_rec * r)
 {
     int res = 0;
     apr_table_t *saved_subprocess_env = NULL;
-    fcgid_wrapper_conf *wrapper_conf;
-    fcgid_auth_conf *access_info;
+    fcgid_cmd_conf *access_info;
     int authoritative;
 
     access_info = get_access_info(r, &authoritative);
@@ -623,9 +619,6 @@ static int mod_fcgid_check_access(request_rec * r)
     /* Is access check enable? */
     if (access_info == NULL)
         return DECLINED;
-
-    /* Check wrapper */
-    wrapper_conf = get_wrapper_info(access_info->path, r);
 
     /* Save old process environment */
     saved_subprocess_env = apr_table_copy(r->pool, r->subprocess_env);
@@ -655,9 +648,7 @@ static int mod_fcgid_check_access(request_rec * r)
     apr_table_set(r->subprocess_env, "HTTP_CONNECTION", "close");
 
     /* Handle the request */
-    res =
-        bridge_request(r, FCGI_AUTHORIZER, NULL, access_info,
-                       wrapper_conf);
+    res = bridge_request(r, FCGI_AUTHORIZER, access_info);
 
     /* Restore r->subprocess_env */
     r->subprocess_env = saved_subprocess_env;

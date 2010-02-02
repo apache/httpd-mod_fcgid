@@ -19,6 +19,7 @@
 #define CORE_PRIVATE
 #include "httpd.h"
 #include "http_config.h"
+#include "apr_strings.h"
 
 #include "fcgid_pm.h"
 #include "fcgid_pm_main.h"
@@ -492,7 +493,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     /* Prepare to spawn */
     procnode->deviceid = command->deviceid;
     procnode->inode = command->inode;
-    procnode->share_grp_id = command->share_grp_id;
+    apr_cpystrn(procnode->cmdline, command->cmdline, _POSIX_PATH_MAX);
     procnode->virtualhost = command->virtualhost;
     procnode->uid = command->uid;
     procnode->gid = command->gid;
@@ -537,7 +538,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     /* Spawn the process now */
     /* XXX Spawn uses wrapper_cmdline, but log uses cgipath ? */
     if ((rv =
-         proc_spawn_process(command->wrapper_cmdline, &procinfo,
+         proc_spawn_process(command->cmdline, &procinfo,
                             procnode)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: spawn process %s error", command->cgipath);

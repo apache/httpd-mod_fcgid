@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) Fix lookup of process command lines when using FcgidWrapper or
+     access control directives, including within .htaccess files.
+     [Chris Darroch]
+
   *) Resolve a regression in 2.3.5 with httpd 2.0.x on some Unix platforms;
      ownership of mutex files was incorrect, resulting in a startup failure.
      PR 48651.  [Jeff Trawick, <pservit gmail.com>]

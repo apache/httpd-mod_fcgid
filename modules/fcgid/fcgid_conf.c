@@ -621,11 +621,12 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     dirconfig->authenticator_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authenticator_info));
-    apr_cpystrn(dirconfig->authenticator_info->path, authenticator,
-                _POSIX_PATH_MAX);
+    dirconfig->authenticator_info->cgipath =
+        apr_pstrdup(cmd->pool, authenticator);
+    dirconfig->authenticator_info->cmdline =
+        dirconfig->authenticator_info->cgipath;
     dirconfig->authenticator_info->inode = finfo.inode;
     dirconfig->authenticator_info->deviceid = finfo.device;
-    dirconfig->authenticator_info->share_group_id = (apr_size_t) - 1;
     return NULL;
 }
 
@@ -639,7 +640,7 @@ const char *set_authenticator_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
-fcgid_auth_conf *get_authenticator_info(request_rec * r, int *authoritative)
+fcgid_cmd_conf *get_authenticator_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -669,11 +670,12 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     dirconfig->authorizer_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authorizer_info));
-    apr_cpystrn(dirconfig->authorizer_info->path, authorizer,
-                _POSIX_PATH_MAX);
+    dirconfig->authorizer_info->cgipath =
+        apr_pstrdup(cmd->pool, authorizer);
+    dirconfig->authorizer_info->cmdline =
+        dirconfig->authorizer_info->cgipath;
     dirconfig->authorizer_info->inode = finfo.inode;
     dirconfig->authorizer_info->deviceid = finfo.device;
-    dirconfig->authorizer_info->share_group_id = (apr_size_t) - 1;
     return NULL;
 }
 
@@ -687,7 +689,7 @@ const char *set_authorizer_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
-fcgid_auth_conf *get_authorizer_info(request_rec * r, int *authoritative)
+fcgid_cmd_conf *get_authorizer_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -717,10 +719,12 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     dirconfig->access_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->access_info));
-    apr_cpystrn(dirconfig->access_info->path, access, _POSIX_PATH_MAX);
+    dirconfig->access_info->cgipath =
+        apr_pstrdup(cmd->pool, access);
+    dirconfig->access_info->cmdline = 
+        dirconfig->access_info->cgipath;
     dirconfig->access_info->inode = finfo.inode;
     dirconfig->access_info->deviceid = finfo.device;
-    dirconfig->access_info->share_group_id = (apr_size_t) - 1;
     return NULL;
 }
 
@@ -734,7 +738,7 @@ const char *set_access_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
-fcgid_auth_conf *get_access_info(request_rec * r, int *authoritative)
+fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);
@@ -747,14 +751,6 @@ fcgid_auth_conf *get_access_info(request_rec * r, int *authoritative)
     return NULL;
 }
 
-typedef struct {
-    apr_hash_t *wrapper_id_hash;
-    apr_size_t cur_id;
-} wrapper_id_info;
-
-/* FIXME thread safety issues when FcgidWrapper is used in .htaccess;
- * see use of pconf
- */
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                                const char *wrapper_cmdline,
                                const char *extension,
@@ -763,11 +759,7 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     const char *path, *tmp;
     apr_status_t rv;
     apr_finfo_t finfo;
-    const char *userdata_key = "fcgid_wrapper_id";
-    wrapper_id_info *id_info;
-    apr_size_t *wrapper_id;
-    fcgid_wrapper_conf *wrapper = NULL;
-    apr_pool_t *wrapper_conf_pool = cmd->server->process->pconf; /* bad */
+    fcgid_cmd_conf *wrapper = NULL;
     fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
 
     /* Sanity checks */
@@ -786,36 +778,6 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
             || ap_strchr_c(extension, '/') || ap_strchr_c(extension, '\\')))
         return "Invalid wrapper file extension";
 
-    /* Get wrapper_id hash from user data */
-    {
-        void *id_info_vp;
-        apr_pool_userdata_get(&id_info_vp, userdata_key,
-                              cmd->server->process->pool);
-        id_info = id_info_vp;
-    }
-
-    if (!id_info) {
-        id_info =
-            apr_pcalloc(cmd->server->process->pool, sizeof(*id_info));
-        id_info->wrapper_id_hash =
-            apr_hash_make(cmd->server->process->pool);
-        apr_pool_userdata_set((const void *) id_info, userdata_key,
-                              apr_pool_cleanup_null,
-                              cmd->server->process->pool);
-    }
-    /* Get wrapper_id for wrapper_cmdline */
-    if ((wrapper_id =
-         apr_hash_get(id_info->wrapper_id_hash, wrapper_cmdline,
-                      strlen(wrapper_cmdline))) == NULL) {
-        wrapper_id =
-            apr_pcalloc(cmd->server->process->pool, sizeof(*wrapper_id));
-        *wrapper_id = id_info->cur_id++;
-        apr_hash_set(id_info->wrapper_id_hash, wrapper_cmdline,
-                     strlen(wrapper_cmdline), wrapper_id);
-    }
-
-    wrapper = apr_pcalloc(wrapper_conf_pool, sizeof(*wrapper));
-
     /* Get wrapper path */
     tmp = wrapper_cmdline;
     path = ap_getword_white(cmd->temp_pool, &tmp);
@@ -828,14 +790,13 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return missing_file_msg(cmd->pool, "Wrapper", path, rv);
     }
 
-    wrapper->exe = apr_pstrdup(wrapper_conf_pool, path);
-    /* FIXME no need to embed in structure (subject to correct pool usage) */
-    apr_cpystrn(wrapper->args, wrapper_cmdline, _POSIX_PATH_MAX);
+    wrapper = apr_pcalloc(cmd->pool, sizeof(*wrapper));
+
+    wrapper->cgipath = apr_pstrdup(cmd->pool, path);
+    wrapper->cmdline = apr_pstrdup(cmd->pool, wrapper_cmdline);
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
-    wrapper->share_group_id = *wrapper_id;
     wrapper->virtual = (virtual != NULL && !strcasecmp(virtual, WRAPPER_FLAG_VIRTUAL));
-    (*wrapper_id)++;
 
     if (extension == NULL)
         extension = DEFAULT_WRAPPER_KEY;
@@ -848,10 +809,10 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     return NULL;
 }
 
-fcgid_wrapper_conf *get_wrapper_info(const char *cgipath, request_rec * r)
+fcgid_cmd_conf *get_wrapper_info(const char *cgipath, request_rec * r)
 {
     const char *extension;
-    fcgid_wrapper_conf *wrapper;
+    fcgid_cmd_conf *wrapper;
     fcgid_dir_conf *config =
         ap_get_module_config(r->per_dir_config, &fcgid_module);
 

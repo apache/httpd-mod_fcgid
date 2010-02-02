@@ -24,8 +24,6 @@
 #include "fcgid_conf.h"
 
 apr_status_t bucket_ctx_cleanup(void *thectx);
-int bridge_request(request_rec * r, int role, const char *argv0,
-                   fcgid_auth_conf * auth_conf,
-                   fcgid_wrapper_conf * wrapper_conf);
+int bridge_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf);
 
 #endif
