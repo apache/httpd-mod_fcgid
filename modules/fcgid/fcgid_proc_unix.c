@@ -161,10 +161,29 @@ static apr_status_t socket_file_cleanup(void *theprocnode)
     return APR_SUCCESS;
 }
 
+static void log_setid_failure(const char *id_type,
+                              uid_t user_id)
+{
+    char errno_desc[120];
+    char errmsg[240];
+
+    apr_strerror(errno, errno_desc, sizeof errno_desc);
+    apr_snprintf(errmsg, sizeof errmsg,
+                 "(%d)%s: mod_fcgid child unable to set %s to %ld\n",
+                 errno, errno_desc, id_type, (long)user_id);
+    write(STDERR_FILENO, errmsg, strlen(errmsg));
+}
+
 static apr_status_t exec_setuid_cleanup(void *dummy)
 {
-    seteuid(0);
-    setuid(ap_unixd_config.user_id);
+    if (seteuid(0) == -1) {
+        log_setid_failure("effective uid", 0);
+        _exit(1);
+    }
+    if (setuid(ap_unixd_config.user_id) == -1) {
+        log_setid_failure("uid", ap_unixd_config.user_id);
+        _exit(1);
+    }
     return APR_SUCCESS;
 }
 
@@ -225,7 +244,10 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
         return errno;
     }
 
-    /* Unlink it when process exit */
+    /* Register cleanups to
+     * 1. Unlink the socket when the process exits
+     * 2. (suexec mode only, in the child cleanup) Switch to the configured uid
+     */
     if (ap_unixd_config.suexec_enabled) {
         apr_pool_cleanup_register(procnode->proc_pool,
                                   procnode, socket_file_cleanup,

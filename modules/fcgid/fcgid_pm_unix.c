@@ -273,7 +273,15 @@ create_process_manager(server_rec * main_server, apr_pool_t * configpool)
             exit(DAEMON_STARTUP_ERROR);
         }
 
-        /* if running as root, switch to configured user */
+        /* If running as root, switch to configured user.
+         *
+         * When running children via suexec, only the effective uid is
+         * switched, so that the PM can return to euid 0 to kill child
+         * processes.
+         *
+         * When running children as the configured user, the real uid
+         * is switched.
+         */
         if (ap_unixd_config.suexec_enabled) {
             if (getuid() != 0) {
                 ap_log_error(APLOG_MARK, APLOG_EMERG, 0, main_server,
