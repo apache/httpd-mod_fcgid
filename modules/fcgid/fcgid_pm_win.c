@@ -134,8 +134,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 
     apr_cpystrn(command->cgipath, cmd_conf->cgipath, _POSIX_PATH_MAX);
     apr_cpystrn(command->cmdline, cmd_conf->cmdline, _POSIX_PATH_MAX);
-    command->deviceid = deviceid;
-    command->inode = inode;
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
