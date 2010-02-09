@@ -345,6 +345,17 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
                                          procattr, procinfo,
                                          procnode->proc_pool);
 
+    if (ap_unixd_config.suexec_enabled) {
+        /* Prior to creating the child process, a child cleanup was registered
+         * to switch the uid in the child.  No-op the child cleanup for this
+         * pool so that it won't run again as other child processes are created.
+         * (The cleanup will be registered for the pool associated with those
+         * processes too.)
+         */
+        apr_pool_child_cleanup_set(procnode->proc_pool, procnode,
+                                   socket_file_cleanup, apr_pool_cleanup_null);
+    }
+
     /* Close socket before try to connect to it */
     close(unix_socket);
     procnode->proc_id = tmpproc;
