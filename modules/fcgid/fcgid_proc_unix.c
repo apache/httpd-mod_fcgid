@@ -211,11 +211,11 @@ apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
     apr_snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path) - 1,
                  "%s/%" APR_PID_T_FMT ".%d", sconf->sockname_prefix,
                  getpid(), g_process_counter++);
-    strncpy(procnode->socket_path, unix_addr.sun_path,
-            sizeof(procnode->socket_path) - 1);
-    strncpy(procnode->executable_path,
-            (lpszwapper != NULL && lpszwapper[0] != '\0') ? wargv[0] : procinfo->cgipath,
-            sizeof(procnode->executable_path) - 1);
+    apr_cpystrn(procnode->socket_path, unix_addr.sun_path,
+                sizeof(procnode->socket_path));
+    apr_cpystrn(procnode->executable_path,
+                (lpszwapper != NULL && lpszwapper[0] != '\0') ? wargv[0] : procinfo->cgipath,
+                sizeof(procnode->executable_path));
 
     /* Unlink the file just in case */
     unlink(unix_addr.sun_path);
