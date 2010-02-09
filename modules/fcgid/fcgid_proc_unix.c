@@ -91,7 +91,8 @@ static apr_status_t ap_unix_create_privileged_process(apr_proc_t *newproc,
 
     if (ugid->userdir) {
         execuser = apr_psprintf(p, "~%ld", (long) ugid->uid);
-    } else {
+    }
+    else {
         execuser = apr_psprintf(p, "%ld", (long) ugid->uid);
     }
     execgroup = apr_psprintf(p, "%ld", (long) ugid->gid);
@@ -167,9 +168,8 @@ static apr_status_t exec_setuid_cleanup(void *dummy)
     return APR_SUCCESS;
 }
 
-apr_status_t
-proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
-                   fcgid_procnode * procnode)
+apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
+                                fcgid_procnode *procnode)
 {
     server_rec *main_server = procinfo->main_server;
     fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
@@ -232,7 +232,8 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
         apr_pool_cleanup_register(procnode->proc_pool,
                                   procnode, socket_file_cleanup,
                                   exec_setuid_cleanup);
-    } else {
+    }
+    else {
         apr_pool_cleanup_register(procnode->proc_pool,
                                   procnode, socket_file_cleanup,
                                   apr_pool_cleanup_null);
@@ -254,7 +255,8 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     /* IPC directory permissions are safe, but avoid confusion */
     /* Not all flavors of unix use the current umask for AF_UNIX perms */
 
-    rv = apr_file_perms_set(unix_addr.sun_path, APR_FPROT_UREAD|APR_FPROT_UWRITE|APR_FPROT_UEXECUTE);
+    rv = apr_file_perms_set(unix_addr.sun_path,
+                            APR_FPROT_UREAD|APR_FPROT_UWRITE|APR_FPROT_UEXECUTE);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_CRIT, rv, main_server,
                      "mod_fcgid: Couldn't set permissions on unix domain socket %s",
@@ -314,30 +316,23 @@ proc_spawn_process(char *lpszwapper, fcgid_proc_info * procinfo,
     }
 
     /* Prepare the fork */
-    if (
-   (rv =
-    apr_procattr_create(&procattr, procnode->proc_pool)) != APR_SUCCESS
-|| (rv =
-    apr_procattr_child_err_set(procattr,
-                               procinfo->main_server->error_log,
-                               NULL)) != APR_SUCCESS
-|| (rv =
-    apr_procattr_child_out_set(procattr,
-                               procinfo->main_server->error_log,
-                               NULL)) != APR_SUCCESS
-|| (rv =
-    apr_procattr_dir_set(procattr,
-                         ap_make_dirstr_parent(procnode->proc_pool,
-                                               (lpszwapper != NULL
-                                                && lpszwapper[0] !=
-                                                '\0') ? wargv[0] :
-                                               procinfo->cgipath))) !=
-APR_SUCCESS
-|| (rv = apr_procattr_cmdtype_set(procattr, APR_PROGRAM)) != APR_SUCCESS
-|| (rv =
-    apr_os_file_put(&file, &unix_socket, 0,
-                    procnode->proc_pool)) != APR_SUCCESS
-|| (rv = apr_procattr_child_in_set(procattr, file, NULL)) != APR_SUCCESS) {
+    if ((rv = apr_procattr_create(&procattr, procnode->proc_pool)) != APR_SUCCESS
+        || (rv = apr_procattr_child_err_set(procattr,
+                                            procinfo->main_server->error_log,
+                                            NULL)) != APR_SUCCESS
+        || (rv = apr_procattr_child_out_set(procattr,
+                                            procinfo->main_server->error_log,
+                                            NULL)) != APR_SUCCESS
+        || (rv = apr_procattr_dir_set(procattr,
+                                      ap_make_dirstr_parent(procnode->proc_pool,
+                                                            (lpszwapper != NULL
+                                                             && lpszwapper[0] !=
+                                                             '\0') ? wargv[0] :
+                                                            procinfo->cgipath))) != APR_SUCCESS
+        || (rv = apr_procattr_cmdtype_set(procattr, APR_PROGRAM)) != APR_SUCCESS
+        || (rv = apr_os_file_put(&file, &unix_socket, 0,
+                                 procnode->proc_pool)) != APR_SUCCESS
+        || (rv = apr_procattr_child_in_set(procattr, file, NULL)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                      "mod_fcgid: couldn't set child process attributes: %s",
                      unix_addr.sun_path);
@@ -354,14 +349,12 @@ APR_SUCCESS
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
                      "mod_fcgid: call %s with wrapper %s",
                      procinfo->cgipath, lpszwapper);
-        if ((rv =
-             fcgid_create_privileged_process(&tmpproc,
-                                             wargv[0], wargv,
-                                             (const char *const *)
-                                             proc_environ, procattr,
-                                             procinfo,
-                                             procnode->proc_pool)) !=
-            APR_SUCCESS) {
+        if ((rv = fcgid_create_privileged_process(&tmpproc,
+                                                  wargv[0], wargv,
+                                                  (const char *const *)
+                                                  proc_environ, procattr,
+                                                  procinfo,
+                                                  procnode->proc_pool)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                          "mod_fcgid: can't create wrapper process for %s",
                          procinfo->cgipath);
@@ -369,18 +362,17 @@ APR_SUCCESS
             procnode->proc_id = tmpproc;
             return rv;
         }
-    } else {
+    } 
+    else {
         argv[0] = procinfo->cgipath;
         argv[1] = NULL;
-        if ((rv =
-             fcgid_create_privileged_process(&tmpproc,
-                                             procinfo->cgipath,
-                                             argv,
-                                             (const char *const *)
-                                             proc_environ, procattr,
-                                             procinfo,
-                                             procnode->proc_pool)) !=
-            APR_SUCCESS) {
+        if ((rv = fcgid_create_privileged_process(&tmpproc,
+                                                  procinfo->cgipath,
+                                                  argv,
+                                                  (const char *const *)
+                                                  proc_environ, procattr,
+                                                  procinfo,
+                                                  procnode->proc_pool)) != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                          "mod_fcgid: can't create process");
             close(unix_socket);
@@ -396,10 +388,8 @@ APR_SUCCESS
     return APR_SUCCESS;
 }
 
-apr_status_t
-proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
+apr_status_t proc_kill_gracefully(fcgid_procnode *procnode, server_rec *main_server)
 {
-
     /* su as root before sending kill signal, for suEXEC */
     apr_status_t rv;
 
@@ -410,8 +400,7 @@ proc_kill_gracefully(fcgid_procnode * procnode, server_rec * main_server)
         return APR_EACCES;
     }
     rv = apr_proc_kill(&(procnode->proc_id), SIGTERM);
-    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0)
-    {
+    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0) {
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
@@ -424,22 +413,19 @@ apr_status_t proc_kill_force(fcgid_procnode * procnode,
     apr_status_t rv;
 
     if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {
-
         /* It's fatal error */
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
     rv = apr_proc_kill(&(procnode->proc_id), SIGKILL);
-    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0)
-    {
+    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0) {
         kill(getpid(), SIGTERM);
         return APR_EACCES;
     }
     return rv;
 }
 
-apr_status_t
-proc_wait_process(server_rec * main_server, fcgid_procnode * procnode)
+apr_status_t proc_wait_process(server_rec *main_server, fcgid_procnode *procnode)
 {
     apr_status_t rv;
     int exitcode;
@@ -504,8 +490,7 @@ static apr_status_t set_socket_nonblock(int sd)
     return APR_SUCCESS;
 }
 
-apr_status_t
-proc_connect_ipc(fcgid_procnode * procnode, fcgid_ipc * ipc_handle)
+apr_status_t proc_connect_ipc(fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
 {
     fcgid_namedpipe_handle *handle_info;
     struct sockaddr_un unix_addr;
@@ -546,8 +531,7 @@ proc_connect_ipc(fcgid_procnode * procnode, fcgid_ipc * ipc_handle)
                (char *) &on, sizeof(on));
 
     /* Set nonblock option */
-    if ((rv =
-         set_socket_nonblock(handle_info->handle_socket)) != APR_SUCCESS) {
+    if ((rv = set_socket_nonblock(handle_info->handle_socket)) != APR_SUCCESS) {
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, rv, ipc_handle->request,
                       "mod_fcgid: can't make unix domain socket nonblocking");
         return rv;
@@ -567,8 +551,8 @@ apr_status_t proc_close_ipc(fcgid_ipc * ipc_handle)
     return rv;
 }
 
-apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
-                           apr_size_t * size)
+apr_status_t proc_read_ipc(fcgid_ipc *ipc_handle, const char *buffer,
+                           apr_size_t *size)
 {
     int retcode, unix_socket;
     fcgid_namedpipe_handle *handle_info;
@@ -602,7 +586,8 @@ apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
                       ipc_handle->request,
                       "mod_fcgid: error polling unix domain socket");
         return errno;
-    } else if (retcode == 0) {
+    }
+    else if (retcode == 0) {
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0,
                       ipc_handle->request,
                       "mod_fcgid: read data timeout in %d seconds",
@@ -630,7 +615,7 @@ apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
     return errno;
 }
 
-static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
+static apr_status_t socket_writev(fcgid_ipc *ipc_handle,
                                   struct iovec *vec, int nvec,
                                   int *writecnt)
 {
@@ -714,7 +699,7 @@ static apr_status_t socket_writev(fcgid_ipc * ipc_handle,
     return rv;
 }
 
-static apr_status_t writev_it_all(fcgid_ipc * ipc_handle,
+static apr_status_t writev_it_all(fcgid_ipc *ipc_handle,
                                   struct iovec *vec, int nvec)
 {
     apr_size_t bytes_written = 0;
@@ -757,8 +742,8 @@ static apr_status_t writev_it_all(fcgid_ipc * ipc_handle,
 }
 
 #define FCGID_VEC_COUNT 8
-apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
-                            apr_bucket_brigade * output_brigade)
+apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
+                            apr_bucket_brigade *output_brigade)
 {
     apr_status_t rv;
     struct iovec vec[FCGID_VEC_COUNT];
@@ -787,7 +772,8 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                                FCGID_VEC_COUNT)) != APR_SUCCESS)
                 return rv;
             nvec = 0;
-        } else
+        }
+        else
             nvec++;
     }
 
@@ -800,9 +786,8 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
     return APR_SUCCESS;
 }
 
-void
-proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
-                     apr_exit_why_e exitwhy, server_rec * main_server)
+void proc_print_exit_info(fcgid_procnode *procnode, int exitcode,
+                          apr_exit_why_e exitwhy, server_rec *main_server)
 {
     const char *diewhy = NULL;
     char signal_info[HUGE_STRING_LEN];
@@ -861,7 +846,8 @@ proc_print_exit_info(fcgid_procnode * procnode, int exitcode,
                              "get unexpected signal %d", signum);
             }
         }
-    } else if (APR_PROC_CHECK_EXIT(exitwhy)) {
+    }
+    else if (APR_PROC_CHECK_EXIT(exitwhy)) {
         apr_snprintf(signal_info, HUGE_STRING_LEN - 1,
                      "terminated by calling exit(), return code: %d",
                      exitcode);
