@@ -39,7 +39,7 @@ typedef struct {
     request_rec *request;
 } fcgid_ipc;
 
-apr_status_t proc_spawn_process(char *lpszwapper,
+apr_status_t proc_spawn_process(const char *cmdline,
                                 fcgid_proc_info * procinfo,
                                 fcgid_procnode * procnode);
 

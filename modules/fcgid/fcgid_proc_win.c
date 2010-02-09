@@ -58,7 +58,7 @@ static apr_status_t close_finish_event(void *finishevent)
     return APR_SUCCESS;
 }
 
-apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo,
+apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
                                 fcgid_procnode *procnode)
 {
     HANDLE *finish_event, listen_handle;
@@ -69,14 +69,13 @@ apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo
     apr_file_t *file;
     char **proc_environ;
     char sock_path[_POSIX_PATH_MAX];
-    char *argv[2];
     int argc;
     char *wargv[APACHE_ARG_MAX], *word; /* For wrapper */
     const char *tmp;
 
     /* Build wrapper args */
     argc = 0;
-    tmp = wrapper_cmdline;
+    tmp = cmdline;
     while (1) {
         word = ap_getword_white(procnode->proc_pool, &tmp);
         if (word == NULL || *word == '\0')
@@ -132,8 +131,7 @@ apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo
         return APR_ENOSOCKET;
     }
     apr_cpystrn(procnode->socket_path, sock_path, sizeof(procnode->socket_path));
-    apr_cpystrn(procnode->executable_path,
-                (wrapper_cmdline != NULL && wrapper_cmdline[0] != '\0') ? wargv[0] : procinfo->cgipath,
+    apr_cpystrn(procnode->executable_path, wargv[0],
                 sizeof(procnode->executable_path));
 
     /* Build environment variables */
@@ -151,8 +149,7 @@ apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo
                != APR_SUCCESS
         || (rv = apr_procattr_dir_set(proc_attr,
                      ap_make_dirstr_parent(procnode->proc_pool,
-                         (wrapper_cmdline && wrapper_cmdline[0] != '\0') 
-                              ? wargv[0] : procinfo->cgipath))) != APR_SUCCESS
+                                           wargv[0]))) != APR_SUCCESS
         || (rv = apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM))
                != APR_SUCCESS
         || (rv = apr_procattr_detach_set(proc_attr, 1)) != APR_SUCCESS
@@ -170,37 +167,18 @@ apr_status_t proc_spawn_process(char *wrapper_cmdline, fcgid_proc_info *procinfo
     }
 
     /* fork and exec now */
-    if (wrapper_cmdline != NULL && wrapper_cmdline[0] != '\0') {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
-                     "mod_fcgid: call %s with wrapper %s",
-                     procinfo->cgipath, wrapper_cmdline);
-        if ((rv = apr_proc_create(&(procnode->proc_id), wargv[0],
-                                  wargv, proc_environ, proc_attr,
-                                  procnode->proc_pool)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
-                         "mod_fcgid: can't create wrapper process for %s",
-                         procinfo->cgipath);
-            CloseHandle(listen_handle);
-            return rv;
-        }
-    } else {
-        argv[0] = procinfo->cgipath;
-        argv[1] = NULL;
-        if ((rv =
-             apr_proc_create(&(procnode->proc_id), procinfo->cgipath,
-                             argv, proc_environ, proc_attr,
-                             procnode->proc_pool)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
-                         "mod_fcgid: can't create process");
-            CloseHandle(listen_handle);
-            return rv;
-        }
-    }
+    rv = apr_proc_create(&(procnode->proc_id), wargv[0], wargv,
+                         proc_environ, proc_attr, procnode->proc_pool);
 
     /* OK, I created the process, now put it back to idle list */
     CloseHandle(listen_handle);
 
-    return APR_SUCCESS;
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
+                     "mod_fcgid: can't run %s", wargv[0]);
+    }
+
+    return rv;
 }
 
 apr_status_t proc_kill_gracefully(fcgid_procnode *procnode,

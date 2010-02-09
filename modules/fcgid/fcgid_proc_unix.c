@@ -168,7 +168,7 @@ static apr_status_t exec_setuid_cleanup(void *dummy)
     return APR_SUCCESS;
 }
 
-apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
+apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
                                 fcgid_procnode *procnode)
 {
     server_rec *main_server = procinfo->main_server;
@@ -185,11 +185,10 @@ apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
     const char *wargv[APACHE_ARG_MAX];
     const char *word; /* For wrapper */
     const char *tmp;
-    const char *argv[2];
 
     /* Build wrapper args */
     argc = 0;
-    tmp = lpszwapper;
+    tmp = cmdline;
     while (1) {
         word = ap_getword_white(procnode->proc_pool, &tmp);
         if (word == NULL || *word == '\0')
@@ -213,8 +212,7 @@ apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
                  getpid(), g_process_counter++);
     apr_cpystrn(procnode->socket_path, unix_addr.sun_path,
                 sizeof(procnode->socket_path));
-    apr_cpystrn(procnode->executable_path,
-                (lpszwapper != NULL && lpszwapper[0] != '\0') ? wargv[0] : procinfo->cgipath,
+    apr_cpystrn(procnode->executable_path, wargv[0],
                 sizeof(procnode->executable_path));
 
     /* Unlink the file just in case */
@@ -325,10 +323,7 @@ apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
                                             NULL)) != APR_SUCCESS
         || (rv = apr_procattr_dir_set(procattr,
                                       ap_make_dirstr_parent(procnode->proc_pool,
-                                                            (lpszwapper != NULL
-                                                             && lpszwapper[0] !=
-                                                             '\0') ? wargv[0] :
-                                                            procinfo->cgipath))) != APR_SUCCESS
+                                                            wargv[0]))) != APR_SUCCESS
         || (rv = apr_procattr_cmdtype_set(procattr, APR_PROGRAM)) != APR_SUCCESS
         || (rv = apr_os_file_put(&file, &unix_socket, 0,
                                  procnode->proc_pool)) != APR_SUCCESS
@@ -345,47 +340,21 @@ apr_status_t proc_spawn_process(char *lpszwapper, fcgid_proc_info *procinfo,
      * for it's a share memory address, both parent and child process may modify 
      * procnode->proc_id->pid, so sometimes it's 0 and sometimes it's >0
      */
-    if (lpszwapper != NULL && lpszwapper[0] != '\0') {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
-                     "mod_fcgid: call %s with wrapper %s",
-                     procinfo->cgipath, lpszwapper);
-        if ((rv = fcgid_create_privileged_process(&tmpproc,
-                                                  wargv[0], wargv,
-                                                  (const char *const *)
-                                                  proc_environ, procattr,
-                                                  procinfo,
-                                                  procnode->proc_pool)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
-                         "mod_fcgid: can't create wrapper process for %s",
-                         procinfo->cgipath);
-            close(unix_socket);
-            procnode->proc_id = tmpproc;
-            return rv;
-        }
-    } 
-    else {
-        argv[0] = procinfo->cgipath;
-        argv[1] = NULL;
-        if ((rv = fcgid_create_privileged_process(&tmpproc,
-                                                  procinfo->cgipath,
-                                                  argv,
-                                                  (const char *const *)
-                                                  proc_environ, procattr,
-                                                  procinfo,
-                                                  procnode->proc_pool)) != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
-                         "mod_fcgid: can't create process");
-            close(unix_socket);
-            procnode->proc_id = tmpproc;
-            return rv;
-        }
-    }
+    rv = fcgid_create_privileged_process(&tmpproc, wargv[0], wargv,
+                                         (const char *const *)proc_environ,
+                                         procattr, procinfo,
+                                         procnode->proc_pool);
 
     /* Close socket before try to connect to it */
     close(unix_socket);
     procnode->proc_id = tmpproc;
 
-    return APR_SUCCESS;
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
+                     "mod_fcgid: can't run %s", wargv[0]);
+    }
+
+    return rv;
 }
 
 apr_status_t proc_kill_gracefully(fcgid_procnode *procnode, server_rec *main_server)
