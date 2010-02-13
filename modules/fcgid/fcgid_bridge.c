@@ -169,7 +169,13 @@ apr_status_t bucket_ctx_cleanup(void *thectx)
         ctx->buffer = NULL;
     }
 
-    proc_close_ipc(&ctx->ipc);
+    /* proc_close_ipc() and ipc_handle_cleanup() do their own sanity
+     * checks, but we'll do our own anyway
+     */
+    if (ctx->ipc.ipc_handle_info) {
+        proc_close_ipc(&ctx->ipc);
+        ctx->ipc.ipc_handle_info = NULL;
+    }
 
     if (ctx->procnode) {
         ++ctx->procnode->requests_handled;
@@ -282,22 +288,93 @@ static int getsfunc_fcgid_BRIGADE(char *buf, int len, void *arg)
 }
 
 static int
-handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
-               apr_bucket_brigade * output_brigade)
+handle_request_ipc(request_rec *r, int role,
+                   apr_bucket_brigade *output_brigade,
+                   fcgid_bucket_ctx *bucket_ctx, const char **location_ptr)
 {
-    apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
-    fcgid_command fcgi_request;
-    fcgid_bucket_ctx *bucket_ctx;
-    int i, j, cond_status;
+    int cond_status;
     apr_status_t rv;
     apr_bucket_brigade *brigade_stdout;
     char sbuf[MAX_STRING_LEN];
     const char *location;
 
-    bucket_ctx = apr_pcalloc(request_pool, sizeof(*bucket_ctx));
+    /* Write output_brigade to fastcgi server */
+    if ((rv = proc_write_ipc(&bucket_ctx->ipc,
+                             output_brigade)) != APR_SUCCESS) {
+        bucket_ctx->has_error = 1;
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /* Create brigade */
+    brigade_stdout =
+        apr_brigade_create(r->pool, r->connection->bucket_alloc);
+    APR_BRIGADE_INSERT_TAIL(brigade_stdout,
+                            ap_bucket_fcgid_header_create(r->connection->
+                                                          bucket_alloc,
+                                                          bucket_ctx));
+
+    /* Check the script header first; return immediately on error. */
+    if ((cond_status =
+         ap_scan_script_header_err_core(r, sbuf, getsfunc_fcgid_BRIGADE,
+                                        brigade_stdout)) >= 400) {
+        return cond_status;
+    }
+
+    /* Check redirect */
+    location = apr_table_get(r->headers_out, "Location");
+
+    if (location && location[0] == '/' && r->status == 200) {
+        /* This redirect needs to be a GET no matter what the original 
+         * method was. 
+         */
+        r->method = apr_pstrdup(r->pool, "GET");
+        r->method_number = M_GET;
+
+        /* We already read the message body (if any), so don't allow 
+         * the redirected request to think it has one.  We can ignore 
+         * Transfer-Encoding, since we used REQUEST_CHUNKED_ERROR. 
+         */
+        apr_table_unset(r->headers_in, "Content-Length");
+
+        *location_ptr = location;
+        return HTTP_OK;
+    }
+    else if (location && r->status == 200) {
+        /* XX Note that if a script wants to produce its own Redirect 
+         * body, it now has to explicitly *say* "Status: 302" 
+         */
+        return HTTP_MOVED_TEMPORARILY;
+    }
+
+    /* Now pass to output filter */
+    if (role == FCGI_RESPONDER
+        && (rv = ap_pass_brigade(r->output_filters,
+                                 brigade_stdout)) != APR_SUCCESS) {
+        if (!APR_STATUS_IS_ECONNABORTED(rv)) {
+            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                          "mod_fcgid: ap_pass_brigade failed in "
+                          "handle_request_ipc function");
+        }
+
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    return cond_status;
+}
+
+static int
+handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
+               apr_bucket_brigade * output_brigade)
+{
+    fcgid_command fcgi_request;
+    fcgid_bucket_ctx *bucket_ctx;
+    int i, j, cond_status;
+    const char *location = NULL;
+
+    bucket_ctx = apr_pcalloc(r->pool, sizeof(*bucket_ctx));
 
     bucket_ctx->ipc.request = r;
-    apr_pool_cleanup_register(request_pool, bucket_ctx,
+    apr_pool_cleanup_register(r->pool, bucket_ctx,
                               bucket_ctx_cleanup, apr_pool_cleanup_null);
 
     /* Try to get a connected ipc handle */
@@ -357,63 +434,36 @@ handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
         apr_time_now();
     bucket_ctx->procnode->diewhy = FCGID_DIE_KILLSELF;
 
-    /* Write output_brigade to fastcgi server */
-    if ((rv =
-         proc_write_ipc(&bucket_ctx->ipc, output_brigade)) != APR_SUCCESS) {
-        bucket_ctx->has_error = 1;
-        return HTTP_INTERNAL_SERVER_ERROR;
-    }
+    cond_status = handle_request_ipc(r, role, output_brigade,
+                                     bucket_ctx, &location);
 
-    /* Create brigade */
-    brigade_stdout =
-        apr_brigade_create(request_pool, r->connection->bucket_alloc);
-    APR_BRIGADE_INSERT_TAIL(brigade_stdout,
-                            ap_bucket_fcgid_header_create(r->connection->
-                                                          bucket_alloc,
-                                                          bucket_ctx));
-    /*APR_BRIGADE_INSERT_TAIL(brigade_stdout, apr_bucket_flush_create(r->connection->bucket_alloc)); */
+    /* Release the process ASAP.  This may already have been done in
+     * ap_pass_brigade() by fcgid_header_bucket_read(), but not in the
+     * case where handle_request_ipc() returned early without reading
+     * the body of the HTTP response.  This could be because of an error,
+     * or because of a role or a status code which permits us to ignore
+     * the message body.
+     *
+     * As an example, when handling a request in the FCGI_AUTHORIZER role,
+     * we don't read through to the end of the response from the process,
+     * we just read the HTTP headers.  That means each phase of the
+     * request handling sequence (e.g., authentication, authorization, etc.)
+     * will require its own process unless we make sure to always release
+     * any process we acquired regardless of whether we're reading the
+     * response body.
+     *
+     * As another example, if we perform or cause an internal redirection
+     * (for instance, by returning an error code that invokes a script
+     * handler in ap_die() because of an ErrorDocument configuration), then
+     * we must also release the process we acquired here so that it is
+     * potentially available during the next handling phase.
+     */
 
-    /* Check the script header first. If got error, return immediately */
-    if ((cond_status = ap_scan_script_header_err_core
-         (r, sbuf, getsfunc_fcgid_BRIGADE, brigade_stdout)) >= 400)
-        return cond_status;
+    apr_pool_cleanup_run(r->pool, bucket_ctx, bucket_ctx_cleanup);
 
-    /* Check redirect */
-    location = apr_table_get(r->headers_out, "Location");
-
-    if (location && location[0] == '/' && r->status == 200) {
-        /* This redirect needs to be a GET no matter what the original 
-         * method was. 
-         */
-        r->method = apr_pstrdup(r->pool, "GET");
-        r->method_number = M_GET;
-
-        /* We already read the message body (if any), so don't allow 
-         * the redirected request to think it has one. We can ignore 
-         * Transfer-Encoding, since we used REQUEST_CHUNKED_ERROR. 
-         */
-        apr_table_unset(r->headers_in, "Content-Length");
-
+    /* Perform internal redirection if necessary */
+    if (location) {
         ap_internal_redirect_handler(location, r);
-        return HTTP_OK;
-    }
-    else if (location && r->status == 200) {
-        /* XX Note that if a script wants to produce its own Redirect 
-         * body, it now has to explicitly *say* "Status: 302" 
-         */
-        return HTTP_MOVED_TEMPORARILY;
-    }
-
-    /* Now pass to output filter */
-    if (role == FCGI_RESPONDER && (rv =
-                                   ap_pass_brigade(r->output_filters,
-                                                   brigade_stdout)) !=
-        APR_SUCCESS) {
-        if (!APR_STATUS_IS_ECONNABORTED(rv)) {
-            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
-                          "mod_fcgid: ap_pass_brigade failed in handle_request function");
-        }
-        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     /* Retrun condition status */
@@ -610,16 +660,15 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
 
 int bridge_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf)
 {
-    apr_pool_t *request_pool = r->main ? r->main->pool : r->pool;
     apr_bucket_brigade *output_brigade;
     apr_bucket *bucket_eos;
-    char **envp = ap_create_environment(request_pool,
+    char **envp = ap_create_environment(r->pool,
                                         r->subprocess_env);
     int rc;
 
     /* Create brigade for the request to fastcgi server */
     output_brigade =
-        apr_brigade_create(request_pool, r->connection->bucket_alloc);
+        apr_brigade_create(r->pool, r->connection->bucket_alloc);
 
     /* Build the begin request and environ request, append them to output_brigade */
     if (!build_begin_block
@@ -632,7 +681,7 @@ int bridge_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf)
     }
 
     if (role == FCGI_RESPONDER) {
-        rc = add_request_body(r, request_pool, output_brigade);
+        rc = add_request_body(r, r->pool, output_brigade);
         if (rc) {
             return rc;
         }

@@ -144,7 +144,6 @@ static int fcgid_handler(request_rec * r)
     cgi_exec_info_t e_info;
     const char *command;
     const char **argv;
-    apr_pool_t *p;
     apr_status_t rv;
     int http_retcode;
     fcgid_cmd_conf *wrapper_conf;
@@ -169,7 +168,6 @@ static int fcgid_handler(request_rec * r)
     e_info.bb = NULL;
     e_info.ctx = NULL;
     e_info.next = NULL;
-    p = r->main ? r->main->pool : r->pool;
 
     wrapper_conf = get_wrapper_info(r->filename, r);
 
@@ -185,7 +183,7 @@ static int fcgid_handler(request_rec * r)
     /* Build the command line */
     if (wrapper_conf) {
         if ((rv =
-             default_build_command(&command, &argv, r, p,
+             default_build_command(&command, &argv, r, r->pool,
                                    &e_info)) != APR_SUCCESS) {
             ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
                           "mod_fcgid: don't know how to spawn wrapper child process: %s",
@@ -193,7 +191,7 @@ static int fcgid_handler(request_rec * r)
             return HTTP_INTERNAL_SERVER_ERROR;
         }
     } else {
-        if ((rv = cgi_build_command(&command, &argv, r, p,
+        if ((rv = cgi_build_command(&command, &argv, r, r->pool,
                                     &e_info)) != APR_SUCCESS) {
             ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r,
                           "mod_fcgid: don't know how to spawn child process: %s",
