@@ -1,6 +1,11 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) FcgidPassHeader now maps header names to environment variable names
+     in the usual manner: The header name is converted to upper case and
+     is prefixed with HTTP_.  An additional environment variable is 
+     created with the legacy name.  PR 48964.  [Jeff Trawick]
+
   *) Allow processes to be reused within multiple phases of a request
      by releasing them into the free list as soon as possible.
      [Chris Darroch]

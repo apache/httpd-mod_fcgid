@@ -19,6 +19,7 @@
 #include "http_request.h"
 #include "http_protocol.h"
 #include "ap_mmn.h"
+#include "apr_lib.h"
 #include "apr_buckets.h"
 #include "apr_strings.h"
 #include "apr_thread_proc.h"
@@ -105,6 +106,32 @@ default_build_command(const char **cmd, const char ***argv,
     return APR_SUCCESS;
 }
 
+/* http2env stolen from util_script.c */
+static char *http2env(apr_pool_t *a, const char *w)
+{
+    char *res = (char *)apr_palloc(a, sizeof("HTTP_") + strlen(w));
+    char *cp = res;
+    char c;
+
+    *cp++ = 'H';
+    *cp++ = 'T';
+    *cp++ = 'T';
+    *cp++ = 'P';
+    *cp++ = '_';
+
+    while ((c = *w++) != 0) {
+        if (!apr_isalnum(c)) {
+            *cp++ = '_';
+        }
+        else {
+            *cp++ = apr_toupper(c);
+        }
+    }
+    *cp = 0;
+ 
+    return res;
+}
+
 static void fcgid_add_cgi_vars(request_rec * r)
 {
     apr_array_header_t *passheaders = get_pass_headers(r);
@@ -117,8 +144,15 @@ static void fcgid_add_cgi_vars(request_rec * r)
         for (i = 0; i < hdrcnt; i++, ++hdr) {
             const char *val = apr_table_get(r->headers_in, *hdr);
 
-            if (val)
+            if (val) {
+                /* no munging of header name to create envvar name;
+                 * consistent with legacy mod_fcgid behavior and mod_fastcgi
+                 * prior to 2.4.7
+                 */
                 apr_table_setn(r->subprocess_env, *hdr, val);
+                /* standard munging of header name (upcase, HTTP_, etc.) */
+                apr_table_setn(r->subprocess_env, http2env(r->pool, *hdr), val);
+            }
         }
     }
 

@@ -937,9 +937,17 @@
     <usage>
       <p>This directive specifies the name of a request header which
       will be passed to the FastCGI application as an environment
-      variable.  The environment variable name will match the name 
-      specified on this directive, with hyphens converted to 
-      underscores, and no case conversion performed.</p>
+      variable.  The name of the environment variable is derived from
+      the value specified on this directive, as discussed below:</p>
+
+      <p>The legacy behavior is to use the value specified on this directive
+      as the environment variable name, converting hyphens to underscores.
+      No case conversion is performed.</p>
+
+      <p>Beginning with release 2.3.6-dev, an additional environment variable
+      is created.  The value specified on this directive is converted to 
+      upper case, prefixed with <code>HTTP_</code>, and hyphens are 
+      converted to underscores.</p>
 
       <note type="hint"><title>Note</title>
       <p>Most request headers are already available to the application
