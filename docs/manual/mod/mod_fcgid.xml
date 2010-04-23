@@ -759,6 +759,12 @@
       any processes which have exceeded 
       <directive module="mod_fcgid">FcgidIdleTimeout</directive> or
       <directive module="mod_fcgid">FcgidProcessLifeTime</directive>.</p>
+
+      <p>Unix: mod_fcgid will terminate such processes with SIGTERM;
+      if the process is still active during the next scan, the process
+      will be terminated with SIGKILL.  Thus, this directive controls the
+      amount of time for orderly process terminate before being forcibly 
+      killed.</p>
     </usage>
   </directivesynopsis>
 
