@@ -282,6 +282,7 @@ static void scan_errorlist(server_rec * main_server)
     fcgid_server_conf *sconf =
         ap_get_module_config(main_server->module_config,
                              &fcgid_module);
+    int graceful_terminations = 0;
 
     /* Should I check the busy list? */
     if (procmgr_must_exit()
@@ -326,6 +327,7 @@ static void scan_errorlist(server_rec * main_server)
                               current_node->proc_pool);
         if (!dummy) {
             proc_kill_gracefully(current_node, main_server);
+            ++graceful_terminations;
             apr_pool_userdata_set("set", HAS_GRACEFUL_KILL,
                                   apr_pool_cleanup_null,
                                   current_node->proc_pool);
@@ -350,6 +352,12 @@ static void scan_errorlist(server_rec * main_server)
     }
     previous_node->next_index = temp_error_header.next_index;
     proctable_pm_unlock(main_server);
+
+    if (graceful_terminations) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
+                     "mod_fcgid: gracefully terminated %d processes",
+                     graceful_terminations);
+    }
 }
 
 static void kill_all_subprocess(server_rec * main_server)
