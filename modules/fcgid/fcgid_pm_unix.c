@@ -451,10 +451,6 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
     char notifybyte;
     apr_size_t nbytes = sizeof(*command);
 
-    /* Sanity check first */
-    if (g_caughtSigTerm || !g_ap_write_pipe)
-        return APR_SUCCESS;
-
     /* Get the global mutex before posting the request */
     if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {
         ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
