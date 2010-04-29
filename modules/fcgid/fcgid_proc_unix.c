@@ -201,7 +201,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     struct sockaddr_un unix_addr;
     apr_procattr_t *procattr = NULL;
     int argc;
-    const char *wargv[APACHE_ARG_MAX];
+    const char *wargv[APACHE_ARG_MAX + 1];
     const char *word; /* For wrapper */
     const char *tmp;
 

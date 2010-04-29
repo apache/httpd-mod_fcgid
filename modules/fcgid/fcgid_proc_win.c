@@ -70,7 +70,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     char **proc_environ;
     char sock_path[_POSIX_PATH_MAX];
     int argc;
-    char *wargv[APACHE_ARG_MAX], *word; /* For wrapper */
+    char *wargv[APACHE_ARG_MAX + 1], *word; /* For wrapper */
     const char *tmp;
 
     /* Build wrapper args */
