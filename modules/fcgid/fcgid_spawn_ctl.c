@@ -159,6 +159,14 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
     if (!command || !g_stat_pool)
         return 1;
 
+    /* Total process count higher than up limit? */
+    if (g_total_process >= sconf->max_process_count) {
+        ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
+                     "mod_fcgid: %s total process count %d >= %d, skip the spawn request",
+                     command->cgipath, g_total_process, sconf->max_process_count);
+        return 0;
+    }
+
     /* Can I find the node base on inode, device id and cmdline? */
     for (current_node = g_stat_list_header;
          current_node != NULL; current_node = current_node->next) {
@@ -171,8 +179,12 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
             break;
     }
 
-    if (!current_node)
+    if (!current_node) {
+        /* There are no existing processes for this class, so obviously 
+         * no class-specific limits have been exceeded.
+         */
         return 1;
+    }
     else {
         apr_time_t now = apr_time_now();
 
@@ -189,14 +201,6 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
                          "mod_fcgid: %s spawn score %d >= %d, skip the spawn request",
                          command->cgipath, current_node->score,
                          sconf->spawnscore_uplimit);
-            return 0;
-        }
-
-        /* Total process count higher than up limit? */
-        if (g_total_process >= sconf->max_process_count) {
-            ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
-                         "mod_fcgid: %s total process count %d >= %d, skip the spawn request",
-                         command->cgipath, g_total_process, sconf->max_process_count);
             return 0;
         }
 
