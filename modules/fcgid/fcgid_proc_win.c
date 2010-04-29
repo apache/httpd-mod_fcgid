@@ -68,7 +68,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     apr_status_t rv;
     apr_file_t *file;
     char **proc_environ;
-    char sock_path[_POSIX_PATH_MAX];
+    char sock_path[FCGID_PATH_MAX];
     int argc;
     char *wargv[APACHE_ARG_MAX + 1], *word; /* For wrapper */
     const char *tmp;
@@ -110,8 +110,8 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     apr_table_setn(procinfo->proc_environ, SHUTDOWN_EVENT_NAME,
                    apr_ltoa(procnode->proc_pool, (long) *finish_event));
 
-    /* Prepare the listen namedpipe file name */
-    apr_snprintf(sock_path, _POSIX_PATH_MAX - 1,
+    /* Prepare the listen namedpipe file name (no check for truncation) */
+    apr_snprintf(sock_path, sizeof sock_path,
                  "\\\\.\\pipe\\fcgidpipe-%u.%lu",
                  GetCurrentProcessId(), g_process_counter++);
 

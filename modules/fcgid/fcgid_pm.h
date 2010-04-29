@@ -21,8 +21,8 @@
 #include "fcgid_conf.h"
 
 typedef struct {
-    char cgipath[_POSIX_PATH_MAX];
-    char cmdline[_POSIX_PATH_MAX];
+    char cgipath[FCGID_PATH_MAX];
+    char cmdline[FCGID_CMDLINE_MAX];
     apr_ino_t inode;
     dev_t deviceid;
     const char *virtualhost;  /* Virtualhost granularity */

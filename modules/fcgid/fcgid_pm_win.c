@@ -132,8 +132,12 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 {
     memset(command, 0, sizeof(*command));
 
-    apr_cpystrn(command->cgipath, cmd_conf->cgipath, _POSIX_PATH_MAX);
-    apr_cpystrn(command->cmdline, cmd_conf->cmdline, _POSIX_PATH_MAX);
+    /* no truncation should ever occur */
+    AP_DEBUG_ASSERT(sizeof command->cgipath > strlen(cmd_conf->cgipath));
+    apr_cpystrn(command->cgipath, cmd_conf->cgipath, sizeof command->cgipath);
+    AP_DEBUG_ASSERT(sizeof command->cmdline > strlen(cmd_conf->cmdline));
+    apr_cpystrn(command->cmdline, cmd_conf->cmdline, sizeof command->cmdline);
+
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;

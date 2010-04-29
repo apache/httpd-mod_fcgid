@@ -792,8 +792,16 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
 
     wrapper = apr_pcalloc(cmd->pool, sizeof(*wrapper));
 
+    if (strlen(path) >= FCGID_PATH_MAX) {
+        return "Executable path length exceeds compiled-in limit";
+    }
     wrapper->cgipath = apr_pstrdup(cmd->pool, path);
+
+    if (strlen(wrapper_cmdline) >= FCGID_CMDLINE_MAX) {
+        return "Command line length exceeds compiled-in limit";
+    }
     wrapper->cmdline = apr_pstrdup(cmd->pool, wrapper_cmdline);
+
     wrapper->inode = finfo.inode;
     wrapper->deviceid = finfo.device;
     wrapper->virtual = (virtual != NULL && !strcasecmp(virtual, WRAPPER_FLAG_VIRTUAL));

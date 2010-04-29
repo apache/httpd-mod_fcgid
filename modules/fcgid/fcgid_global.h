@@ -26,8 +26,29 @@
 #include "fcgid_config.h"
 #endif
 
-#ifndef _POSIX_PATH_MAX
-#define _POSIX_PATH_MAX 255
+/* FCGID_PATH_MAX
+ * - includes terminating '\0'
+ * - based on minimum supported path length (on Unix at least)
+ * - should be used in declarations, but logic should use sizeof
+ *   wherever possible
+ */
+#ifndef FCGID_PATH_MAX
+#ifdef _POSIX_PATH_MAX
+#define FCGID_PATH_MAX _POSIX_PATH_MAX
+#else
+#define FCGID_PATH_MAX 256
+#endif
+#endif
+
+/* FCGID_CMDLINE_MAX
+ * - includes terminating '\0'
+ * - FCGID_PATH_MAX represents the executable, remainder represents
+ *   the args
+ * - should be used in declarations, but logic should use sizeof
+ *   wherever possible
+ */
+#ifndef FCGID_CMDLINE_MAX
+#define FCGID_CMDLINE_MAX (FCGID_PATH_MAX + 256)
 #endif
 
 #define fcgid_min(a,b)    (((a) < (b)) ? (a) : (b))

@@ -42,11 +42,11 @@ typedef struct {
     int node_type;              /* the type of this node, used in fcgid_status_hook() only */
     apr_pool_t *proc_pool;      /* pool for process */
     apr_proc_t proc_id;         /* the process id */
-    char executable_path[_POSIX_PATH_MAX]; /* executable file path */
-    char socket_path[_POSIX_PATH_MAX];  /* cgi application socket path */
+    char executable_path[FCGID_PATH_MAX]; /* executable file path */
+    char socket_path[FCGID_PATH_MAX]; /* cgi application socket path */
     apr_ino_t inode;            /* cgi file inode */
     apr_dev_t deviceid;         /* cgi file device id */
-    char cmdline[_POSIX_PATH_MAX]; /* entire command line */
+    char cmdline[FCGID_CMDLINE_MAX]; /* entire command line */
     gid_t gid;                  /* for suEXEC */
     uid_t uid;                  /* for suEXEC */
     const char *virtualhost;      /* the virtualhost this process belongs to */

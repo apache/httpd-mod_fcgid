@@ -435,8 +435,12 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         command->userdir = 0;
     }
 
-    apr_cpystrn(command->cgipath, cmd_conf->cgipath, _POSIX_PATH_MAX);
-    apr_cpystrn(command->cmdline, cmd_conf->cmdline, _POSIX_PATH_MAX);
+    /* no truncation should ever occur */
+    AP_DEBUG_ASSERT(sizeof command->cgipath > strlen(cmd_conf->cgipath));
+    apr_cpystrn(command->cgipath, cmd_conf->cgipath, sizeof command->cgipath);
+    AP_DEBUG_ASSERT(sizeof command->cmdline > strlen(cmd_conf->cmdline));
+    apr_cpystrn(command->cmdline, cmd_conf->cmdline, sizeof command->cmdline);
+
     command->deviceid = cmd_conf->deviceid;
     command->inode = cmd_conf->inode;
     command->virtualhost = r->server->server_hostname;

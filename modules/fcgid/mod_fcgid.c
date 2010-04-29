@@ -244,7 +244,17 @@ static int fcgid_handler(request_rec * r)
             }
         }
 
+        /* Dummy up a wrapper configuration, using the requested file as 
+         * both the executable path and command-line.
+         */
         wrapper_conf = apr_pcalloc(r->pool, sizeof(*wrapper_conf));
+
+        if (strlen(command) >= fcgid_min(FCGID_PATH_MAX, FCGID_CMDLINE_MAX)) {
+            ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r,
+                          "mod_fcgid: Executable path length exceeds compiled-in limit: %s",
+                          command);
+            return HTTP_INTERNAL_SERVER_ERROR;
+        }
 
         wrapper_conf->cgipath = apr_pstrdup(r->pool, command);
         wrapper_conf->cmdline = wrapper_conf->cgipath;

@@ -501,7 +501,11 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     /* Prepare to spawn */
     procnode->deviceid = command->deviceid;
     procnode->inode = command->inode;
-    apr_cpystrn(procnode->cmdline, command->cmdline, _POSIX_PATH_MAX);
+
+    /* no truncation should ever occur */
+    AP_DEBUG_ASSERT(sizeof procnode->cmdline > strlen(command->cmdline));
+    apr_cpystrn(procnode->cmdline, command->cmdline, sizeof procnode->cmdline);
+
     procnode->virtualhost = command->virtualhost;
     procnode->uid = command->uid;
     procnode->gid = command->gid;

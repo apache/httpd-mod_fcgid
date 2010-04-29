@@ -200,7 +200,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     char **proc_environ;
     struct sockaddr_un unix_addr;
     apr_procattr_t *procattr = NULL;
-    int argc;
+    int argc, len;
     const char *wargv[APACHE_ARG_MAX + 1];
     const char *word; /* For wrapper */
     const char *tmp;
@@ -223,14 +223,29 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
      */
 
     /* Generate a UNIX domain socket file path */
-    /* XXX It's nothing I can do if the socket dir is too long... */
     memset(&unix_addr, 0, sizeof(unix_addr));
     unix_addr.sun_family = AF_UNIX;
-    apr_snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path) - 1,
-                 "%s/%" APR_PID_T_FMT ".%d", sconf->sockname_prefix,
-                 getpid(), g_process_counter++);
+    len = apr_snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path),
+                       "%s/%" APR_PID_T_FMT ".%d", sconf->sockname_prefix,
+                       getpid(), g_process_counter++);
+
+    /* check for truncation of the socket path
+     *
+     * cheap but overly zealous check for sun_path overflow: if length of
+     * prepared string is at the limit, assume truncation
+     */
+    if (len + 1 == sizeof(unix_addr.sun_path)
+        || len >= sizeof procnode->socket_path) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, main_server,
+                     "mod_fcgid: socket path length exceeds compiled-in limits");
+        return APR_EGENERAL;
+    }
+
     apr_cpystrn(procnode->socket_path, unix_addr.sun_path,
                 sizeof(procnode->socket_path));
+
+    /* truncation already checked for in handler or FcgidWrapper parser */
+    AP_DEBUG_ASSERT(strlen(wargv[0]) < sizeof(procnode->executable_path));
     apr_cpystrn(procnode->executable_path, wargv[0],
                 sizeof(procnode->executable_path));
 
@@ -513,6 +528,9 @@ apr_status_t proc_connect_ipc(fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
     /* Connect to fastcgi server */
     memset(&unix_addr, 0, sizeof(unix_addr));
     unix_addr.sun_family = AF_UNIX;
+
+    /* PM already made this check for truncation */
+    AP_DEBUG_ASSERT(sizeof unix_addr.sun_path > strlen(procnode->socket_path));
     apr_cpystrn(unix_addr.sun_path, procnode->socket_path,
                 sizeof(unix_addr.sun_path));
 
