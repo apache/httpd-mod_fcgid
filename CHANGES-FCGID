@@ -1,6 +1,11 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) Fix the search for processes with the proper vhost config when
+     ServerName isn't set in every vhost or a module updates 
+     r->server->server_hostname dynamically (e.g., mod_vhost_cdb).
+     [Jeff Trawick]
+
   *) FcgidPassHeader now maps header names to environment variable names
      in the usual manner: The header name is converted to upper case and
      is prefixed with HTTP_.  An additional environment variable is 

@@ -49,7 +49,7 @@ typedef struct {
     char cmdline[FCGID_CMDLINE_MAX]; /* entire command line */
     gid_t gid;                  /* for suEXEC */
     uid_t uid;                  /* for suEXEC */
-    const char *virtualhost;      /* the virtualhost this process belongs to */
+    const server_rec *server;   /* the virtualhost this process belongs to */
     apr_time_t start_time;      /* the time of this process create */
     apr_time_t last_active_time;    /* the time this process last active */
     int requests_handled;       /* number of requests process has handled */

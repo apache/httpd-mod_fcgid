@@ -45,7 +45,7 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
     uid_t uid = command->uid;
     gid_t gid = command->gid;
     const char *cmdline = command->cmdline;
-    const char *virtualhost = command->virtualhost;
+    const server_rec *server = command->server;
 
     proc_table = proctable_get_table_array();
     previous_node = proctable_get_idle_list();
@@ -59,7 +59,7 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
         if (current_node->inode == inode
             && current_node->deviceid == deviceid
             && !strcmp(current_node->cmdline, cmdline)
-            && current_node->virtualhost == virtualhost
+            && current_node->server == server
             && current_node->uid == uid && current_node->gid == gid) {
             /* Unlink from idle list */
             previous_node->next_index = current_node->next_index;
@@ -139,7 +139,7 @@ static int count_busy_processes(request_rec *r, fcgid_command *command)
         if (current_node->inode == command->inode
             && current_node->deviceid == command->deviceid
             && !strcmp(current_node->cmdline, command->cmdline)
-            && current_node->virtualhost == command->virtualhost
+            && current_node->server == command->server
             && current_node->uid == command->uid
             && current_node->gid == command->gid) {
             result++;

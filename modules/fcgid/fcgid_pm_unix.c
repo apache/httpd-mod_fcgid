@@ -443,7 +443,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 
     command->deviceid = cmd_conf->deviceid;
     command->inode = cmd_conf->inode;
-    command->virtualhost = r->server->server_hostname;
+    command->server = r->server;
 
     get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }

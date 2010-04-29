@@ -298,8 +298,8 @@ static int fcgidsort(fcgid_procnode **e1, fcgid_procnode **e2)
     cmp = strcmp((*e1)->cmdline, (*e2)->cmdline);
     if (cmp != 0)
         return cmp;
-    if ((*e1)->virtualhost != (*e2)->virtualhost)
-        return (*e1)->virtualhost > (*e2)->virtualhost ? 1 : -1;
+    if ((*e1)->server != (*e2)->server)
+        return (*e1)->server > (*e2)->server ? 1 : -1;
     if ((*e1)->diewhy != (*e2)->diewhy)
         return (*e1)->diewhy > (*e2)->diewhy ? 1 : -1;
     if ((*e1)->node_type != (*e2)->node_type)
@@ -346,7 +346,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
     uid_t last_uid = 0;
     const char *last_cmdline = "";
     apr_time_t now;
-    const char *last_virtualhost = NULL;
+    const server_rec *last_virtualhost = NULL;
     const char *basename, *tmpbasename;
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode *error_list_header = proctable_get_error_list();
@@ -419,7 +419,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
         if (current_node->inode != last_inode || current_node->deviceid != last_deviceid
             || current_node->gid != last_gid || current_node->uid != last_uid
             || strcmp(current_node->cmdline, last_cmdline)
-            || current_node->virtualhost != last_virtualhost) {
+            || current_node->server != last_virtualhost) {
             if (index != 0)
                  ap_rputs("</table>\n\n", r);
            
@@ -446,7 +446,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
             last_gid = current_node->gid;
             last_uid = current_node->uid;
             last_cmdline = current_node->cmdline;
-            last_virtualhost = current_node->virtualhost;
+            last_virtualhost = current_node->server;
         }
 
         ap_rprintf(r, "<tr><td>%" APR_PID_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%" APR_TIME_T_FMT "</td><td>%d</td><td>%s</td></tr>",

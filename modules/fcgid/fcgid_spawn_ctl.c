@@ -29,7 +29,7 @@ struct fcgid_stat_node {
     uid_t uid;
     gid_t gid;
     const char *cmdline;
-    const char *virtualhost;
+    const server_rec *server;
     int score;
     int process_counter;
     int max_class_process_count;
@@ -60,7 +60,7 @@ register_life_death(server_rec * main_server,
         if (current_node->inode == procnode->inode
             && current_node->deviceid == procnode->deviceid
             && !strcmp(current_node->cmdline, procnode->cmdline)
-            && current_node->virtualhost == procnode->virtualhost
+            && current_node->server == procnode->server
             && current_node->uid == procnode->uid
             && current_node->gid == procnode->gid)
             break;
@@ -96,7 +96,7 @@ register_life_death(server_rec * main_server,
         current_node->deviceid = procnode->deviceid;
         current_node->inode = procnode->inode;
         current_node->cmdline = apr_pstrdup(g_stat_pool, procnode->cmdline);
-        current_node->virtualhost = procnode->virtualhost;
+        current_node->server = procnode->server;
         current_node->uid = procnode->uid;
         current_node->gid = procnode->gid;
         current_node->last_stat_time = apr_time_now();
@@ -165,7 +165,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
         if (current_node->inode == command->inode
             && current_node->deviceid == command->deviceid
             && !strcmp(current_node->cmdline, command->cmdline)
-            && current_node->virtualhost == command->virtualhost
+            && current_node->server == command->server
             && current_node->uid == command->uid
             && current_node->gid == command->gid)
             break;
@@ -229,7 +229,7 @@ int is_kill_allowed(server_rec * main_server, fcgid_procnode * procnode)
         if (current_node->inode == procnode->inode
             && current_node->deviceid == procnode->deviceid
             && !strcmp(current_node->cmdline, procnode->cmdline)
-            && current_node->virtualhost == procnode->virtualhost
+            && current_node->server == procnode->server
             && current_node->uid == procnode->uid
             && current_node->gid == procnode->gid)
             break;

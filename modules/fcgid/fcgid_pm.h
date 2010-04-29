@@ -25,7 +25,7 @@ typedef struct {
     char cmdline[FCGID_CMDLINE_MAX];
     apr_ino_t inode;
     dev_t deviceid;
-    const char *virtualhost;  /* Virtualhost granularity */
+    const server_rec *server;   /* Virtualhost granularity */
     uid_t uid;                  /* For suEXEC */
     gid_t gid;                  /* For suEXEC */
     int userdir;                /* For suEXEC */

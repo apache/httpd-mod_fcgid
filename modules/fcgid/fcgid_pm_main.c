@@ -506,7 +506,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     AP_DEBUG_ASSERT(sizeof procnode->cmdline > strlen(command->cmdline));
     apr_cpystrn(procnode->cmdline, command->cmdline, sizeof procnode->cmdline);
 
-    procnode->virtualhost = command->virtualhost;
+    procnode->server = command->server;
     procnode->uid = command->uid;
     procnode->gid = command->gid;
     procnode->start_time = procnode->last_active_time = apr_time_now();
@@ -566,7 +566,9 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
                           procnode, proctable_array);
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
                      "mod_fcgid: server %s:%s(%" APR_PID_T_FMT ") started",
-                     command->virtualhost, command->cgipath,
+                     command->server->server_hostname ?
+                         command->server->server_hostname : "(unknown)",
+                     command->cgipath,
                      procnode->proc_id.pid);
         register_spawn(main_server, procnode);
     }

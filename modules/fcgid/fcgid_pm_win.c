@@ -141,7 +141,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
-    command->virtualhost = r->server->server_hostname;
+    command->server = r->server;
 
     get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }
