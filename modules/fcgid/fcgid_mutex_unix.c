@@ -23,7 +23,7 @@
 #include "http_log.h"
 #include "fcgid_mutex.h"
 
-#if AP_MODULE_MAGIC_AT_LEAST(20091119,1)
+#if AP_MODULE_MAGIC_AT_LEAST(20100504,0)
 
 #include "util_mutex.h"
 
@@ -41,14 +41,12 @@ apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
 {
     apr_status_t rv;
 
-    *lockfile = NULL;
-    rv = ap_global_mutex_create(mutex, mutex_type, NULL, main_server,
+    rv = ap_global_mutex_create(mutex, lockfile, mutex_type, NULL, main_server,
                                 pconf, 0);
     if (rv != APR_SUCCESS) {
         return rv;
     }
 
-    *lockfile = apr_global_mutex_lockfile(*mutex);
     return APR_SUCCESS;
 }
 
