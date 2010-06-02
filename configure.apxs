@@ -104,8 +104,7 @@ cd ..
 if test "x$found_features" = "x"; then
   cp modules/fcgid/fcgid_config.h.in modules/fcgid/fcgid_config.h
 else
-  found_features="`echo \"$found_features\" | sed -e '#s*/#*\\$/#g;'`"
-  eval sed $found_features < modules/fcgid/fcgid_config.h.in \
+  eval sed "$found_features" < modules/fcgid/fcgid_config.h.in \
                            > modules/fcgid/fcgid_config.h
 fi
 
