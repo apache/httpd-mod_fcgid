@@ -175,6 +175,9 @@ static void log_setid_failure(const char *proc_type,
     write(STDERR_FILENO, errmsg, strlen(errmsg));
 }
 
+/* When suexec is enabled, this runs in the forked child
+ * process prior to exec().
+ */
 static apr_status_t exec_setuid_cleanup(void *dummy)
 {
     if (seteuid(0) == -1) {
