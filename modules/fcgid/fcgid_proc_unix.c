@@ -161,7 +161,8 @@ static apr_status_t socket_file_cleanup(void *theprocnode)
     return APR_SUCCESS;
 }
 
-static void log_setid_failure(const char *id_type,
+static void log_setid_failure(const char *proc_type,
+                              const char *id_type,
                               uid_t user_id)
 {
     char errno_desc[120];
@@ -169,19 +170,19 @@ static void log_setid_failure(const char *id_type,
 
     apr_strerror(errno, errno_desc, sizeof errno_desc);
     apr_snprintf(errmsg, sizeof errmsg,
-                 "(%d)%s: mod_fcgid child unable to set %s to %ld\n",
-                 errno, errno_desc, id_type, (long)user_id);
+                 "(%d)%s: %s unable to set %s to %ld\n",
+                 errno, errno_desc, proc_type, id_type, (long)user_id);
     write(STDERR_FILENO, errmsg, strlen(errmsg));
 }
 
 static apr_status_t exec_setuid_cleanup(void *dummy)
 {
     if (seteuid(0) == -1) {
-        log_setid_failure("effective uid", 0);
+        log_setid_failure("mod_fcgid child", "effective uid", 0);
         _exit(1);
     }
     if (setuid(ap_unixd_config.user_id) == -1) {
-        log_setid_failure("uid", ap_unixd_config.user_id);
+        log_setid_failure("mod_fcgid child", "uid", ap_unixd_config.user_id);
         _exit(1);
     }
     return APR_SUCCESS;
@@ -405,41 +406,39 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     return rv;
 }
 
-apr_status_t proc_kill_gracefully(fcgid_procnode *procnode, server_rec *main_server)
+static apr_status_t proc_kill_internal(fcgid_procnode *procnode, int sig)
 {
-    /* su as root before sending kill signal, for suEXEC */
+    /* su as root before sending signal, for suEXEC */
     apr_status_t rv;
 
     if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {
 
-        /* It's fatal error */
-        kill(getpid(), SIGTERM);
-        return APR_EACCES;
+        /* can't gain privileges to send signal (should not occur); do NOT
+         * proceed, as something is broken with current identity
+         */
+        log_setid_failure("mod_fcgid PM", "effective uid", 0);
+        _exit(1);
     }
-    rv = apr_proc_kill(&(procnode->proc_id), SIGTERM);
+    rv = apr_proc_kill(&(procnode->proc_id), sig);
     if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0) {
-        kill(getpid(), SIGTERM);
-        return APR_EACCES;
+        /* can't drop privileges after signalling (should not occur); do NOT
+         * proceed any further as euid(0)!
+         */
+        log_setid_failure("mod_fcgid PM", "effective uid", ap_unixd_config.user_id);
+        _exit(1);
     }
     return rv;
+}
+
+apr_status_t proc_kill_gracefully(fcgid_procnode *procnode, server_rec *main_server)
+{
+    return proc_kill_internal(procnode, SIGTERM);
 }
 
 apr_status_t proc_kill_force(fcgid_procnode * procnode,
                              server_rec * main_server)
 {
-    apr_status_t rv;
-
-    if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {
-        /* It's fatal error */
-        kill(getpid(), SIGTERM);
-        return APR_EACCES;
-    }
-    rv = apr_proc_kill(&(procnode->proc_id), SIGKILL);
-    if (ap_unixd_config.suexec_enabled && seteuid(ap_unixd_config.user_id) != 0) {
-        kill(getpid(), SIGTERM);
-        return APR_EACCES;
-    }
-    return rv;
+    return proc_kill_internal(procnode, SIGKILL);
 }
 
 apr_status_t proc_wait_process(server_rec *main_server, fcgid_procnode *procnode)
