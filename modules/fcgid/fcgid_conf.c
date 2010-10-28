@@ -60,6 +60,14 @@
 void *create_fcgid_server_config(apr_pool_t * p, server_rec * s)
 {
     fcgid_server_conf *config = apr_pcalloc(p, sizeof(*config));
+    static int vhost_id = 0;
+
+    /* allow vhost comparison even when some mass-vhost module
+     * makes a copy of the server_rec to override docroot or
+     * other such settings
+     */
+    ++vhost_id;
+    config->vhost_id = vhost_id;
 
     if (!s->is_virtual) {
         config->busy_scan_interval = DEFAULT_BUSY_SCAN_INTERVAL;

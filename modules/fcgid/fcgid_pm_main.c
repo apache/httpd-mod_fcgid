@@ -480,6 +480,8 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     fcgid_proc_info procinfo;
     apr_status_t rv;
     int i;
+    fcgid_server_conf *sconf =
+        ap_get_module_config(command->server->module_config, &fcgid_module);
 
     free_list_header = proctable_get_free_list();
     idle_list_header = proctable_get_idle_list();
@@ -506,7 +508,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     AP_DEBUG_ASSERT(sizeof procnode->cmdline > strlen(command->cmdline));
     apr_cpystrn(procnode->cmdline, command->cmdline, sizeof procnode->cmdline);
 
-    procnode->server = command->server;
+    procnode->vhost_id = sconf->vhost_id;
     procnode->uid = command->uid;
     procnode->gid = command->gid;
     procnode->start_time = procnode->last_active_time = apr_time_now();

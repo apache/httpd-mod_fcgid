@@ -55,6 +55,8 @@ typedef struct {
 } fcgid_cmd_conf;
 
 typedef struct {
+    /* not based on config */
+    int vhost_id;
     /* global only */
     apr_hash_t *cmdopts_hash;
     int busy_scan_interval;
