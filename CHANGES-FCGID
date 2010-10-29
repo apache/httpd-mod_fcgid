@@ -6,7 +6,8 @@ Changes with mod_fcgid 2.3.6
 
   *) Fix the search for processes with the proper vhost config when
      ServerName isn't set in every vhost or a module updates 
-     r->server->server_hostname dynamically (e.g., mod_vhost_cdb).
+     r->server->server_hostname dynamically (e.g., mod_vhost_cdb)
+     or a module updates r->server dynamically (e.g., mod_vhost_ldap).
      [Jeff Trawick]
 
   *) FcgidPassHeader now maps header names to environment variable names
