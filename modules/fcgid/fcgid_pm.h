@@ -25,12 +25,10 @@ typedef struct {
     char cmdline[FCGID_CMDLINE_MAX];
     apr_ino_t inode;
     dev_t deviceid;
-    /* module_config and server_hostname are copied from the
-     * server_rec of the vhost that started the process, in
-     * support of mass vhost modules that create server_rec
-     * during the request phase
+    /* can't reference these via server_rec because some mass vhost
+     * module may have copied it for per-request customization
      */
-    struct ap_conf_vector_t *module_config;
+    int vhost_id;
     char server_hostname[32];   /* for logging only; ok to truncate */
     uid_t uid;                  /* For suEXEC */
     gid_t gid;                  /* For suEXEC */

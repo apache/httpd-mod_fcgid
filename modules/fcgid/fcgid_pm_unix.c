@@ -421,6 +421,8 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             fcgid_cmd_conf *cmd_conf)
 {
     ap_unix_identity_t *ugid;
+    fcgid_server_conf *sconf =
+        ap_get_module_config(r->server->module_config, &fcgid_module);
 
     memset(command, 0, sizeof(*command));
 
@@ -443,7 +445,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 
     command->deviceid = cmd_conf->deviceid;
     command->inode = cmd_conf->inode;
-    command->module_config = r->server->module_config;
+    command->vhost_id = sconf->vhost_id;
     if (r->server->server_hostname) {
         apr_cpystrn(command->server_hostname, r->server->server_hostname,
                     sizeof command->server_hostname);

@@ -130,6 +130,9 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
 void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             fcgid_cmd_conf *cmd_conf)
 {
+    fcgid_server_conf *sconf =
+        ap_get_module_config(r->server->module_config, &fcgid_module);
+
     memset(command, 0, sizeof(*command));
 
     /* no truncation should ever occur */
@@ -141,7 +144,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
-    command->module_config = r->server->module_config;
+    command->vhost_id = sconf->vhost_id;
     if (r->server->server_hostname) {
         apr_cpystrn(command->server_hostname, r->server->server_hostname,
                     sizeof command->server_hostname);
