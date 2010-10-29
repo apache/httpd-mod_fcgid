@@ -46,7 +46,7 @@ static fcgid_procnode *apply_free_procnode(request_rec *r,
     gid_t gid = command->gid;
     const char *cmdline = command->cmdline;
     fcgid_server_conf *sconf =
-        ap_get_module_config(command->server->module_config, &fcgid_module);
+        ap_get_module_config(command->module_config, &fcgid_module);
 
     proc_table = proctable_get_table_array();
     previous_node = proctable_get_idle_list();
@@ -132,7 +132,7 @@ static int count_busy_processes(request_rec *r, fcgid_command *command)
     fcgid_procnode *proc_table = proctable_get_table_array();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
     fcgid_server_conf *sconf =
-        ap_get_module_config(command->server->module_config, &fcgid_module);
+        ap_get_module_config(command->module_config, &fcgid_module);
 
     proctable_lock(r);
 

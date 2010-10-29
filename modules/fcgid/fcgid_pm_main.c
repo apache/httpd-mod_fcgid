@@ -481,7 +481,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
     apr_status_t rv;
     int i;
     fcgid_server_conf *sconf =
-        ap_get_module_config(command->server->module_config, &fcgid_module);
+        ap_get_module_config(command->module_config, &fcgid_module);
 
     free_list_header = proctable_get_free_list();
     idle_list_header = proctable_get_idle_list();
@@ -568,8 +568,8 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
                           procnode, proctable_array);
         ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
                      "mod_fcgid: server %s:%s(%" APR_PID_T_FMT ") started",
-                     command->server->server_hostname ?
-                         command->server->server_hostname : "(unknown)",
+                     command->server_hostname[0] ?
+                         command->server_hostname : "(unknown)",
                      command->cgipath,
                      procnode->proc_id.pid);
         register_spawn(main_server, procnode);

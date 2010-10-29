@@ -141,7 +141,11 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
-    command->server = r->server;
+    command->module_config = r->server->module_config;
+    if (r->server->server_hostname) {
+        apr_cpystrn(command->server_hostname, r->server->server_hostname,
+                    sizeof command->server_hostname);
+    }
 
     get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }
