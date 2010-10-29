@@ -360,49 +360,106 @@ static void scan_errorlist(server_rec * main_server)
     }
 }
 
-static void kill_all_subprocess(server_rec * main_server)
+typedef enum action_t {DO_NOTHING, KILL_GRACEFULLY, KILL_FORCEFULLY,
+                       HARD_WAIT} action_t;
+
+static int reclaim_one_pid(server_rec *main_server, fcgid_procnode *proc,
+                           action_t action)
 {
-    size_t i;
     int exitcode;
     apr_exit_why_e exitwhy;
+    apr_wait_how_e wait_how = action == HARD_WAIT ? APR_WAIT : APR_NOWAIT;
+
+    if (apr_proc_wait(&proc->proc_id, &exitcode, &exitwhy,
+                      wait_how) != APR_CHILD_NOTDONE) {
+        proc->diewhy = FCGID_DIE_SHUTDOWN;
+        proc_print_exit_info(proc, exitcode, exitwhy,
+                             main_server);
+        apr_pool_destroy(proc->proc_pool);
+        proc->proc_pool = NULL;
+        return 1;
+    }
+
+    switch(action) {
+    case DO_NOTHING:
+    case HARD_WAIT:
+        break;
+
+    case KILL_GRACEFULLY:
+        proc_kill_gracefully(proc, main_server);
+        break;
+
+    case KILL_FORCEFULLY:
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, main_server,
+                     "FastCGI process %" APR_PID_T_FMT
+                     " still did not exit, "
+                     "terminating forcefully",
+                     proc->proc_id.pid);
+        proc_kill_force(proc, main_server);
+        break;
+    }
+
+    return 0;
+}
+
+static void kill_all_subprocess(server_rec *main_server)
+{
+    apr_time_t waittime = 1024 * 16;
+    size_t i, table_size = proctable_get_table_size();
+    int not_dead_yet;
+    int cur_action, next_action;
+    apr_time_t starttime = apr_time_now();
+    struct {
+        action_t action;
+        apr_time_t action_time;
+    } action_table[] = {
+        {DO_NOTHING,      0}, /* dummy entry for iterations where
+                              * we reap children but take no action
+                              * against stragglers
+                              */
+        {KILL_GRACEFULLY, apr_time_from_sec(0)},
+        {KILL_GRACEFULLY, apr_time_from_sec(1)},
+        {KILL_FORCEFULLY, apr_time_from_sec(8)},
+        {HARD_WAIT,       apr_time_from_sec(8)}
+    };
     fcgid_procnode *proc_table = proctable_get_table_array();
 
-    /* Kill gracefully */
-    for (i = 0; i < proctable_get_table_size(); i++) {
-        if (proc_table[i].proc_pool)
-            proc_kill_gracefully(&proc_table[i], main_server);
-    }
-    apr_sleep(apr_time_from_sec(1));
-
-    /* Kill with SIGKILL if it doesn't work */
-    for (i = 0; i < proctable_get_table_size(); i++) {
-        if (proc_table[i].proc_pool) {
-            if (apr_proc_wait(&(proc_table[i].proc_id), &exitcode, &exitwhy,
-                              APR_NOWAIT) != APR_CHILD_NOTDONE) {
-                proc_table[i].diewhy = FCGID_DIE_SHUTDOWN;
-                proc_print_exit_info(&proc_table[i], exitcode, exitwhy,
-                                     main_server);
-                apr_pool_destroy(proc_table[i].proc_pool);
-                proc_table[i].proc_pool = NULL;
-            }
-            else
-                proc_kill_force(&proc_table[i], main_server);
+    next_action = 1;
+    do {
+        apr_sleep(waittime);
+        /* don't let waittime get longer than 1 second; otherwise, we don't
+         * react quickly to the last child exiting, and taking action can
+         * be delayed
+         */
+        waittime = waittime * 4;
+        if (waittime > apr_time_from_sec(1)) {
+            waittime = apr_time_from_sec(1);
         }
-    }
 
-    /* Wait again */
-    for (i = 0; i < proctable_get_table_size(); i++) {
-        if (proc_table[i].proc_pool) {
-            if (apr_proc_wait(&(proc_table[i].proc_id), &exitcode, &exitwhy,
-                              APR_WAIT) != APR_CHILD_NOTDONE) {
-                proc_table[i].diewhy = FCGID_DIE_SHUTDOWN;
-                proc_print_exit_info(&proc_table[i], exitcode, exitwhy,
-                                     main_server);
-                apr_pool_destroy(proc_table[i].proc_pool);
-                proc_table[i].proc_pool = NULL;
+        /* see what action to take, if any */
+        if (action_table[next_action].action_time <= apr_time_now() - starttime) {
+            cur_action = next_action;
+            ++next_action;
+        }
+        else {
+            cur_action = 0; /* index of DO_NOTHING entry */
+        }
+
+        /* now see who is done */
+        not_dead_yet = 0;
+        for (i = 0; i < table_size; i++) {
+            if (!proc_table[i].proc_pool) {
+                continue; /* unused */
+            }
+
+            if (!reclaim_one_pid(main_server, &proc_table[i],
+                                 action_table[cur_action].action)) {
+                ++not_dead_yet;
             }
         }
-    }
+        
+    } while (not_dead_yet &&
+             action_table[cur_action].action != HARD_WAIT);
 }
 
 /* This should be proposed as a stand-alone improvement to the httpd module,

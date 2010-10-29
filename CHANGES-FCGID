@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) Allow FastCGI apps more time to exit at shutdown before being
+     forcefully killed.  [Jeff Trawick]
+
   *) Correct a problem that resulted in FcgidMaxProcesses being ignored
      in some situations.  PR 48981.  [<rkosolapov gmail.com>]
 
