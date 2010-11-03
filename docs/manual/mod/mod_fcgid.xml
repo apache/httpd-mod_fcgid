@@ -445,7 +445,7 @@
       the result of the check.</p>
 
       <note type="warning"><title>Warning</title>
-      <p>Currently, only one FastCGI application of any type (AAA or handler)
+      <p>Before 2.3.6, only one FastCGI application of any type (AAA or handler)
       can be used for a particular request URI.  Otherwise, the wrong FastCGI
       application may be invoked for one or more phases of request processing.</p>
       </note>
@@ -503,7 +503,7 @@
       the result of authentication.</p>
 
       <note type="warning"><title>Warning</title>
-      <p>Currently, only one FastCGI application of any type (AAA or handler)
+      <p>Before 2.3.6, only one FastCGI application of any type (AAA or handler)
       can be used for a particular request URI.  Otherwise, the wrong FastCGI
       application may be invoked for one or more phases of request processing.</p>
       </note>
@@ -559,7 +559,7 @@
       the result of authorization.</p>
 
       <note type="warning"><title>Warning</title>
-      <p>Currently, only one FastCGI application of any type (AAA or handler)
+      <p>Before 2.3.6, only one FastCGI application of any type (AAA or handler)
       can be used for a particular request URI.  Otherwise, the wrong FastCGI
       application may be invoked for one or more phases of request processing.</p>
       </note>
