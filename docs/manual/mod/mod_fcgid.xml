@@ -885,6 +885,7 @@
       <p>If the size of the request body exceeds this amount, the
       request will fail with <code>500 Server Error</code>.</p>
     </usage>
+    <seealso><directive module="mod_fcgid">FcgidMaxRequestInMem</directive></seealso>
   </directivesynopsis>
 
   <directivesynopsis>
