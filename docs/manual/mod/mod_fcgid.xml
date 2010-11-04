@@ -959,7 +959,7 @@
       as the environment variable name, converting hyphens to underscores.
       No case conversion is performed.</p>
 
-      <p>Beginning with release 2.3.6-dev, an additional environment variable
+      <p>Beginning with release 2.3.6, an additional environment variable
       is created.  The value specified on this directive is converted to 
       upper case, prefixed with <code>HTTP_</code>, and hyphens are 
       converted to underscores.</p>
