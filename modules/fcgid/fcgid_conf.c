@@ -52,8 +52,11 @@
 #define DEFAULT_IPC_COMM_TIMEOUT 40
 #define DEFAULT_OUTPUT_BUFFERSIZE 65536
 #define DEFAULT_MAX_REQUESTS_PER_PROCESS 0
-#define DEFAULT_MAX_REQUEST_LEN (1024*1024*1024)    /* 1G */
-#define DEFAULT_MAX_MEM_REQUEST_LEN (1024*64)   /* 64k */
+/* by default, allow spooling of request bodies up to
+ * 128k (first 64k in memory)
+ */
+#define DEFAULT_MAX_REQUEST_LEN (1024*128)
+#define DEFAULT_MAX_MEM_REQUEST_LEN (1024*64)
 #define DEFAULT_WRAPPER_KEY "ALL"
 #define WRAPPER_FLAG_VIRTUAL "virtual"
 

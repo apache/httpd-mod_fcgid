@@ -879,11 +879,19 @@
     <name>FcgidMaxRequestLen</name>
     <description>maximum HTTP request length</description>
     <syntax>FcgidMaxRequestLen <em>bytes</em></syntax>
-    <default>FcgidMaxRequestLen 1073741824</default>
+    <default>FcgidMaxRequestLen 131072</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>If the size of the request body exceeds this amount, the
       request will fail with <code>500 Server Error</code>.</p>
+
+      <p>Administrators should change this to an appropriate value for their site based
+      on application requirements.</p>
+
+      <note type="warning"><title>Warning</title>
+      <p>Before 2.3.6, this defaulted to 1GB.  Most users of earlier versions should
+      use this directive to set a more reasonable limit.</p>
+      </note>
     </usage>
     <seealso><directive module="mod_fcgid">FcgidMaxRequestInMem</directive></seealso>
   </directivesynopsis>

@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) Change the default for FcgidMaxRequestLen from 1GB to 128K.
+     Administrators should change this to an appropriate value based on
+     site requirements.  [Jeff Trawick]
+
   *) Allow FastCGI apps more time to exit at shutdown before being
      forcefully killed.  [Jeff Trawick]
 
