@@ -96,7 +96,7 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 
         /* Initialize header */
         putsize = fcgid_min(bufferlen, sizeof(header) - hasread);
-        memcpy(&header + hasread, buffer, putsize);
+        memcpy((apr_byte_t *)&header + hasread, buffer, putsize);
         hasread += putsize;
 
         /* Ignore the bytes that have read */

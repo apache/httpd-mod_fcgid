@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.6
 
+  *) SECURITY: CVE-2010-3872 (cve.mitre.org)
+     Fix possible stack buffer overwrite.  Diagnosed by the reporter.
+     PR 49406.  [Edgar Frank <ef-lists email.de>]
+
   *) Change the default for FcgidMaxRequestLen from 1GB to 128K.
      Administrators should change this to an appropriate value based on
      site requirements.  [Jeff Trawick]
