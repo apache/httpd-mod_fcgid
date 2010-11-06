@@ -775,9 +775,13 @@ apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
     for (e = APR_BRIGADE_FIRST(output_brigade);
          e != APR_BRIGADE_SENTINEL(output_brigade);
          e = APR_BUCKET_NEXT(e)) {
-        /* Read bucket */
         apr_size_t len;
         const char* base;
+
+        if (APR_BUCKET_IS_METADATA(e)) {
+            continue;
+        }
+
         if ((rv = apr_bucket_read(e, &base, &len,
                                   APR_BLOCK_READ)) != APR_SUCCESS) {
             ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, ipc_handle->request,
