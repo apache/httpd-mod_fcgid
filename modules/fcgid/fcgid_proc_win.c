@@ -385,10 +385,7 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
         apr_size_t write_buf_len;
         apr_size_t has_write;
 
-        if (APR_BUCKET_IS_EOS(bucket_request))
-            break;
-
-        if (APR_BUCKET_IS_FLUSH(bucket_request))
+        if (APR_BUCKET_IS_METADATA(bucket_request))
             continue;
 
         if ((rv = apr_bucket_read(bucket_request, &write_buf, &write_buf_len,
