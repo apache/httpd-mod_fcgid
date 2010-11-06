@@ -514,7 +514,6 @@ apr_status_t proc_connect_ipc(fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
     fcgid_namedpipe_handle *handle_info;
     struct sockaddr_un unix_addr;
     apr_status_t rv;
-    apr_int32_t on = 1;
 
     /* Alloc memory for unix domain socket */
     ipc_handle->ipc_handle_info
@@ -547,10 +546,6 @@ apr_status_t proc_connect_ipc(fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
                       procnode->socket_path);
         return APR_ECONNREFUSED;
     }
-
-    /* Set no delay option */
-    setsockopt(handle_info->handle_socket, IPPROTO_TCP, TCP_NODELAY,
-               (char *) &on, sizeof(on));
 
     /* Set nonblock option */
     if ((rv = set_socket_nonblock(handle_info->handle_socket)) != APR_SUCCESS) {
