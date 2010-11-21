@@ -49,6 +49,7 @@ register_life_death(server_rec * main_server,
     struct fcgid_stat_node *previous_node, *current_node;
     fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
                                                     &fcgid_module);
+    apr_time_t now = apr_time_now();
 
     if (!g_stat_pool || !procnode)
         abort();
@@ -67,31 +68,13 @@ register_life_death(server_rec * main_server,
         previous_node = current_node;
     }
 
-    if (current_node) {
-        /* Found the node */
-        apr_time_t now = apr_time_now();
-
-        /* Increase the score first */
-        if (life_or_death == REGISTER_LIFE) {
-            current_node->score += sconf->spawn_score;
-            current_node->process_counter++;
-        } else {
-            current_node->score += sconf->termination_score;
-            current_node->process_counter--;
+    if (!current_node) {         /* I can't find it, create one */
+        if (life_or_death == REGISTER_DEATH) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, 0, main_server,
+                         "stat node not found for exiting process %s",
+                         procnode->cmdline);
+            return;
         }
-
-        /* Decrease the score base on elapsed time */
-        current_node->score -= 
-          sconf->time_score * 
-          (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
-
-        /* Make score reasonable */
-        if (current_node->score < 0)
-            current_node->score = 0;
-
-        current_node->last_stat_time = now;
-    } else {
-        /* I can't find it, create one */
         current_node = apr_pcalloc(g_stat_pool, sizeof(*current_node));
         current_node->deviceid = procnode->deviceid;
         current_node->inode = procnode->inode;
@@ -99,9 +82,9 @@ register_life_death(server_rec * main_server,
         current_node->vhost_id = procnode->vhost_id;
         current_node->uid = procnode->uid;
         current_node->gid = procnode->gid;
-        current_node->last_stat_time = apr_time_now();
+        current_node->last_stat_time = now;
         current_node->score = 0;
-        current_node->process_counter = 1;
+        current_node->process_counter = 0;
         current_node->max_class_process_count =
             procnode->cmdopts.max_class_process_count;
         current_node->min_class_process_count =
@@ -114,6 +97,26 @@ register_life_death(server_rec * main_server,
         else
             previous_node->next = current_node;
     }
+
+    /* Increase the score first */
+    if (life_or_death == REGISTER_LIFE) {
+        current_node->score += sconf->spawn_score;
+        current_node->process_counter++;
+    } else {
+        current_node->score += sconf->termination_score;
+        current_node->process_counter--;
+    }
+
+    /* Decrease the score based on elapsed time */
+    current_node->score -= 
+        sconf->time_score * 
+        (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
+
+    /* Make score reasonable */
+    if (current_node->score < 0)
+        current_node->score = 0;
+
+    current_node->last_stat_time = now;
 }
 
 void spawn_control_init(server_rec * main_server, apr_pool_t * configpool)

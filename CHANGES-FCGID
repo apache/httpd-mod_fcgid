@@ -1,7 +1,7 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.7
 
-
+  *) Account for first process in class in the spawn score.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.6
 
