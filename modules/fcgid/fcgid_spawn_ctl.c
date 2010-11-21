@@ -80,7 +80,7 @@ register_life_death(server_rec * main_server,
             current_node->process_counter--;
         }
 
-        /* Decrease the score base on the time passing */
+        /* Decrease the score base on elapsed time */
         current_node->score -= 
           sconf->time_score * 
           (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
@@ -142,14 +142,16 @@ void register_spawn(server_rec * main_server, fcgid_procnode * procnode)
 }
 
 /* 
-    Spawn control is base on such strategy:
-    1. Increate score if application is terminated
-    2. Increate score if application is spawned
-    3. Decrease score each second while score is positive
-    4. Negative spawn request if score is higher than up limit
-    5. Negative spawn request if total process count higher than up limit
-    6. Negative spawn request if process count of this class higher than up limit
-*/
+ * Spawn control strategy:
+ * 1. Add FcgidSpawnScore to score if application is terminated
+ * 2. Add FcgidTerminationScore to score if application is spawned
+ * 3. Subtract FcgidTimeScore from score each second while score is positive
+ * 4. Ignore spawn request if score is higher than FcgidSpawnScoreUpLimit
+ * 5. Ignore spawn request if total process count higher than
+ *    FcgidSpawnScoreUpLimit
+ * 6. Ignore spawn request if process count of this class is higher than
+ *    FcgidMaxProcessesPerClass
+ */
 int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 {
     struct fcgid_stat_node *current_node;
@@ -205,9 +207,8 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
         }
 
         /* 
-           Process count of this class higher than up limit?
+         * Process count of this class higher than up limit?
          */
-        /* I need max class proccess count */
         if (current_node->process_counter >= current_node->max_class_process_count) {
             ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
                          "mod_fcgid: too many %s processes (current:%d, max:%d), skip the spawn request",
