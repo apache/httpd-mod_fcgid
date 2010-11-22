@@ -178,7 +178,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
         if (current_node->inode == command->inode
             && current_node->deviceid == command->deviceid
             && !strcmp(current_node->cmdline, command->cmdline)
-            && current_node->vhost_id == sconf->vhost_id
+            && current_node->vhost_id == command->vhost_id
             && current_node->uid == command->uid
             && current_node->gid == command->gid)
             break;

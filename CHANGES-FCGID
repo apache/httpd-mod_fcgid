@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.7
 
+  *) Fix regression in 2.3.6 which broke process controls when using vhost-
+     specific configuration.  [Jeff Trawick]
+
   *) Account for first process in class in the spawn score.  [Jeff Trawick]
 
 Changes with mod_fcgid 2.3.6
