@@ -60,11 +60,16 @@
 
   </summary>
 
+  <!-- References to other documents or directives -->
+  <seealso><a href="../howto/cgi.html">Dynamic Content With CGI</a></seealso>
+  <seealso><module>mod_cgi</module></seealso>
+  <seealso><module>mod_cgid</module></seealso>
+
   <section id="upgrade">
     <title>Upgrade Notes</title>
     <p>The following changes have been made in the ASF release of mod_fcgid
     and should be considered when upgrading from the original version by
-    Ryan Pan (Pan Qingfeng).
+    Ryan Pan (Pan Qingfeng).</p>
     <ul>
       <li>All directives have been renamed in order to use a common prefix "Fcgid".
       Underscores in directive names have been eliminated in favor of
@@ -204,7 +209,6 @@
       </table>
       </li>
     </ul>
-    </p>
 
   </section>
 
@@ -414,16 +418,11 @@
     <module>mod_status</module> server-status page.</p>
   </section>
 
-  <!-- References to other documents or directives -->
-  <seealso><a href="../howto/cgi.html">Dynamic Content With CGI</a></seealso>
-  <seealso><module>mod_cgi</module></seealso>
-  <seealso><module>mod_cgid</module></seealso>
- 
-  <directivesynopsis>
+ <directivesynopsis>
     <name>FcgidAccessChecker</name>
     <description>full path to FastCGI access checker</description>
     <syntax>FcgidAccessChecker <em>command</em></syntax>
-    <default><em>none</em></default>
+    <default>none</default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
@@ -474,7 +473,7 @@
     <name>FcgidAuthenticator</name>
     <description>full path to FastCGI authenticator</description>
     <syntax>FcgidAuthenticator <em>command</em></syntax>
-    <default><em>none</em></default>
+    <default>none</default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
@@ -532,7 +531,7 @@
     <name>FcgidAuthorizer</name>
     <description>full path to FastCGI authorizer</description>
     <syntax>FcgidAuthorizer <em>command</em></syntax>
-    <default><em>none</em></default>
+    <default>none</default>
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
@@ -699,7 +698,7 @@
     <name>FcgidInitialEnv</name>
     <description>an environment variable name and optional value to pass to FastCGI.</description>
     <syntax>FcgidInitialEnv <em>name</em> [ <em>value</em> ]</syntax>
-    <default><em>none</em></default>
+    <default>none</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>Use <directive>FcgidInitialEnv</directive> to define environment 
@@ -947,7 +946,7 @@
     <name>FcgidPassHeader</name>
     <description>Header name which will be passed to FastCGI as environment variable.</description>
     <syntax>FcgidPassHeader <em>name</em></syntax>
-    <default><em>none</em></default>
+    <default>none</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
       <p>This directive specifies the name of a request header which
@@ -1128,7 +1127,7 @@
     <name>FcgidWrapper</name>
     <description>The CGI wrapper setting</description>
     <syntax>FcgidWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
-    <default><em>none</em></default>
+    <default>none</default>
     <contextlist>
       <context>server config</context> <context>virtual host</context>
       <context>directory</context> <context>.htaccess</context>
