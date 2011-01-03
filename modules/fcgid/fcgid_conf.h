@@ -21,7 +21,7 @@
 #include "apr_general.h" /* stringify */
 
 #define MODFCGID_COPYRIGHT \
-  "Copyright 2010-2011 The Apache Software Foundation."
+  "Copyright 2011 The Apache Software Foundation."
 
 #define MODFCGID_VERSION_MAJOR  2
 #define MODFCGID_VERSION_MINOR  3
