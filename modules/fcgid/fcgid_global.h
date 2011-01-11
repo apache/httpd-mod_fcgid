@@ -22,6 +22,10 @@
 #include "http_core.h"
 #include "http_log.h"
 
+#ifdef APLOG_USE_MODULE
+APLOG_USE_MODULE(fcgid);
+#endif
+
 #ifdef FCGID_APXS_BUILD
 #include "fcgid_config.h"
 #endif
