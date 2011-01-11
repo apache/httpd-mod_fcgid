@@ -22,7 +22,7 @@
 #include "http_core.h"
 #include "http_log.h"
 
-#ifdef APLOG_USE_MODULE
+#if AP_MODULE_MAGIC_AT_LEAST(20100606,0)
 APLOG_USE_MODULE(fcgid);
 #endif
 
