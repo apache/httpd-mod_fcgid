@@ -16,6 +16,15 @@ dnl limitations under the License.
 dnl #  start of module specific part
 APACHE_MODPATH_INIT(fcgid)
 
+case $host in
+    *mingw*)
+        fcgid_platform_objs="fcgid_pm_win.lo fcgid_proc_win.lo fcgid_proctbl_win.lo"
+        ;;
+    *)
+        fcgid_platform_objs="fcgid_pm_unix.lo fcgid_proc_unix.lo fcgid_proctbl_unix.lo fcgid_mutex_unix.lo"
+        ;;
+esac
+
 dnl #  list of module object files
 fcigd_objs="dnl
 mod_fcgid.lo dnl
@@ -24,12 +33,9 @@ fcgid_conf.lo dnl
 fcgid_pm_main.lo dnl
 fcgid_protocol.lo dnl
 fcgid_spawn_ctl.lo dnl
-fcgid_proctbl_unix.lo dnl
-fcgid_pm_unix.lo dnl
-fcgid_proc_unix.lo dnl
 fcgid_bucket.lo dnl
 fcgid_filter.lo dnl
-fcgid_mutex_unix.lo dnl
+$fcgid_platform_objs dnl
 "
 
 APACHE_MODULE(fcgid, [FastCGI support (mod_fcgid)], $fcigd_objs, , no, [
