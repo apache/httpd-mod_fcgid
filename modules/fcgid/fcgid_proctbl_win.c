@@ -81,47 +81,47 @@ proctable_child_init(server_rec * main_server, apr_pool_t * pchild)
     return APR_SUCCESS;
 }
 
-static apr_status_t proctable_lock_internal()
+static apr_status_t proctable_lock_internal(void)
 {
     return apr_thread_mutex_lock(g_sharelock);
 }
 
-static apr_status_t proctable_unlock_internal()
+static apr_status_t proctable_unlock_internal(void)
 {
     return apr_thread_mutex_unlock(g_sharelock);
 }
 
-fcgid_procnode *proctable_get_free_list()
+fcgid_procnode *proctable_get_free_list(void)
 {
     return g_free_list_header;
 }
 
-fcgid_procnode *proctable_get_busy_list()
+fcgid_procnode *proctable_get_busy_list(void)
 {
     return g_busy_list_header;
 }
 
-fcgid_procnode *proctable_get_idle_list()
+fcgid_procnode *proctable_get_idle_list(void)
 {
     return g_idle_list_header;
 }
 
-fcgid_procnode *proctable_get_table_array()
+fcgid_procnode *proctable_get_table_array(void)
 {
     return g_proc_array;
 }
 
-fcgid_procnode *proctable_get_error_list()
+fcgid_procnode *proctable_get_error_list(void)
 {
     return g_error_list_header;
 }
 
-fcgid_global_share *proctable_get_globalshare()
+fcgid_global_share *proctable_get_globalshare(void)
 {
     return g_global_share;
 }
 
-size_t proctable_get_table_size()
+size_t proctable_get_table_size(void)
 {
     return g_table_size;
 }

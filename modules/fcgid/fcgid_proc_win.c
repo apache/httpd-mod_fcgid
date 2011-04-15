@@ -62,15 +62,14 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
                                 fcgid_procnode *procnode)
 {
     HANDLE *finish_event, listen_handle;
-    int bufused = 0;
     SECURITY_ATTRIBUTES SecurityAttributes;
     apr_procattr_t *proc_attr;
     apr_status_t rv;
     apr_file_t *file;
-    char **proc_environ;
+    const char * const *proc_environ;
     char sock_path[FCGID_PATH_MAX];
     int argc;
-    char *wargv[APACHE_ARG_MAX + 1], *word; /* For wrapper */
+    char const * wargv[APACHE_ARG_MAX + 1], *word; /* For wrapper */
     const char *tmp;
 
     /* Build wrapper args */
@@ -112,7 +111,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
 
     /* Prepare the listen namedpipe file name (no check for truncation) */
     apr_snprintf(sock_path, sizeof sock_path,
-                 "\\\\.\\pipe\\fcgidpipe-%u.%lu",
+                 "\\\\.\\pipe\\fcgidpipe-%lu.%d",
                  GetCurrentProcessId(), g_process_counter++);
 
     /* Prepare the listen namedpipe handle */
@@ -135,7 +134,8 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
                 sizeof(procnode->executable_path));
 
     /* Build environment variables */
-    proc_environ = ap_create_environment(procnode->proc_pool,
+    proc_environ = (const char * const *)
+                   ap_create_environment(procnode->proc_pool,
                                          procinfo->proc_environ);
     if (!proc_environ) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
@@ -168,7 +168,8 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
 
     /* fork and exec now */
     rv = apr_proc_create(&(procnode->proc_id), wargv[0], wargv,
-                         proc_environ, proc_attr, procnode->proc_pool);
+                         proc_environ, 
+                         proc_attr, procnode->proc_pool);
 
     /* OK, I created the process, now put it back to idle list */
     CloseHandle(listen_handle);
@@ -381,7 +382,7 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
          bucket_request != APR_BRIGADE_SENTINEL(birgade_send);
          bucket_request = APR_BUCKET_NEXT(bucket_request))
     {
-        char *write_buf;
+        const char *write_buf;
         apr_size_t write_buf_len;
         apr_size_t has_write;
 

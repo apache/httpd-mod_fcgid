@@ -190,7 +190,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
 
             if ((rv =
                  apr_queue_pop(g_notifyqueue,
-                               &notifybyte)) != APR_SUCCESS) {
+                               (void **)&notifybyte)) != APR_SUCCESS) {
                 apr_thread_mutex_unlock(g_reqlock);
                 ap_log_rerror(APLOG_MARK, APLOG_EMERG, rv, r,
                               "mod_fcgid: can't pop notify message");
@@ -226,11 +226,10 @@ apr_status_t procmgr_finish_notify(server_rec * main_server)
 apr_status_t procmgr_peek_cmd(fcgid_command * command,
                               server_rec * main_server)
 {
-    apr_status_t rv = APR_SUCCESS;
     fcgid_command *peakcmd = NULL;
 
     if (!g_must_exit && g_msgqueue) {
-        if (apr_queue_pop(g_msgqueue, &peakcmd) == APR_SUCCESS) {
+        if (apr_queue_pop(g_msgqueue, (void **)&peakcmd) == APR_SUCCESS) {
             if (!peakcmd)
                 return APR_TIMEUP;  /* This a wake up message */
             else {
@@ -273,7 +272,7 @@ apr_status_t procmgr_stop_procmgr(void *server)
         /* Free the memory left in queue */
         fcgid_command *peakcmd = NULL;
 
-        while (apr_queue_trypop(g_msgqueue, &peakcmd) == APR_SUCCESS) {
+        while (apr_queue_trypop(g_msgqueue, (void **)&peakcmd) == APR_SUCCESS) {
             if (peakcmd)
                 free(peakcmd);
         }
