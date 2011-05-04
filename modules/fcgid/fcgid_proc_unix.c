@@ -402,6 +402,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     procnode->proc_id = tmpproc;
 
     if (rv != APR_SUCCESS) {
+        memset(&procnode->proc_id, 0, sizeof(procnode->proc_id));
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                      "mod_fcgid: can't run %s", wargv[0]);
     }
@@ -413,6 +414,11 @@ static apr_status_t proc_kill_internal(fcgid_procnode *procnode, int sig)
 {
     /* su as root before sending signal, for suEXEC */
     apr_status_t rv;
+
+    if (procnode->proc_id.pid == 0) {
+        /* procnode->proc_id.pid be 0 while fcgid_create_privileged_process() fail */
+        return APR_SUCCESS; 
+    }
 
     if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {
 
@@ -461,6 +467,7 @@ apr_status_t proc_wait_process(server_rec *main_server, fcgid_procnode *procnode
         /* Destroy pool */
         apr_pool_destroy(procnode->proc_pool);
         procnode->proc_pool = NULL;
+        memset(&procnode->proc_id, 0, sizeof(procnode->proc_id));
 
         return APR_CHILD_DONE;
     }
