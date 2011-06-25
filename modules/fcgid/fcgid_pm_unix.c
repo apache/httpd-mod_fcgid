@@ -21,7 +21,10 @@
 #include "apr_strings.h"
 #include "apr_queue.h"
 #include "apr_global_mutex.h"
+#include "apr_version.h"
+#if APR_MAJOR_VERSION < 2
 #include "apr_support.h"
+#endif
 #include "http_config.h"
 #include "fcgid_pm.h"
 #include "fcgid_pm_main.h"
@@ -522,7 +525,11 @@ apr_status_t procmgr_peek_cmd(fcgid_command * command,
         return APR_EPIPE;
 
     /* Wait for next command */
+#if APR_MAJOR_VERSION < 2
     rv = apr_wait_for_io_or_timeout(g_pm_read_pipe, NULL, FOR_READ);
+#else
+    rv = apr_file_pipe_wait(g_pm_read_pipe, APR_WAIT_READ);
+#endif
 
     /* Log any unexpect result */
     if (rv != APR_SUCCESS && !APR_STATUS_IS_TIMEUP(rv)) {
