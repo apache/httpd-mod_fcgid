@@ -114,7 +114,7 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
     }
 
     /* Create wake up thread */
-    /* XXX If there was a function such like apr_queue_pop_timedwait(), 
+    /* XXX If there was a function such like apr_queue_pop_timedwait(),
        then I don't need such an ugly thread to do the wake up job */
     if ((rv = apr_thread_create(&g_wakeup_thread, NULL, wakeup_thread,
                                 NULL, pconf)) != APR_SUCCESS) {
@@ -160,7 +160,7 @@ apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
         && g_reqlock && g_notifyqueue) {
         apr_status_t rv;
 
-        /* 
+        /*
            Prepare the message send to another thread
            destroy the message if I can't push to message
          */

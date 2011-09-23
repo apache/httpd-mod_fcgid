@@ -71,7 +71,7 @@ default_build_command(const char **cmd, const char ***argv,
 
     if (e_info->process_cgi) {
         *cmd = r->filename;
-        /* Do not process r->args if they contain an '=' assignment 
+        /* Do not process r->args if they contain an '=' assignment
          */
         if (r->args && r->args[0] && !ap_strchr_c(r->args, '=')) {
             args = r->args;
@@ -88,7 +88,7 @@ default_build_command(const char **cmd, const char ***argv,
             }
         }
     }
-    /* Everything is - 1 to account for the first parameter 
+    /* Everything is - 1 to account for the first parameter
      * which is the program name.
      */
     if (numwords > APACHE_ARG_MAX - 1) {
@@ -128,7 +128,7 @@ static char *http2env(apr_pool_t *a, const char *w)
         }
     }
     *cp = 0;
- 
+
     return res;
 }
 
@@ -244,7 +244,7 @@ static int fcgid_handler(request_rec * r)
             }
         }
 
-        /* Dummy up a wrapper configuration, using the requested file as 
+        /* Dummy up a wrapper configuration, using the requested file as
          * both the executable path and command-line.
          */
         wrapper_conf = apr_pcalloc(r->pool, sizeof(*wrapper_conf));
@@ -334,15 +334,15 @@ static char *get_state_desc(fcgid_procnode *node)
         }
     }
 }
-    
+
 /* fcgid Extension to mod_status */
 static int fcgid_status_hook(request_rec *r, int flags)
-{       
+{
     fcgid_procnode **ar = NULL, *current_node;
     int num_ent, index;
     apr_ino_t last_inode = 0;
     apr_dev_t last_deviceid = 0;
-    gid_t last_gid = 0;  
+    gid_t last_gid = 0;
     uid_t last_uid = 0;
     const char *last_cmdline = "";
     apr_time_t now;
@@ -352,12 +352,12 @@ static int fcgid_status_hook(request_rec *r, int flags)
     fcgid_procnode *error_list_header = proctable_get_error_list();
     fcgid_procnode *idle_list_header = proctable_get_idle_list();
     fcgid_procnode *busy_list_header = proctable_get_busy_list();
-        
+
     if ((flags & AP_STATUS_SHORT) || (proc_table == NULL))
         return OK;
-            
+
     proctable_lock(r);
-        
+
     /* Get element count */
     num_ent = 0;
     current_node = &proc_table[busy_list_header->next_index];
@@ -393,7 +393,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
             *ar[index] = *current_node;
             ar[index++]->node_type = FCGID_PROCNODE_TYPE_IDLE;
             current_node = &proc_table[current_node->next_index];
-        }    
+        }
         current_node = &proc_table[error_list_header->next_index];
         while (current_node != proc_table) {
             ar[index] = apr_palloc(r->pool, sizeof(fcgid_procnode));
@@ -410,7 +410,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
     if (num_ent != 0)
         qsort((void *)ar, num_ent, sizeof(fcgid_procnode *),
               (int (*)(const void *, const void *))fcgidsort);
-    
+
     /* Output */
     ap_rputs("<hr />\n<h1>mod_fcgid status:</h1>\n", r);
     ap_rprintf(r, "Total FastCGI processes: %d\n", num_ent);
@@ -422,7 +422,7 @@ static int fcgid_status_hook(request_rec *r, int flags)
             || current_node->vhost_id != last_vhost_id) {
             if (index != 0)
                  ap_rputs("</table>\n\n", r);
-           
+
             /* Print executable path basename */
 	    tmpbasename = ap_strrchr_c(current_node->executable_path, '/');
 	    if (tmpbasename != NULL)
@@ -469,8 +469,8 @@ static int fcgid_status_hook(request_rec *r, int flags)
 static int mod_fcgid_modify_auth_header(void *subprocess_env,
                                         const char *key, const char *val)
 {
-    /* When the application gives a 200 response, the server ignores response 
-       headers whose names aren't prefixed with Variable- prefix, and ignores 
+    /* When the application gives a 200 response, the server ignores response
+       headers whose names aren't prefixed with Variable- prefix, and ignores
        any response content */
     if (strncasecmp(key, "Variable-", 9) == 0)
         apr_table_setn(subprocess_env, key + 9, val);
@@ -1012,7 +1012,7 @@ static int fcgid_pre_config(apr_pool_t *pconf, apr_pool_t *plog,
     }
 
     return OK;
-} 
+}
 
 static void register_hooks(apr_pool_t * p)
 {

@@ -222,8 +222,8 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     }
     wargv[argc] = NULL;
 
-    /* 
-       Create UNIX domain socket before spawn 
+    /*
+       Create UNIX domain socket before spawn
      */
 
     /* Generate a UNIX domain socket file path */
@@ -378,7 +378,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
 
     /* fork and exec now */
     /* Note, don't pass &(procnode->proc_id) to fcgid_create_privileged_process(),
-     * for it's a share memory address, both parent and child process may modify 
+     * for it's a share memory address, both parent and child process may modify
      * procnode->proc_id->pid, so sometimes it's 0 and sometimes it's >0
      */
     rv = fcgid_create_privileged_process(&tmpproc, wargv[0], wargv,
@@ -417,7 +417,7 @@ static apr_status_t proc_kill_internal(fcgid_procnode *procnode, int sig)
 
     if (procnode->proc_id.pid == 0) {
         /* procnode->proc_id.pid be 0 while fcgid_create_privileged_process() fail */
-        return APR_SUCCESS; 
+        return APR_SUCCESS;
     }
 
     if (ap_unixd_config.suexec_enabled && seteuid(0) != 0) {

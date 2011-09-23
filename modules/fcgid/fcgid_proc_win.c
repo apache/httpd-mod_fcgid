@@ -153,7 +153,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
         || (rv = apr_procattr_cmdtype_set(proc_attr, APR_PROGRAM))
                != APR_SUCCESS
         || (rv = apr_procattr_detach_set(proc_attr, 1)) != APR_SUCCESS
-        || (rv = apr_procattr_io_set(proc_attr, APR_NO_PIPE, 
+        || (rv = apr_procattr_io_set(proc_attr, APR_NO_PIPE,
                                      APR_NO_FILE, APR_NO_FILE)) != APR_SUCCESS
         || (rv = apr_os_file_put(&file, &listen_handle, 0,
                                  procnode->proc_pool)) != APR_SUCCESS
@@ -168,7 +168,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
 
     /* fork and exec now */
     rv = apr_proc_create(&(procnode->proc_id), wargv[0], wargv,
-                         proc_environ, 
+                         proc_environ,
                          proc_attr, procnode->proc_pool);
 
     /* OK, I created the process, now put it back to idle list */
@@ -298,7 +298,7 @@ apr_status_t proc_connect_ipc(fcgid_procnode *procnode, fcgid_ipc *ipc_handle)
                           " server %" APR_PID_T_FMT " has been terminated",
                           procnode->proc_id.pid);
         else
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(), 
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, apr_get_os_error(),
                           ipc_handle->request,
                           "mod_fcgid: can't connect to named pipe, FastCGI"
                           " server pid %" APR_PID_T_FMT,
@@ -352,7 +352,7 @@ apr_status_t proc_read_ipc(fcgid_ipc * ipc_handle, const char *buffer,
                                      &transferred, FALSE /* don't wait */ )
                 || transferred == 0) {
                 rv = apr_get_os_error();
-                ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, 
+                ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv,
                               ipc_handle->request,
                               "mod_fcgid: get overlap result error");
                 return rv;
@@ -413,7 +413,7 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                               "mod_fcgid: can't write to pipe");
                 return rv;
             } else {
-                /* 
+                /*
                    it's ERROR_IO_PENDING on write
                  */
                 DWORD dwWaitResult =

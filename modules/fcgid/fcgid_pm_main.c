@@ -44,8 +44,8 @@ link_node_to_list(server_rec * main_server,
 static apr_time_t lastidlescan = 0;
 static void scan_idlelist(server_rec * main_server)
 {
-    /* 
-       Scan the idle list 
+    /*
+       Scan the idle list
        1. move all processes idle timeout to error list
        2. move all processes lifetime expired to error list
      */
@@ -138,7 +138,7 @@ static void scan_busylist(server_rec * main_server)
         last_active_time = current_node->last_active_time;
         if (apr_time_sec(now) - apr_time_sec(last_active_time) >
             (current_node->cmdopts.busy_timeout)) {
-            /* Protocol: 
+            /* Protocol:
                1. diewhy init with FCGID_DIE_KILLSELF
                2. Process manager set diewhy to FCGID_DIE_BUSY_TIMEOUT and gracefully kill process while busy timeout
                3. Process manager forced kill process while busy timeout and diewhy is FCGID_DIE_BUSY_TIMEOUT
@@ -158,8 +158,8 @@ static void scan_busylist(server_rec * main_server)
 static apr_time_t lastzombiescan = 0;
 static void scan_idlelist_zombie(server_rec * main_server)
 {
-    /* 
-       Scan the idle list 
+    /*
+       Scan the idle list
        1. pick up the node for scan(now-last_activ>g_zombie_scan_interval)
        2. check if it's zombie process
        3. if it's zombie process, wait() and return to free list
@@ -185,8 +185,8 @@ static void scan_idlelist_zombie(server_rec * main_server)
         return;
     lastzombiescan = now;
 
-    /* 
-       Check the list 
+    /*
+       Check the list
      */
     proc_table = proctable_get_table_array();
     previous_node = proctable_get_idle_list();
@@ -215,7 +215,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
     }
     proctable_pm_unlock(main_server);
 
-    /* 
+    /*
        Now check every node in check list
        1) If it's zombie process, wait() and return to free list
        2) If it's not zombie process, link it to the tail of idle list
@@ -245,8 +245,8 @@ static void scan_idlelist_zombie(server_rec * main_server)
         current_node = next_node;
     }
 
-    /* 
-       Now link the check list back to the tail of idle list 
+    /*
+       Now link the check list back to the tail of idle list
      */
     if (check_list_header->next_index) {
         proctable_pm_lock(main_server);
@@ -268,7 +268,7 @@ static void scan_idlelist_zombie(server_rec * main_server)
 static apr_time_t lasterrorscan = 0;
 static void scan_errorlist(server_rec * main_server)
 {
-    /* 
+    /*
        kill() and wait() every node in error list
        put them back to free list after that
      */
@@ -457,7 +457,7 @@ static void kill_all_subprocess(server_rec *main_server)
                 ++not_dead_yet;
             }
         }
-        
+
     } while (not_dead_yet &&
              action_table[cur_action].action != HARD_WAIT);
 }

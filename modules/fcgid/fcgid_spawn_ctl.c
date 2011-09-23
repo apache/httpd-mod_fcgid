@@ -108,8 +108,8 @@ register_life_death(server_rec * main_server,
     }
 
     /* Decrease the score based on elapsed time */
-    current_node->score -= 
-        sconf->time_score * 
+    current_node->score -=
+        sconf->time_score *
         (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
 
     /* Make score reasonable */
@@ -144,7 +144,7 @@ void register_spawn(server_rec * main_server, fcgid_procnode * procnode)
     g_total_process++;
 }
 
-/* 
+/*
  * Spawn control strategy:
  * 1. Add FcgidSpawnScore to score if application is terminated
  * 2. Add FcgidTerminationScore to score if application is spawned
@@ -185,7 +185,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
     }
 
     if (!current_node) {
-        /* There are no existing processes for this class, so obviously 
+        /* There are no existing processes for this class, so obviously
          * no class-specific limits have been exceeded.
          */
         return 1;
@@ -193,8 +193,8 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
     else {
         apr_time_t now = apr_time_now();
 
-        current_node->score -= 
-          sconf->time_score * 
+        current_node->score -=
+          sconf->time_score *
           (int)(apr_time_sec(now) - apr_time_sec(current_node->last_stat_time));
         current_node->last_stat_time = now;
         if (current_node->score < 0)
@@ -209,7 +209,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
             return 0;
         }
 
-        /* 
+        /*
          * Process count of this class higher than up limit?
          */
         if (current_node->process_counter >= current_node->max_class_process_count) {

@@ -131,9 +131,9 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
         merged->default_init_env = base->default_init_env;
     }
     else {
-        merged->default_init_env = 
+        merged->default_init_env =
           apr_table_copy(p, base->default_init_env);
-        apr_table_overlap(merged->default_init_env, 
+        apr_table_overlap(merged->default_init_env,
                           local->default_init_env,
                           APR_OVERLAP_TABLES_SET);
     }
@@ -146,8 +146,8 @@ void *merge_fcgid_server_config(apr_pool_t * p, void *basev, void *locv)
         merged->pass_headers = base->pass_headers;
     }
     else {
-        merged->pass_headers = 
-          apr_array_append(p, 
+        merged->pass_headers =
+          apr_array_append(p,
                            base->pass_headers,
                            local->pass_headers);
     }
@@ -569,7 +569,7 @@ static void add_envvar_to_table(apr_table_t *t, apr_pool_t *p,
 #endif
     apr_table_set(t, name, value ? value : "");
 }
-                                
+
 const char *add_default_env_vars(cmd_parms * cmd, void *dummy,
                                  const char *name, const char *value)
 {
@@ -732,7 +732,7 @@ const char *set_access_info(cmd_parms * cmd, void *config,
                     sizeof(*dirconfig->access_info));
     dirconfig->access_info->cgipath =
         apr_pstrdup(cmd->pool, access);
-    dirconfig->access_info->cmdline = 
+    dirconfig->access_info->cmdline =
         dirconfig->access_info->cgipath;
     dirconfig->access_info->inode = finfo.inode;
     dirconfig->access_info->deviceid = finfo.device;
@@ -912,7 +912,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
     cmdopts->min_class_process_count = DEFAULT_MIN_CLASS_PROCESS_COUNT;
     cmdopts->proc_lifetime = DEFAULT_PROC_LIFETIME;
     /* via pcalloc: cmdopts->initenv_key[0][0] = '\0'; */
-    
+
     cmdname = ap_getword_conf(cmd->pool, &args);
     if (!strlen(cmdname)) {
         return "A command must be specified for FcgidCmdOptions";
@@ -942,7 +942,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
             cmdopts->ipc_connect_timeout = atoi(val);
             continue;
         }
-            
+
         if (!strcasecmp(option, "IdleTimeout")) {
             val = ap_getword_white(cmd->pool, &args);
             if (!strlen(val)) {
@@ -982,7 +982,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
             cmdopts->ipc_comm_timeout = atoi(val);
             continue;
         }
-            
+
         if (!strcasecmp(option, "MaxProcesses")) {
             val = ap_getword_white(cmd->pool, &args);
             if (!strlen(val)) {

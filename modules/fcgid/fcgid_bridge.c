@@ -323,15 +323,15 @@ handle_request_ipc(request_rec *r, int role,
     location = apr_table_get(r->headers_out, "Location");
 
     if (location && location[0] == '/' && r->status == 200) {
-        /* This redirect needs to be a GET no matter what the original 
-         * method was. 
+        /* This redirect needs to be a GET no matter what the original
+         * method was.
          */
         r->method = apr_pstrdup(r->pool, "GET");
         r->method_number = M_GET;
 
-        /* We already read the message body (if any), so don't allow 
-         * the redirected request to think it has one.  We can ignore 
-         * Transfer-Encoding, since we used REQUEST_CHUNKED_ERROR. 
+        /* We already read the message body (if any), so don't allow
+         * the redirected request to think it has one.  We can ignore
+         * Transfer-Encoding, since we used REQUEST_CHUNKED_ERROR.
          */
         apr_table_unset(r->headers_in, "Content-Length");
 
@@ -339,8 +339,8 @@ handle_request_ipc(request_rec *r, int role,
         return HTTP_OK;
     }
     else if (location && r->status == 200) {
-        /* XX Note that if a script wants to produce its own Redirect 
-         * body, it now has to explicitly *say* "Status: 302" 
+        /* XX Note that if a script wants to produce its own Redirect
+         * body, it now has to explicitly *say* "Status: 302"
          */
         return HTTP_MOVED_TEMPORARILY;
     }
@@ -482,9 +482,9 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
     int seen_eos;
 
     /* Stdin header and body */
-    /* I have to read all the request into memory before sending it 
-       to fastcgi application server, this prevents slow clients from 
-       keeping the server in processing too long. 
+    /* I have to read all the request into memory before sending it
+       to fastcgi application server, this prevents slow clients from
+       keeping the server in processing too long.
        But sometimes it's not acceptable (think about uploading a large attachment)
        Request will be stored in tmp file if the size larger than max_mem_request_len
      */

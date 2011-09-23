@@ -141,7 +141,7 @@ static void fcgid_maint(int reason, void *data, apr_wait_t status)
                  * try to terminate httpd
                  */
                 kill(getpid(), SIGTERM);
-                
+
             }
             else {
                 ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL,
@@ -355,9 +355,9 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
                                                     &fcgid_module);
 
     /* Calculate procmgr_peek_cmd wake up interval */
-    g_wakeup_timeout = fcgid_min(sconf->error_scan_interval, 
+    g_wakeup_timeout = fcgid_min(sconf->error_scan_interval,
                                  sconf->busy_scan_interval);
-    g_wakeup_timeout = fcgid_min(sconf->idle_scan_interval, 
+    g_wakeup_timeout = fcgid_min(sconf->idle_scan_interval,
                                  g_wakeup_timeout);
     if (g_wakeup_timeout == 0)
         g_wakeup_timeout = 1;   /* Make it reasonable */
