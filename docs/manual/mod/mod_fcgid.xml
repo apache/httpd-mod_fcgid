@@ -25,7 +25,7 @@
   <sourcefile>mod_fcgid.c</sourcefile>
   <identifier>fcgid_module</identifier>
   <compatibility>Apache 2.0 and higher</compatibility>
- 
+
   <summary>
     <p>Any program assigned to the handler <code>fcgid-script</code> is processed
     using the FastCGI protocol; <module>mod_fcgid</module> starts a sufficient
@@ -42,15 +42,15 @@
     Configuration directives below let the administrator tune the number of
     instances of the program that will run concurrently.</p>
 
-    <p>Specific executables are assigned this handler either by having a name 
-    containing an extension defined by the 
+    <p>Specific executables are assigned this handler either by having a name
+    containing an extension defined by the
     <directive module="mod_mime">AddHandler</directive> directive, or with an
-    override using the <directive module="mod_mime">SetHandler</directive> 
+    override using the <directive module="mod_mime">SetHandler</directive>
     directive (e.g., for all files in a specific directory such as cgi-bin).</p>
 
     <p>Some changes have been made in the ASF release of mod_fcgid which
     can affect existing configurations.  All documentation refers to new
-    names for the directives.  (The old names still work but are now 
+    names for the directives.  (The old names still work but are now
     deprecated.)  Please read the <a href="#upgrade">Upgrade Notes</a> for
     details.</p>
 
@@ -100,7 +100,7 @@
         </tr>
         <tr>
           <td><directive>ErrorScanInterval</directive></td>
-          <td><directive module="mod_fcgid">FcgidErrorScanInterval</directive></td> 
+          <td><directive module="mod_fcgid">FcgidErrorScanInterval</directive></td>
         </tr>
         <tr>
           <td><directive>FastCgiAccessChecker</directive></td>
@@ -217,12 +217,12 @@
 
     <note type="hint"><title>Note</title>
     <p>The examples assume that mod_fcgid and other necessary
-    modules are loaded into the server already, either built-in or 
+    modules are loaded into the server already, either built-in or
     via the <directive module="mod_so">LoadModule</directive>
     directive.</p>
 
     <p>Additionally, the example configurations provide full access
-    to the applications using access control directives which work 
+    to the applications using access control directives which work
     with Apache 2.0 and 2.2.  These directives are not appropriate
     for all environments, and they do not work for development
     levels of Apache HTTP Server (Subversion trunk).</p>
@@ -266,7 +266,7 @@
 
     <p>PHP applications are usually configured using the
     <directive module="mod_fcgid">FcgidWrapper</directive> directive
-    and a corresponding wrapper script.  The wrapper script can be 
+    and a corresponding wrapper script.  The wrapper script can be
     an appropriate place to define any environment variables required
     by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>
     or anything else.  (Environment variables can also be set with
@@ -337,7 +337,7 @@
     should always be disabled with mod_fcgid, which will only route
     one request at a time to application processes it has spawned;
     thus, any child processes created by PHP will not be used
-    effectively.  (Additionally, the PHP child processes may not be 
+    effectively.  (Additionally, the PHP child processes may not be
     terminated properly.) By default, and with the environment
     variable setting <code>PHP_FCGI_CHILDREN=0</code>, PHP child
     process management is disabled.</p>
@@ -393,8 +393,8 @@
       </tr>
     </table>
 
-    <p>Several of the directives control processing for a <em>process 
-    class</em>.  A process class is the set of processes which were started 
+    <p>Several of the directives control processing for a <em>process
+    class</em>.  A process class is the set of processes which were started
     with the same executable file and share certain other characteristics such
     as virtual host and identity.  Two commands which are links to or otherwise
     refer to the same executable file share the same process class.</p>
@@ -407,14 +407,14 @@
     documentation for more information.) In the case of
     <directive module="mod_fcgid">FcgidInitialEnv</directive>, if two
     virtual hosts have the same server name but different environments as
-    defined by 
-    <directive module="mod_fcgid">FcgidInitialEnv</directive>, the 
+    defined by
+    <directive module="mod_fcgid">FcgidInitialEnv</directive>, the
     environment used for a particular request will be that defined for the
-    virtual host of the request that caused the FastCGI process to be 
+    virtual host of the request that caused the FastCGI process to be
     started.</p>
     </note>
 
-    <p>Information about each process will be displayed in the 
+    <p>Information about each process will be displayed in the
     <module>mod_status</module> server-status page.</p>
   </section>
 
@@ -426,8 +426,8 @@
     <contextlist><context>directory</context> <context>.htaccess</context></contextlist>
     <override>FileInfo</override>
     <usage>
-      <p>Access checking or, more formally, access control, is a procedure 
-      which verifies that the client is allowed to access a resource, using 
+      <p>Access checking or, more formally, access control, is a procedure
+      which verifies that the client is allowed to access a resource, using
       some mechanism other than authentication and authorization.</p>
 
       <p>Key environment variables passed to the application for access
@@ -460,7 +460,7 @@
     <override>FileInfo</override>
     <usage>
       <p>This directive controls whether or not other access checkers
-      are allowed to run when this module has an access checker configured 
+      are allowed to run when this module has an access checker configured
       and it fails a request.  If this directive is <code>On</code> (default)
       and a FastCGI access checker returns a failure status, a failure is
       returned to the client without giving other access checkers a chance to
@@ -478,7 +478,7 @@
     <override>FileInfo</override>
     <usage>
       <p>Authentication is the procedure which verifies that the user is
-      who they claim they are.  This directive specifies the full path to 
+      who they claim they are.  This directive specifies the full path to
       a FastCGI application which will handle authentication for a particular
       context, such as a directory.</p>
 
@@ -518,11 +518,11 @@
     <override>FileInfo</override>
     <usage>
       <p>This directive controls whether or not other authenticators
-      are allowed to run when this module has an authenticator configured 
+      are allowed to run when this module has an authenticator configured
       and it fails a request.  If this directive is <code>On</code> (default)
       and a FastCGI authenticator returns a failure status, a failure is
       returned to the client without giving other authenticators a chance to
-      validate the client identity.  If this directive is <code>Off</code>, 
+      validate the client identity.  If this directive is <code>Off</code>,
       other authenticators will be called.</p>
     </usage>
   </directivesynopsis>
@@ -545,11 +545,11 @@
 
       <dl>
         <dt><code>REMOTE_USER</code></dt>
-        <dd>set to the user id of the client, which has already been 
+        <dd>set to the user id of the client, which has already been
         authenticated</dd>
 
         <dt><code>FCGI_APACHE_ROLE</code></dt>
-        <dd>set to <code>AUTHORIZER</code>; by checking the current role, the 
+        <dd>set to <code>AUTHORIZER</code>; by checking the current role, the
         same FastCGI application can handle multiple stages of request
         processing</dd>
       </dl>
@@ -574,7 +574,7 @@
     <override>FileInfo</override>
     <usage>
       <p>This directive controls whether or not other authorizers
-      are allowed to run when this module has an authorizer configured 
+      are allowed to run when this module has an authorizer configured
       and it fails a request.  If this directive is <code>On</code> (default)
       and a FastCGI authorizer returns a failure status, a failure is
       returned to the client without giving other authorizer a chance to
@@ -590,8 +590,8 @@
     <default>FcgidBusyScanInterval 120</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>The module performs the 
-      <directive module="mod_fcgid">FcgidBusyTimeout</directive> check at this 
+      <p>The module performs the
+      <directive module="mod_fcgid">FcgidBusyTimeout</directive> check at this
       interval.</p>
     </usage>
   </directivesynopsis>
@@ -686,7 +686,7 @@
       environment variable setting; additionally, mod_fcgid will
       terminate it after it has handled 2000 requests, and I/O
       operations will time out after 90 seconds.  Directives
-      corresponding to other options, such as 
+      corresponding to other options, such as
       <directive module="mod_fcgid">FcgidIdleTimeout</directive> or
       <directive module="mod_fcgid">FcgidProcessLifeTime</directive>,
       will be ignored for this command; defaults will be used for options
@@ -701,12 +701,12 @@
     <default>none</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Use <directive>FcgidInitialEnv</directive> to define environment 
-      variables to pass to the FastCGI application.  This directive can 
+      <p>Use <directive>FcgidInitialEnv</directive> to define environment
+      variables to pass to the FastCGI application.  This directive can
       be used multiple times.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -719,11 +719,11 @@
     <default>FcgidMaxProcessesPerClass 100</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>This directive sets the maximum number of processes that can be 
+      <p>This directive sets the maximum number of processes that can be
       started for each process class.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -740,7 +740,7 @@
       retained in a process class after finishing requests.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -755,14 +755,14 @@
     <usage>
       <p>This is the interval at which the module will handle
       pending process termination.  Termination is pending for
-      any processes which have exceeded 
+      any processes which have exceeded
       <directive module="mod_fcgid">FcgidIdleTimeout</directive> or
       <directive module="mod_fcgid">FcgidProcessLifeTime</directive>.</p>
 
       <p>Unix: mod_fcgid will terminate such processes with SIGTERM;
       if the process is still active during the next scan, the process
       will be terminated with SIGKILL.  Thus, this directive controls the
-      amount of time for orderly process terminate before being forcibly 
+      amount of time for orderly process terminate before being forcibly
       killed.</p>
     </usage>
   </directivesynopsis>
@@ -775,7 +775,7 @@
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>This is the interval at which the module will search for
-      processes which have exceeded 
+      processes which have exceeded
       <directive module="mod_fcgid">FcgidIdleTimeout</directive> or
       <directive module="mod_fcgid">FcgidProcessLifeTime</directive>.</p>
     </usage>
@@ -788,17 +788,17 @@
     <default>FcgidIdleTimeout 300</default>
     <contextlist><context>server config</context> <context>virtual host</context></contextlist>
     <usage>
-      <p>Application processes which have not handled a request for this 
+      <p>Application processes which have not handled a request for this
       period of time will be terminated, if the number of processses for the
       class exceeds
       <directive module="mod_fcgid">FcgidMinProcessesPerClass</directive>.
       A value of <code>0</code> disables the check.</p>
 
-      <p>This idle timeout check is performed at the frequency of the configured 
+      <p>This idle timeout check is performed at the frequency of the configured
       <directive module="mod_fcgid">FcgidIdleScanInterval</directive>.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -821,7 +821,7 @@
       </note>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -840,7 +840,7 @@
       will apply.)</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -869,7 +869,7 @@
       before sending it to the application.  Normally the request body
       will be stored in memory.  Once the amount of request body read
       from the client exceeds <directive>FcgidMaxRequestInMem</directive>
-      bytes, the remainder of the request body will be stored in a 
+      bytes, the remainder of the request body will be stored in a
       temporary file.</p>
     </usage>
   </directivesynopsis>
@@ -917,14 +917,14 @@
       limit.</p>
       <note type="hint"><title>Note</title>
       <p>If this is set such that frequent process creation will be
-      required, you will likely need to adjust 
+      required, you will likely need to adjust
       <directive module="mod_fcgid">FcgidSpawnScoreUpLimit</directive>
       or other score-related directives to allow more frequent process
       creation.</p>
       </note>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -959,13 +959,13 @@
       No case conversion is performed.</p>
 
       <p>Beginning with release 2.3.6, an additional environment variable
-      is created.  The value specified on this directive is converted to 
-      upper case, prefixed with <code>HTTP_</code>, and hyphens are 
+      is created.  The value specified on this directive is converted to
+      upper case, prefixed with <code>HTTP_</code>, and hyphens are
       converted to underscores.</p>
 
       <note type="hint"><title>Note</title>
       <p>Most request headers are already available to the application
-      as environment variables, and generally are prefixed with 
+      as environment variables, and generally are prefixed with
       <code>HTTP_</code>.  (Notable exceptions are <code>Content-type</code>
       and <code>Content-length</code>, which do not have the
       <code>HTTP_</code> prefix.)  Thus, this directive is only required
@@ -984,10 +984,10 @@
     <default>FcgidFixPathinfo 0</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
-      <p>This directive enables special <code>SCRIPT_NAME</code> 
+      <p>This directive enables special <code>SCRIPT_NAME</code>
       processing which allows PHP to provide additional path information.
       The setting of <directive>FcgidFixPathinfo</directive>
-      should mirror the <code>cgi.fix_pathinfo</code> setting in 
+      should mirror the <code>cgi.fix_pathinfo</code> setting in
       <code>php.ini</code>.</p>
     </usage>
   </directivesynopsis>
@@ -1005,11 +1005,11 @@
       <directive module="mod_fcgid">FcgidMinProcessesPerClass</directive>.
       A value of <code>0</code> disables the check.</p>
 
-      <p>This process lifetime check is performed at the frequency of the configured 
+      <p>This process lifetime check is performed at the frequency of the configured
       <directive module="mod_fcgid">FcgidIdleScanInterval</directive>.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <directive module="mod_fcgid">FcgidCmdOptions</directive> to apply
       this setting to a single application.</p>
     </usage>
@@ -1065,12 +1065,12 @@
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>A process activity score is maintained for each FastCGI application;
-      the score is used to control the rate of spawning in order to avoid 
+      the score is used to control the rate of spawning in order to avoid
       placing too much load on the system, particularly for applications that
       are repeatedly exiting abnormally.</p>
 
       <p>The value of <directive module="mod_fcgid">FcgidSpawnScore</directive>
-      is added to the score for every spawned application process.  The value of 
+      is added to the score for every spawned application process.  The value of
       <directive module="mod_fcgid">FcgidTerminationScore</directive> is added
       to the score for every terminated application process.  The value of
       <directive module="mod_fcgid">FcgidTimeScore</directive> is subtracted
@@ -1078,13 +1078,13 @@
 
       <p>When the current score is higher than the value of
       <directive>FcgidSpawnScoreUpLimit</directive>, no additional application
-      processes will be spawned; subsequent requests must wait until an existing 
+      processes will be spawned; subsequent requests must wait until an existing
       process is free or until the score decreases below the limit.</p>
 
       <p>If the limit is reached under normal load, it may not be sufficient to
-      simply increase the limit, as that would only delay the amount of time 
-      before the limit is reached again.  Decrease the value of 
-      <directive module="mod_fcgid">FcgidSpawnScore</directive> and/or 
+      simply increase the limit, as that would only delay the amount of time
+      before the limit is reached again.  Decrease the value of
+      <directive module="mod_fcgid">FcgidSpawnScore</directive> and/or
       <directive module="mod_fcgid">FcgidTerminationScore</directive>, or
       increase the value of <directive module="mod_fcgid">FcgidTimeScore</directive>,
       to allow a higher rate of spawning.</p>
@@ -1100,7 +1100,7 @@
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Lower values of this directive increase the allowed spawn rate.  Negative
-      values can be useful in some circumstances, such as allowing process 
+      values can be useful in some circumstances, such as allowing process
       replacement without increasing the score.</p>
 
       <p>Refer to the <directive module="mod_fcgid">FcgidSpawnScoreUpLimit</directive>
@@ -1110,7 +1110,7 @@
 
   <directivesynopsis>
     <name>FcgidTimeScore</name>
-    <description>Amount subtracted from process activity score each 
+    <description>Amount subtracted from process activity score each
     second</description>
     <syntax>FcgidTimeScore <em>value</em></syntax>
     <default>FcgidTimeScore 1</default>
