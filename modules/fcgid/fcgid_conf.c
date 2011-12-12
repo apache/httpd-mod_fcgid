@@ -622,8 +622,8 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
 
-    /* Is the wrapper exist? */
-    if ((rv = apr_stat(&finfo, authenticator, APR_FINFO_NORM,
+    /* Fetch only required file details inode + device */
+    if ((rv = apr_stat(&finfo, authenticator, APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Authenticator", authenticator, rv);
     }
@@ -671,8 +671,8 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
 
-    /* Is the wrapper exist? */
-    if ((rv = apr_stat(&finfo, authorizer, APR_FINFO_NORM,
+    /* Fetch only required file details inode + device */
+    if ((rv = apr_stat(&finfo, authorizer, APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Authorizer", authorizer, rv);
     }
@@ -720,8 +720,8 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
 
-    /* Is the wrapper exist? */
-    if ((rv = apr_stat(&finfo, access, APR_FINFO_NORM,
+    /* Fetch only required file details inode + device */
+    if ((rv = apr_stat(&finfo, access, APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Access checker", access, rv);
     }
@@ -795,8 +795,8 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
     if (path == NULL || *path == '\0')
         return "Invalid wrapper config";
 
-    /* Does the wrapper exist? */
-    if ((rv = apr_stat(&finfo, path, APR_FINFO_NORM,
+    /* Fetch only required file details inode + device */
+    if ((rv = apr_stat(&finfo, path, APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Wrapper", path, rv);
     }
@@ -918,7 +918,8 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         return "A command must be specified for FcgidCmdOptions";
     }
 
-    rv = apr_stat(&finfo, cmdname, APR_FINFO_NORM, cmd->temp_pool);
+    /* Test only for file existence */
+    rv = apr_stat(&finfo, cmdname, APR_FINFO_MIN, cmd->temp_pool);
     if (rv != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Command", cmdname, rv);
     }
