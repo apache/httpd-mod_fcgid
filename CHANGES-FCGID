@@ -1,6 +1,17 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.7
 
+  *) Periodically clean out the brigades which are pulling in the request 
+     body for handoff to the fcgid child. PR: 51749
+     [Dominic Benson <dominic.benson thirdlight.com>]
+
+  *) Resolve crash during graceful restarts. PR 50309
+     [Mario Brandt <JBlond gmail.com>]
+
+  *) Solve latency/cogestion of resolving effective user file access rights
+     when no such info is desired, for config related filename stats. 
+     PR: 51560 [Thangaraj AntonyCrouse <thangaraj gmail.com>, William Rowe]
+
   *) Fix regression in 2.3.6 which broke process controls when using vhost-
      specific configuration.  [Jeff Trawick]
 
