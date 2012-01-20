@@ -32,6 +32,7 @@
 #include "fcgid_bucket.h"
 #define FCGID_APPLY_TRY_COUNT 2
 #define FCGID_REQUEST_COUNT 32
+#define FCGID_BRIGADE_CLEAN_STEP 32
 
 static fcgid_procnode *apply_free_procnode(request_rec *r,
                                            fcgid_command * command)
@@ -489,10 +490,16 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
        Request will be stored in tmp file if the size larger than max_mem_request_len
      */
     seen_eos = 0;
+
+    apr_bucket_brigade *input_brigade = apr_brigade_create(request_pool,
+                                                           r->connection->
+                                                           bucket_alloc);
+    apr_bucket_brigade *tmp_brigade = apr_brigade_create(request_pool,
+                                                           r->connection->
+                                                           bucket_alloc);
+
     do {
-        apr_bucket_brigade *input_brigade = apr_brigade_create(request_pool,
-                                                               r->connection->
-                                                               bucket_alloc);
+        int loop_counter = 0;
 
         if ((rv = ap_get_brigade(r->input_filters, input_brigade,
                                  AP_MODE_READBYTES,
@@ -501,13 +508,22 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
             ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                           "mod_fcgid: can't get data from http client");
             apr_brigade_destroy(output_brigade);
+            apr_brigade_destroy(tmp_brigade);
             apr_brigade_destroy(input_brigade);
             return HTTP_INTERNAL_SERVER_ERROR;
         }
 
-        for (bucket_input = APR_BRIGADE_FIRST(input_brigade);
-             bucket_input != APR_BRIGADE_SENTINEL(input_brigade);
-             bucket_input = APR_BUCKET_NEXT(bucket_input)) {
+	
+
+        while((bucket_input = APR_BRIGADE_FIRST(input_brigade)) != APR_BRIGADE_SENTINEL(input_brigade)) {
+
+            ++loop_counter;
+            if((loop_counter % FCGID_BRIGADE_CLEAN_STEP) == 0) {
+                apr_brigade_cleanup(tmp_brigade);
+            }
+            APR_BUCKET_REMOVE(bucket_input);
+            APR_BRIGADE_INSERT_TAIL(tmp_brigade, bucket_input);
+
             const char *data;
             apr_size_t len;
             apr_bucket *bucket_stdin;
@@ -525,6 +541,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                 ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                               "mod_fcgid: can't read request from HTTP client");
                 apr_brigade_destroy(input_brigade);
+                apr_brigade_destroy(tmp_brigade);
                 apr_brigade_destroy(output_brigade);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
@@ -629,6 +646,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
                 ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0, r,
                               "mod_fcgid: header overflow");
                 apr_brigade_destroy(input_brigade);
+                apr_brigade_destroy(tmp_brigade);
                 apr_brigade_destroy(output_brigade);
                 return HTTP_INTERNAL_SERVER_ERROR;
             }
@@ -636,9 +654,13 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
             APR_BRIGADE_INSERT_TAIL(output_brigade, bucket_stdin);
         }
 
-        apr_brigade_destroy(input_brigade);
+        apr_brigade_cleanup(input_brigade);
+        apr_brigade_cleanup(tmp_brigade);
     }
     while (!seen_eos);
+
+    apr_brigade_destroy(input_brigade);
+    apr_brigade_destroy(tmp_brigade);
 
     /* Append an empty body stdin header */
     stdin_request_header = apr_bucket_alloc(sizeof(FCGI_Header),
