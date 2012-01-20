@@ -375,7 +375,6 @@ static int reclaim_one_pid(server_rec *main_server, fcgid_procnode *proc,
         proc->diewhy = FCGID_DIE_SHUTDOWN;
         proc_print_exit_info(proc, exitcode, exitwhy,
                              main_server);
-        apr_pool_destroy(proc->proc_pool);
         proc->proc_pool = NULL;
         return 1;
     }

@@ -248,8 +248,8 @@ apr_status_t procmgr_peek_cmd(fcgid_command * command,
 apr_status_t
 procmgr_child_init(server_rec * main_server, apr_pool_t * pchild)
 {
-    apr_pool_cleanup_register(pchild, main_server,
-                              procmgr_stop_procmgr, apr_pool_cleanup_null);
+    /* Noop on windows, but used by unix */
+
     return APR_SUCCESS;
 }
 
