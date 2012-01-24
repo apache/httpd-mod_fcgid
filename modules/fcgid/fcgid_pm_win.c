@@ -124,6 +124,9 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
         exit(1);
     }
 
+    apr_pool_cleanup_register(pconf, main_server, procmgr_stop_procmgr,
+                              apr_pool_cleanup_null);
+
     return APR_SUCCESS;
 }
 
