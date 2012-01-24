@@ -480,7 +480,7 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
     FCGI_Header *stdin_request_header;
     fcgid_server_conf *sconf = ap_get_module_config(r->server->module_config,
                                                     &fcgid_module);
-    int seen_eos;
+    int seen_eos = 0;
 
     /* Stdin header and body */
     /* I have to read all the request into memory before sending it
@@ -489,7 +489,6 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
        But sometimes it's not acceptable (think about uploading a large attachment)
        Request will be stored in tmp file if the size larger than max_mem_request_len
      */
-    seen_eos = 0;
 
     apr_bucket_brigade *input_brigade = apr_brigade_create(request_pool,
                                                            r->connection->
@@ -516,6 +515,9 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
 	
 
         while((bucket_input = APR_BRIGADE_FIRST(input_brigade)) != APR_BRIGADE_SENTINEL(input_brigade)) {
+            const char *data;
+            apr_size_t len;
+            apr_bucket *bucket_stdin;
 
             ++loop_counter;
             if((loop_counter % FCGID_BRIGADE_CLEAN_STEP) == 0) {
@@ -523,10 +525,6 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
             }
             APR_BUCKET_REMOVE(bucket_input);
             APR_BRIGADE_INSERT_TAIL(tmp_brigade, bucket_input);
-
-            const char *data;
-            apr_size_t len;
-            apr_bucket *bucket_stdin;
 
             if (APR_BUCKET_IS_EOS(bucket_input)) {
                 seen_eos = 1;
