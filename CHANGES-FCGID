@@ -1,6 +1,11 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.7
 
+  *) Introduce FcgidWin32PreventOrphans directive on Windows to use OS
+     Job Control Objects to terminate all running fcgi's when the worker
+     process has been abruptly terminated. PR: 51078
+     [Thangaraj AntonyCrouse <thangaraj gmail.com>]
+
   *) Periodically clean out the brigades which are pulling in the request 
      body for handoff to the fcgid child. PR: 51749
      [Dominic Benson <dominic.benson thirdlight.com>]
