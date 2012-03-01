@@ -166,7 +166,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 
     /* Total process count higher than up limit? */
     if (g_total_process >= sconf->max_process_count) {
-        ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
                      "mod_fcgid: %s total process count %d >= %d, skip the spawn request",
                      command->cgipath, g_total_process, sconf->max_process_count);
         return 0;
@@ -202,7 +202,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
 
         /* Score is higher than up limit? */
         if (current_node->score >= sconf->spawnscore_uplimit) {
-            ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
                          "mod_fcgid: %s spawn score %d >= %d, skip the spawn request",
                          command->cgipath, current_node->score,
                          sconf->spawnscore_uplimit);
@@ -213,7 +213,7 @@ int is_spawn_allowed(server_rec * main_server, fcgid_command * command)
          * Process count of this class higher than up limit?
          */
         if (current_node->process_counter >= current_node->max_class_process_count) {
-            ap_log_error(APLOG_MARK, APLOG_INFO, 0, main_server,
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
                          "mod_fcgid: too many %s processes (current:%d, max:%d), skip the spawn request",
                          command->cgipath, current_node->process_counter,
                          current_node->max_class_process_count);
