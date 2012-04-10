@@ -264,6 +264,8 @@ int procmgr_must_exit()
 apr_status_t procmgr_stop_procmgr(void *server)
 {
     apr_status_t status;
+    fcgid_server_conf *conf =
+            ap_get_module_config(((server_rec*)server)->module_config, &fcgid_module);
 
     /* Tell the world to die */
     g_must_exit = 1;
@@ -281,6 +283,11 @@ apr_status_t procmgr_stop_procmgr(void *server)
         }
     }
 
+    /* Cleanup the Job object if present */
+    if (conf != NULL && conf->hJobObjectForAutoCleanup != NULL) {
+            CloseHandle(conf->hJobObjectForAutoCleanup);        
+    }
+    
     if (g_wakeup_thread)
         return apr_thread_join(&status, g_wakeup_thread);
 
