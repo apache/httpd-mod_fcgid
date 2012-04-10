@@ -253,11 +253,17 @@ const char *set_php_fix_pathinfo_enable(cmd_parms * cmd, void *dummy,
 const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
                                          const char *arg);
 
+#ifdef WIN32
+const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
+                                              char *arg);
+#endif
+
 const char *set_cmd_options(cmd_parms *cmd, void *dummy,
                             const char *arg);
 
 void get_cmd_options(request_rec *r, const char *cmdpath,
                      fcgid_cmd_options *cmdopts, fcgid_cmd_env *cmdenv);
+
 
 AP_MODULE_DECLARE_DATA extern module fcgid_module;
 

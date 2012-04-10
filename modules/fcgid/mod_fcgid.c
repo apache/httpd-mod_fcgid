@@ -802,11 +802,6 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     return APR_SUCCESS;
 }
 
-#ifdef WIN32
-const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
-                                              char *arg);
-#endif
-
 static const command_rec fcgid_cmds[] = {
     AP_INIT_TAKE1("FcgidAccessChecker", set_access_info, NULL,
                   ACCESS_CONF | OR_FILEINFO,
