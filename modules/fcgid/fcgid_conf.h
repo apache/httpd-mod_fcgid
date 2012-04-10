@@ -71,10 +71,6 @@ typedef struct {
     int termination_score;
     int time_score;
     int zombie_scan_interval;
-#ifdef WIN32
-    /* FcgidWin32PreventOrphans - Win32 CGI processes automatic cleanup */    
-    HANDLE hJobObjectForAutoCleanup;
-#endif /*WIN32*/
     /* global or vhost
      * scalar values have corresponding _set field to aid merging
      */

@@ -177,26 +177,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                      "mod_fcgid: can't run %s", wargv[0]);
-		return rv;
     }
-    /* LTAC - FcgidWin32PreventOrphans feature*/
-    do{
-        fcgid_server_conf *sconf = ap_get_module_config(procinfo->main_server->
-                                                    module_config, &fcgid_module);      
-        if (sconf == NULL){
-            ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
-                         "mod_fcgid: fcgi server configuration info unavailable");
-            break;            
-        }
-        /* Is FcgidWin32PreventOrphans enabled? */
-        if(sconf->hJobObjectForAutoCleanup != NULL){
-            /* Associate cgi process to current process */
-            if(AssignProcessToJobObject(sconf->hJobObjectForAutoCleanup, procnode->proc_id.hproc) == 0){
-                ap_log_error(APLOG_MARK, APLOG_ERR, 0, procinfo->main_server,
-                    "mod_fcgid: unable to assign child process to job object %d", apr_get_os_error());                    
-            }
-        }
-    }while(0);
 
     return rv;
 }

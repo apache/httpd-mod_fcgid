@@ -802,12 +802,6 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     return APR_SUCCESS;
 }
 
-#ifdef WIN32
-const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy, 
-                                              char *arg);
-#endif /*WIN32*/
-
-
 static const command_rec fcgid_cmds[] = {
     AP_INIT_TAKE1("FcgidAccessChecker", set_access_info, NULL,
                   ACCESS_CONF | OR_FILEINFO,
@@ -901,18 +895,7 @@ static const command_rec fcgid_cmds[] = {
     AP_INIT_TAKE1("FcgidZombieScanInterval", set_zombie_scan_interval, NULL,
                   RSRC_CONF,
                   "scan interval for zombie process"),
-#ifdef WIN32
-    /* Apache when run as windows service during shutdown/restart of service process (master/parent) will terminate child httpd
-     * process within 30 seconds (refer \server\mpm\winnt\mpm_winnt.c:master_main()  int timeout = 30000; ~line#1142), therefore
-     * if Apache worker threads are too busy to react to Master's graceful exit signal within 30 seconds - mod_fcgid cleanup 
-     * routines will not get invoked (refer \server\mpm\winnt\child.c: child_main() apr_pool_destroy(pchild); ~line#2275) thereby
-     * orphaning all mod_fcgid spwaned CGI processes. 
-     * Therefore we utilize Win32 JobObjects to clean up child processes automatically so that CGI processes are gauranteed to 
-     * get killed during abnormal mod_fcgid termination.
-     */
-    AP_INIT_NO_ARGS("FcgidWin32PreventOrphans", set_win32_prevent_process_orphans, NULL, RSRC_CONF,
-                    "CGI process orphaning will be prevented during Apache child recycling or abrupt shutdowns"),
-#endif /*WIN32*/
+
     /* The following directives are all deprecated in favor
      * of a consistent use of the Fcgid prefix.
      * Add all new command above this line.
