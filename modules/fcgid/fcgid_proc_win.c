@@ -190,8 +190,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
         return APR_SUCCESS;
     }
 
-    if (sconf->hJobObjectForAutoCleanup != NULL)
-    {
+    if (sconf->hJobObjectForAutoCleanup != NULL) {
         /* Associate cgi process to current process */
         if (AssignProcessToJobObject(sconf->hJobObjectForAutoCleanup,
                                      procnode->proc_id.hproc) == 0) {

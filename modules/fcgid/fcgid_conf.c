@@ -776,8 +776,7 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
     fcgid_server_conf *config = ap_get_module_config(s->module_config,
                                                      &fcgid_module);
 
-    if (config != NULL && config->hJobObjectForAutoCleanup == NULL)
-    {
+    if (config != NULL && config->hJobObjectForAutoCleanup == NULL) {
         /* Create Win32 job object to prevent CGI process oprhaning
          */
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = { 0 };
