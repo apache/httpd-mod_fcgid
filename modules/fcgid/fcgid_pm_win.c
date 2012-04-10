@@ -286,7 +286,7 @@ apr_status_t procmgr_stop_procmgr(void *server)
     conf = ap_get_module_config(((server_rec*)server)->module_config,
                                 &fcgid_module);
 
-    if (conf != NULL && conf->hJobObjectForAutoCleanup != NULL) {
+    if (conf->hJobObjectForAutoCleanup != NULL) {
         CloseHandle(conf->hJobObjectForAutoCleanup);
     }
 

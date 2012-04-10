@@ -184,11 +184,6 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     /* FcgidWin32PreventOrphans feature */
     sconf = ap_get_module_config(procinfo->main_server->module_config,
                                  &fcgid_module);
-    if (sconf == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
-                     "mod_fcgid: missing server configuration record");
-        return APR_SUCCESS;
-    }
 
     if (sconf->hJobObjectForAutoCleanup != NULL) {
         /* Associate cgi process to current process */
