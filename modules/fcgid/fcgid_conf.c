@@ -749,6 +749,71 @@ const char *set_access_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
+
+#ifdef WIN32
+/* FcgidWin32PreventOrphans
+ *
+ *   When Apache process gets recycled or shutdown abruptly, CGI processes 
+ *   spawned by mod_fcgid will get orphaned. Orphaning happens mostly when
+ *   Apache worker threads take more than 30 seconds to exit gracefully.
+ *
+ * Apache when run as windows service during shutdown/restart of service
+ * process (master/parent) will terminate child httpd process within 30
+ * seconds (refer \server\mpm\winnt\mpm_winnt.c:master_main() 
+ * int timeout = 30000; ~line#1142), therefore if Apache worker threads
+ * are too busy to react to Master's graceful exit signal within 30 seconds
+ * mod_fcgid cleanup routines will not get invoked (refer child_main()
+ * \server\mpm\winnt\child.c: apr_pool_destroy(pchild); ~line#2275)
+ * thereby orphaning all mod_fcgid spwaned CGI processes. Therefore we utilize
+ * Win32 JobObjects to clean up child processes automatically so that CGI
+ * processes are force-killed by win32 during abnormal mod_fcgid termination.
+ *
+ */
+const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
+                                              char *arg)
+{
+    server_rec *s = cmd->server;
+    fcgid_server_conf *config = ap_get_module_config(s->module_config,
+                                                     &fcgid_module);
+
+    if (config != NULL && config->hJobObjectForAutoCleanup == NULL)
+    {
+        /* Create Win32 job object to prevent CGI process oprhaning
+         */
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = { 0 };
+        config->hJobObjectForAutoCleanup = CreateJobObject(NULL, NULL);
+
+        if (config->hJobObjectForAutoCleanup == NULL) {
+            ap_log_error(APLOG_MARK, APLOG_ERR, apr_get_os_error(), NULL,
+                         "mod_fcgid: Error enabling CGI process orphan "
+                         "prevention: unable to create job object.");
+            return NULL;
+        }
+
+        /* Set job info so that all spawned CGI processes are associated
+         * with mod_fcgid
+         */
+        job_info.BasicLimitInformation.LimitFlags
+            = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        if (SetInformationJobObject(config->hJobObjectForAutoCleanup,
+                                    JobObjectExtendedLimitInformation,
+                                    &job_info, sizeof(job_info)) == 0) {
+            ap_log_error(APLOG_MARK, APLOG_ERR, apr_get_os_error(), NULL,
+                         "mod_fcgid: Error enabling CGI process orphan "
+                         "prevention: unable to set job object information.");
+            CloseHandle(config->hJobObjectForAutoCleanup);
+            config->hJobObjectForAutoCleanup = NULL;
+            return NULL;
+        }
+
+        ap_log_error(APLOG_MARK, APLOG_INFO, 0, NULL,
+                     "mod_fcgid: Enabled CGI process orphan prevention flag.");
+    }
+
+    return NULL;
+}
+#endif /* WIN32*/
+
 fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative)
 {
     fcgid_dir_conf *config =

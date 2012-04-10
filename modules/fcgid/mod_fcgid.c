@@ -802,6 +802,11 @@ fcgid_init(apr_pool_t * config_pool, apr_pool_t * plog, apr_pool_t * ptemp,
     return APR_SUCCESS;
 }
 
+#ifdef WIN32
+const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
+                                              char *arg);
+#endif
+
 static const command_rec fcgid_cmds[] = {
     AP_INIT_TAKE1("FcgidAccessChecker", set_access_info, NULL,
                   ACCESS_CONF | OR_FILEINFO,
@@ -895,6 +900,12 @@ static const command_rec fcgid_cmds[] = {
     AP_INIT_TAKE1("FcgidZombieScanInterval", set_zombie_scan_interval, NULL,
                   RSRC_CONF,
                   "scan interval for zombie process"),
+#ifdef WIN32
+    AP_INIT_NO_ARGS("FcgidWin32PreventOrphans",
+                    set_win32_prevent_process_orphans, NULL, RSRC_CONF,
+                    "Prevented fcgi process orphaning during Apache worker "
+                    "abrupt shutdowns [see documentation]"),
+#endif
 
     /* The following directives are all deprecated in favor
      * of a consistent use of the Fcgid prefix.

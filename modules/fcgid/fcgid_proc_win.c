@@ -63,6 +63,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
 {
     HANDLE *finish_event, listen_handle;
     SECURITY_ATTRIBUTES SecurityAttributes;
+    fcgid_server_conf *sconf;
     apr_procattr_t *proc_attr;
     apr_status_t rv;
     apr_file_t *file;
@@ -177,9 +178,31 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, procinfo->main_server,
                      "mod_fcgid: can't run %s", wargv[0]);
+        return rv;
     }
 
-    return rv;
+    /* FcgidWin32PreventOrphans feature */
+    sconf = ap_get_module_config(procinfo->main_server->module_config,
+                                 &fcgid_module);
+    if (sconf == NULL) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, procinfo->main_server,
+                     "mod_fcgid: missing server configuration record");
+        return APR_SUCCESS;
+    }
+
+    if (sconf->hJobObjectForAutoCleanup != NULL)
+    {
+        /* Associate cgi process to current process */
+        if (AssignProcessToJobObject(sconf->hJobObjectForAutoCleanup,
+                                     procnode->proc_id.hproc) == 0) {
+            ap_log_error(APLOG_MARK, APLOG_WARNING, apr_get_os_error(),
+                         procinfo->main_server,
+                         "mod_fcgid: unable to assign child process to "
+                         "job object");
+        }
+    }
+
+    return APR_SUCCESS;
 }
 
 apr_status_t proc_kill_gracefully(fcgid_procnode *procnode,

@@ -1124,6 +1124,22 @@
   </directivesynopsis>
 
   <directivesynopsis>
+    <name>FcgidWin32PreventOrphans</name>
+    <description>Job Control orphan prevention for fcgi workers.</description>
+    <syntax>FcgidWin32PreventOrphans</syntax>
+    <default>[disabled]</default>
+    <contextlist><context>server config</context></contextlist>
+    <usage>
+      <p>Uses Job Control Objects on Windows, only, to enforce shutdown of all
+      fcgi processes created by the httpd worker when the httpd worker has been
+      terminated. Processes terminated in this way do not have the opportunity
+      to clean up gracefully, complete pending disk writes, or similar closure
+      transactions, therefore this behavior is experimental and disabled, by
+      default.</p>
+    </usage>
+  </directivesynopsis>
+
+  <directivesynopsis>
     <name>FcgidWrapper</name>
     <description>The CGI wrapper setting</description>
     <syntax>FcgidWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</syntax>
