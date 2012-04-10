@@ -13,11 +13,11 @@
 <body>
 <div id="page-header">
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="../faq/">FAQ</a> | <a href="../glossary.html">Glossary</a> | <a href="../sitemap.html">Sitemap</a></p>
-<p class="apache">Apache HTTP Server Version 2.2</p>
+<p class="apache">Apache HTTP Server Version 2.4</p>
 <img alt="" src="../images/feather.gif" /></div>
 <div class="up"><a href="./"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
 <div id="path">
-<a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">Documentation</a> &gt; <a href="../">Version 2.2</a> &gt; <a href="./">Modules</a></div>
+<a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">Documentation</a> &gt; <a href="../">Version 2.4</a> &gt; <a href="./">Modules</a></div>
 <div id="page-content">
 <div id="preamble"><h1>Apache Module mod_fcgid</h1>
 <div class="toplang">
@@ -45,15 +45,15 @@
     Configuration directives below let the administrator tune the number of
     instances of the program that will run concurrently.</p>
 
-    <p>Specific executables are assigned this handler either by having a name 
-    containing an extension defined by the 
+    <p>Specific executables are assigned this handler either by having a name
+    containing an extension defined by the
     <code class="directive"><a href="../mod/mod_mime.html#addhandler">AddHandler</a></code> directive, or with an
-    override using the <code class="directive"><a href="../mod/mod_mime.html#sethandler">SetHandler</a></code> 
+    override using the <code class="directive"><a href="../mod/mod_mime.html#sethandler">SetHandler</a></code>
     directive (e.g., for all files in a specific directory such as cgi-bin).</p>
 
     <p>Some changes have been made in the ASF release of mod_fcgid which
     can affect existing configurations.  All documentation refers to new
-    names for the directives.  (The old names still work but are now 
+    names for the directives.  (The old names still work but are now
     deprecated.)  Please read the <a href="#upgrade">Upgrade Notes</a> for
     details.</p>
 
@@ -95,6 +95,7 @@
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidterminationscore">FcgidTerminationScore</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidtimescore">FcgidTimeScore</a></li>
+<li><img alt="" src="../images/down.gif" /> <a href="#fcgidwin32preventorphans">FcgidWin32PreventOrphans</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidwrapper">FcgidWrapper</a></li>
 <li><img alt="" src="../images/down.gif" /> <a href="#fcgidzombiescaninterval">FcgidZombieScanInterval</a></li>
 </ul>
@@ -115,7 +116,7 @@
     
     <p>The following changes have been made in the ASF release of mod_fcgid
     and should be considered when upgrading from the original version by
-    Ryan Pan (Pan Qingfeng).
+    Ryan Pan (Pan Qingfeng).</p>
     <ul>
       <li>All directives have been renamed in order to use a common prefix "Fcgid".
       Underscores in directive names have been eliminated in favor of
@@ -145,7 +146,7 @@
         </tr>
 <tr class="odd">
           <td><code class="directive">ErrorScanInterval</code></td>
-          <td><code class="directive"><a href="#fcgiderrorscaninterval">FcgidErrorScanInterval</a></code></td> 
+          <td><code class="directive"><a href="#fcgiderrorscaninterval">FcgidErrorScanInterval</a></code></td>
         </tr>
 <tr>
           <td><code class="directive">FastCgiAccessChecker</code></td>
@@ -254,7 +255,6 @@
 </table>
       </li>
     </ul>
-    </p>
 
   </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="section">
@@ -263,12 +263,12 @@
 
     <div class="note"><h3>Note</h3>
     <p>The examples assume that mod_fcgid and other necessary
-    modules are loaded into the server already, either built-in or 
+    modules are loaded into the server already, either built-in or
     via the <code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>
     directive.</p>
 
     <p>Additionally, the example configurations provide full access
-    to the applications using access control directives which work 
+    to the applications using access control directives which work
     with Apache 2.0 and 2.2.  These directives are not appropriate
     for all environments, and they do not work for development
     levels of Apache HTTP Server (Subversion trunk).</p>
@@ -312,7 +312,7 @@
 
     <p>PHP applications are usually configured using the
     <code class="directive"><a href="#fcgidwrapper">FcgidWrapper</a></code> directive
-    and a corresponding wrapper script.  The wrapper script can be 
+    and a corresponding wrapper script.  The wrapper script can be
     an appropriate place to define any environment variables required
     by the application, such as <code>PHP_FCGI_MAX_REQUESTS</code>
     or anything else.  (Environment variables can also be set with
@@ -383,7 +383,7 @@
     should always be disabled with mod_fcgid, which will only route
     one request at a time to application processes it has spawned;
     thus, any child processes created by PHP will not be used
-    effectively.  (Additionally, the PHP child processes may not be 
+    effectively.  (Additionally, the PHP child processes may not be
     terminated properly.) By default, and with the environment
     variable setting <code>PHP_FCGI_CHILDREN=0</code>, PHP child
     process management is disabled.</p>
@@ -437,8 +437,8 @@
       </tr>
 </table>
 
-    <p>Several of the directives control processing for a <em>process 
-    class</em>.  A process class is the set of processes which were started 
+    <p>Several of the directives control processing for a <em>process
+    class</em>.  A process class is the set of processes which were started
     with the same executable file and share certain other characteristics such
     as virtual host and identity.  Two commands which are links to or otherwise
     refer to the same executable file share the same process class.</p>
@@ -451,14 +451,14 @@
     documentation for more information.) In the case of
     <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>, if two
     virtual hosts have the same server name but different environments as
-    defined by 
-    <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>, the 
+    defined by
+    <code class="directive"><a href="#fcgidinitialenv">FcgidInitialEnv</a></code>, the
     environment used for a particular request will be that defined for the
-    virtual host of the request that caused the FastCGI process to be 
+    virtual host of the request that caused the FastCGI process to be
     started.</p>
     </div>
 
-    <p>Information about each process will be displayed in the 
+    <p>Information about each process will be displayed in the
     <code class="module"><a href="../mod/mod_status.html">mod_status</a></code> server-status page.</p>
   </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
@@ -466,14 +466,14 @@
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>full path to FastCGI access checker</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAccessChecker <em>command</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>none</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>Access checking or, more formally, access control, is a procedure 
-      which verifies that the client is allowed to access a resource, using 
+      <p>Access checking or, more formally, access control, is a procedure
+      which verifies that the client is allowed to access a resource, using
       some mechanism other than authentication and authorization.</p>
 
       <p>Key environment variables passed to the application for access
@@ -508,7 +508,7 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This directive controls whether or not other access checkers
-      are allowed to run when this module has an access checker configured 
+      are allowed to run when this module has an access checker configured
       and it fails a request.  If this directive is <code>On</code> (default)
       and a FastCGI access checker returns a failure status, a failure is
       returned to the client without giving other access checkers a chance to
@@ -521,14 +521,14 @@
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>full path to FastCGI authenticator</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAuthenticator <em>command</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>none</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Authentication is the procedure which verifies that the user is
-      who they claim they are.  This directive specifies the full path to 
+      who they claim they are.  This directive specifies the full path to
       a FastCGI application which will handle authentication for a particular
       context, such as a directory.</p>
 
@@ -570,11 +570,11 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This directive controls whether or not other authenticators
-      are allowed to run when this module has an authenticator configured 
+      are allowed to run when this module has an authenticator configured
       and it fails a request.  If this directive is <code>On</code> (default)
       and a FastCGI authenticator returns a failure status, a failure is
       returned to the client without giving other authenticators a chance to
-      validate the client identity.  If this directive is <code>Off</code>, 
+      validate the client identity.  If this directive is <code>Off</code>,
       other authenticators will be called.</p>
     
 </div>
@@ -583,7 +583,7 @@
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>full path to FastCGI authorizer</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidAuthorizer <em>command</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>none</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -599,11 +599,11 @@
 
       <dl>
         <dt><code>REMOTE_USER</code></dt>
-        <dd>set to the user id of the client, which has already been 
+        <dd>set to the user id of the client, which has already been
         authenticated</dd>
 
         <dt><code>FCGI_APACHE_ROLE</code></dt>
-        <dd>set to <code>AUTHORIZER</code>; by checking the current role, the 
+        <dd>set to <code>AUTHORIZER</code>; by checking the current role, the
         same FastCGI application can handle multiple stages of request
         processing</dd>
       </dl>
@@ -630,7 +630,7 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This directive controls whether or not other authorizers
-      are allowed to run when this module has an authorizer configured 
+      are allowed to run when this module has an authorizer configured
       and it fails a request.  If this directive is <code>On</code> (default)
       and a FastCGI authorizer returns a failure status, a failure is
       returned to the client without giving other authorizer a chance to
@@ -648,8 +648,8 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>The module performs the 
-      <code class="directive"><a href="#fcgidbusytimeout">FcgidBusyTimeout</a></code> check at this 
+      <p>The module performs the
+      <code class="directive"><a href="#fcgidbusytimeout">FcgidBusyTimeout</a></code> check at this
       interval.</p>
     
 </div>
@@ -747,7 +747,7 @@
       environment variable setting; additionally, mod_fcgid will
       terminate it after it has handled 2000 requests, and I/O
       operations will time out after 90 seconds.  Directives
-      corresponding to other options, such as 
+      corresponding to other options, such as
       <code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code> or
       <code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code>,
       will be ignored for this command; defaults will be used for options
@@ -770,7 +770,7 @@
       will apply.)</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -787,14 +787,14 @@
 </table>
       <p>This is the interval at which the module will handle
       pending process termination.  Termination is pending for
-      any processes which have exceeded 
+      any processes which have exceeded
       <code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code> or
       <code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code>.</p>
 
       <p>Unix: mod_fcgid will terminate such processes with SIGTERM;
       if the process is still active during the next scan, the process
       will be terminated with SIGKILL.  Thus, this directive controls the
-      amount of time for orderly process terminate before being forcibly 
+      amount of time for orderly process terminate before being forcibly
       killed.</p>
     
 </div>
@@ -809,10 +809,10 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>This directive enables special <code>SCRIPT_NAME</code> 
+      <p>This directive enables special <code>SCRIPT_NAME</code>
       processing which allows PHP to provide additional path information.
       The setting of <code class="directive">FcgidFixPathinfo</code>
-      should mirror the <code>cgi.fix_pathinfo</code> setting in 
+      should mirror the <code>cgi.fix_pathinfo</code> setting in
       <code>php.ini</code>.</p>
     
 </div>
@@ -827,7 +827,7 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>This is the interval at which the module will search for
-      processes which have exceeded 
+      processes which have exceeded
       <code class="directive"><a href="#fcgididletimeout">FcgidIdleTimeout</a></code> or
       <code class="directive"><a href="#fcgidprocesslifetime">FcgidProcessLifeTime</a></code>.</p>
     
@@ -842,17 +842,17 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>Application processes which have not handled a request for this 
+      <p>Application processes which have not handled a request for this
       period of time will be terminated, if the number of processses for the
       class exceeds
       <code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
 
-      <p>This idle timeout check is performed at the frequency of the configured 
+      <p>This idle timeout check is performed at the frequency of the configured
       <code class="directive"><a href="#fcgididlescaninterval">FcgidIdleScanInterval</a></code>.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -862,17 +862,17 @@
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>an environment variable name and optional value to pass to FastCGI.</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidInitialEnv <em>name</em> [ <em>value</em> ]</code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>none</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>Use <code class="directive">FcgidInitialEnv</code> to define environment 
-      variables to pass to the FastCGI application.  This directive can 
+      <p>Use <code class="directive">FcgidInitialEnv</code> to define environment
+      variables to pass to the FastCGI application.  This directive can
       be used multiple times.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -897,7 +897,7 @@
       </div>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -942,11 +942,11 @@
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
-      <p>This directive sets the maximum number of processes that can be 
+      <p>This directive sets the maximum number of processes that can be
       started for each process class.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -965,7 +965,7 @@
       before sending it to the application.  Normally the request body
       will be stored in memory.  Once the amount of request body read
       from the client exceeds <code class="directive">FcgidMaxRequestInMem</code>
-      bytes, the remainder of the request body will be stored in a 
+      bytes, the remainder of the request body will be stored in a
       temporary file.</p>
     
 </div>
@@ -1020,14 +1020,14 @@
       limit.</p>
       <div class="note"><h3>Note</h3>
       <p>If this is set such that frequent process creation will be
-      required, you will likely need to adjust 
+      required, you will likely need to adjust
       <code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code>
       or other score-related directives to allow more frequent process
       creation.</p>
       </div>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -1046,7 +1046,7 @@
       retained in a process class after finishing requests.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -1070,7 +1070,7 @@
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Header name which will be passed to FastCGI as environment variable.</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidPassHeader <em>name</em></code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>none</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
@@ -1085,13 +1085,13 @@
       No case conversion is performed.</p>
 
       <p>Beginning with release 2.3.6, an additional environment variable
-      is created.  The value specified on this directive is converted to 
-      upper case, prefixed with <code>HTTP_</code>, and hyphens are 
+      is created.  The value specified on this directive is converted to
+      upper case, prefixed with <code>HTTP_</code>, and hyphens are
       converted to underscores.</p>
 
       <div class="note"><h3>Note</h3>
       <p>Most request headers are already available to the application
-      as environment variables, and generally are prefixed with 
+      as environment variables, and generally are prefixed with
       <code>HTTP_</code>.  (Notable exceptions are <code>Content-type</code>
       and <code>Content-length</code>, which do not have the
       <code>HTTP_</code> prefix.)  Thus, this directive is only required
@@ -1117,11 +1117,11 @@
       <code class="directive"><a href="#fcgidminprocessesperclass">FcgidMinProcessesPerClass</a></code>.
       A value of <code>0</code> disables the check.</p>
 
-      <p>This process lifetime check is performed at the frequency of the configured 
+      <p>This process lifetime check is performed at the frequency of the configured
       <code class="directive"><a href="#fcgididlescaninterval">FcgidIdleScanInterval</a></code>.</p>
 
       <p>This setting will apply to all applications spawned for this
-      server or virtual host.  Use 
+      server or virtual host.  Use
       <code class="directive"><a href="#fcgidcmdoptions">FcgidCmdOptions</a></code> to apply
       this setting to a single application.</p>
     
@@ -1169,12 +1169,12 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>A process activity score is maintained for each FastCGI application;
-      the score is used to control the rate of spawning in order to avoid 
+      the score is used to control the rate of spawning in order to avoid
       placing too much load on the system, particularly for applications that
       are repeatedly exiting abnormally.</p>
 
       <p>The value of <code class="directive"><a href="#fcgidspawnscore">FcgidSpawnScore</a></code>
-      is added to the score for every spawned application process.  The value of 
+      is added to the score for every spawned application process.  The value of
       <code class="directive"><a href="#fcgidterminationscore">FcgidTerminationScore</a></code> is added
       to the score for every terminated application process.  The value of
       <code class="directive"><a href="#fcgidtimescore">FcgidTimeScore</a></code> is subtracted
@@ -1182,13 +1182,13 @@
 
       <p>When the current score is higher than the value of
       <code class="directive">FcgidSpawnScoreUpLimit</code>, no additional application
-      processes will be spawned; subsequent requests must wait until an existing 
+      processes will be spawned; subsequent requests must wait until an existing
       process is free or until the score decreases below the limit.</p>
 
       <p>If the limit is reached under normal load, it may not be sufficient to
-      simply increase the limit, as that would only delay the amount of time 
-      before the limit is reached again.  Decrease the value of 
-      <code class="directive"><a href="#fcgidspawnscore">FcgidSpawnScore</a></code> and/or 
+      simply increase the limit, as that would only delay the amount of time
+      before the limit is reached again.  Decrease the value of
+      <code class="directive"><a href="#fcgidspawnscore">FcgidSpawnScore</a></code> and/or
       <code class="directive"><a href="#fcgidterminationscore">FcgidTerminationScore</a></code>, or
       increase the value of <code class="directive"><a href="#fcgidtimescore">FcgidTimeScore</a></code>,
       to allow a higher rate of spawning.</p>
@@ -1206,7 +1206,7 @@
 <tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
 </table>
       <p>Lower values of this directive increase the allowed spawn rate.  Negative
-      values can be useful in some circumstances, such as allowing process 
+      values can be useful in some circumstances, such as allowing process
       replacement without increasing the score.</p>
 
       <p>Refer to the <code class="directive"><a href="#fcgidspawnscoreuplimit">FcgidSpawnScoreUpLimit</a></code>
@@ -1216,7 +1216,7 @@
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="FcgidTimeScore" id="FcgidTimeScore">FcgidTimeScore</a> <a name="fcgidtimescore" id="fcgidtimescore">Directive</a></h2>
 <table class="directive">
-<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Amount subtracted from process activity score each 
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Amount subtracted from process activity score each
     second</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidTimeScore <em>value</em></code></td></tr>
 <tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>FcgidTimeScore 1</code></td></tr>
@@ -1231,11 +1231,29 @@
     
 </div>
 <div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="FcgidWin32PreventOrphans" id="FcgidWin32PreventOrphans">FcgidWin32PreventOrphans</a> <a name="fcgidwin32preventorphans" id="fcgidwin32preventorphans">Directive</a></h2>
+<table class="directive">
+<tr><th><a href="directive-dict.html#Description">Description:</a></th><td>Job Control orphan prevention for fcgi workers.</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidWin32PreventOrphans</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>[disabled]</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
+<tr><th><a href="directive-dict.html#Module">Module:</a></th><td>mod_fcgid</td></tr>
+</table>
+      <p>Uses Job Control Objects on Windows, only, to enforce shutdown of all
+      fcgi processes created by the httpd worker when the httpd worker has been
+      terminated. Processes terminated in this way do not have the opportunity
+      to clean up gracefully, complete pending disk writes, or similar closure
+      transactions, therefore this behavior is experimental and disabled, by
+      default.</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
 <div class="directive-section"><h2><a name="FcgidWrapper" id="FcgidWrapper">FcgidWrapper</a> <a name="fcgidwrapper" id="fcgidwrapper">Directive</a></h2>
 <table class="directive">
 <tr><th><a href="directive-dict.html#Description">Description:</a></th><td>The CGI wrapper setting</td></tr>
 <tr><th><a href="directive-dict.html#Syntax">Syntax:</a></th><td><code>FcgidWrapper <em>command</em> [ <em>suffix</em> ] [ virtual ]</code></td></tr>
-<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code><em>none</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">Default:</a></th><td><code>none</code></td></tr>
 <tr><th><a href="directive-dict.html#Context">Context:</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
 <tr><th><a href="directive-dict.html#Override">Override:</a></th><td>FileInfo</td></tr>
 <tr><th><a href="directive-dict.html#Status">Status:</a></th><td>External</td></tr>
@@ -1274,6 +1292,6 @@
 <div class="bottomlang">
 <p><span>Available Languages: </span><a href="../en/mod/mod_fcgid.html" title="English">&nbsp;en&nbsp;</a></p>
 </div><div id="footer">
-<p class="apache">Copyright 2011 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
+<p class="apache">Copyright 2012 The Apache Software Foundation.<br />Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.</p>
 <p class="menu"><a href="../mod/">Modules</a> | <a href="../mod/directives.html">Directives</a> | <a href="../faq/">FAQ</a> | <a href="../glossary.html">Glossary</a> | <a href="../sitemap.html">Sitemap</a></p></div>
 </body></html>
