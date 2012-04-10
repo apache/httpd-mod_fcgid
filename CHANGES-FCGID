@@ -15,7 +15,7 @@ Changes with mod_fcgid 2.3.7
 
   *) Solve latency/cogestion of resolving effective user file access rights
      when no such info is desired, for config related filename stats. 
-     PR: 51560 [Thangaraj AntonyCrouse <thangaraj gmail.com>, William Rowe]
+     PR: 51020 [Thangaraj AntonyCrouse <thangaraj gmail.com>, William Rowe]
 
   *) Fix regression in 2.3.6 which broke process controls when using vhost-
      specific configuration.  [Jeff Trawick]
