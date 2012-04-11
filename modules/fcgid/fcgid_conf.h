@@ -255,7 +255,7 @@ const char *set_max_requests_per_process(cmd_parms * cmd, void *dummy,
 
 #ifdef WIN32
 const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
-                                              char *arg);
+                                              int arg);
 #endif
 
 const char *set_cmd_options(cmd_parms *cmd, void *dummy,

@@ -896,10 +896,10 @@ static const command_rec fcgid_cmds[] = {
                   RSRC_CONF,
                   "scan interval for zombie process"),
 #ifdef WIN32
-    AP_INIT_NO_ARGS("FcgidWin32PreventOrphans",
-                    set_win32_prevent_process_orphans, NULL, RSRC_CONF,
-                    "Prevented fcgi process orphaning during Apache worker "
-                    "abrupt shutdowns [see documentation]"),
+    AP_INIT_FLAG("FcgidWin32PreventOrphans",
+                 set_win32_prevent_process_orphans, NULL, RSRC_CONF,
+                 "Prevented fcgi process orphaning during Apache worker "
+                 "abrupt shutdowns [see documentation]"),
 #endif
 
     /* The following directives are all deprecated in favor

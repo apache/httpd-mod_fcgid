@@ -1126,8 +1126,8 @@
   <directivesynopsis>
     <name>FcgidWin32PreventOrphans</name>
     <description>Job Control orphan prevention for fcgi workers.</description>
-    <syntax>FcgidWin32PreventOrphans</syntax>
-    <default>[disabled]</default>
+    <syntax>FcgidWin32PreventOrphans <em>On|Off</em></syntax>
+    <default>FcgidWin32PreventOrphans Off</default>
     <contextlist><context>server config</context></contextlist>
     <usage>
       <p>Uses Job Control Objects on Windows, only, to enforce shutdown of all

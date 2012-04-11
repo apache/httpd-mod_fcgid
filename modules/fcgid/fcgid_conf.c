@@ -770,7 +770,7 @@ const char *set_access_authoritative(cmd_parms * cmd,
  *
  */
 const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
-                                              char *arg)
+                                              int arg)
 {
     server_rec *s = cmd->server;
     fcgid_server_conf *config = ap_get_module_config(s->module_config,
@@ -781,7 +781,7 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
         return err;
     }
 
-    if (config->hJobObjectForAutoCleanup == NULL) {
+    if (arg && config->hJobObjectForAutoCleanup == NULL) {
         /* Create Win32 job object to prevent CGI process oprhaning
          */
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = { 0 };
