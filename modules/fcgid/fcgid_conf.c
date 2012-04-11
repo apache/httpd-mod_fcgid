@@ -776,6 +776,7 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
     fcgid_server_conf *config = ap_get_module_config(s->module_config,
                                                      &fcgid_module);
     const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+#define SETUP_ERR_MSG "Error enabling CGI process orphan prevention"
 
     if (err != NULL) {
         return err;
@@ -788,10 +789,9 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
         config->hJobObjectForAutoCleanup = CreateJobObject(NULL, NULL);
 
         if (config->hJobObjectForAutoCleanup == NULL) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, apr_get_os_error(), NULL,
-                         "mod_fcgid: Error enabling CGI process orphan "
-                         "prevention: unable to create job object.");
-            return NULL;
+            ap_log_perror(APLOG_MARK, APLOG_STARTUP|APLOG_ERR, apr_get_os_error(),
+                          cmd->pool, "mod_fcgid: unable to create job object.");
+            return SETUP_ERR_MSG;
         }
 
         /* Set job info so that all spawned CGI processes are associated
@@ -802,16 +802,12 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
         if (SetInformationJobObject(config->hJobObjectForAutoCleanup,
                                     JobObjectExtendedLimitInformation,
                                     &job_info, sizeof(job_info)) == 0) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, apr_get_os_error(), NULL,
-                         "mod_fcgid: Error enabling CGI process orphan "
-                         "prevention: unable to set job object information.");
+            ap_log_perror(APLOG_MARK, APLOG_STARTUP|APLOG_ERR, apr_get_os_error(),
+                          cmd->pool, "mod_fcgid: unable to set job object information.");
             CloseHandle(config->hJobObjectForAutoCleanup);
             config->hJobObjectForAutoCleanup = NULL;
-            return NULL;
+            return SETUP_ERR_MSG;
         }
-
-        ap_log_error(APLOG_MARK, APLOG_INFO, 0, NULL,
-                     "mod_fcgid: Enabled CGI process orphan prevention flag.");
     }
 
     return NULL;
