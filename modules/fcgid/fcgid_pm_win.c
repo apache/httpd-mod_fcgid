@@ -282,7 +282,7 @@ apr_status_t procmgr_stop_procmgr(void *server)
         }
     }
 
-    /* Cleanup the Job object if present */
+    /* Clean up the Job object if present */
     conf = ap_get_module_config(((server_rec*)server)->module_config,
                                 &fcgid_module);
 
