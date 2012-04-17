@@ -514,13 +514,13 @@ static int add_request_body(request_rec *r, apr_pool_t *request_pool,
 
 	
 
-        while((bucket_input = APR_BRIGADE_FIRST(input_brigade)) != APR_BRIGADE_SENTINEL(input_brigade)) {
+        while ((bucket_input = APR_BRIGADE_FIRST(input_brigade)) != APR_BRIGADE_SENTINEL(input_brigade)) {
             const char *data;
             apr_size_t len;
             apr_bucket *bucket_stdin;
 
             ++loop_counter;
-            if((loop_counter % FCGID_BRIGADE_CLEAN_STEP) == 0) {
+            if ((loop_counter % FCGID_BRIGADE_CLEAN_STEP) == 0) {
                 apr_brigade_cleanup(tmp_brigade);
             }
             APR_BUCKET_REMOVE(bucket_input);
