@@ -249,6 +249,7 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
                 sizeof(procnode->socket_path));
 
     /* truncation already checked for in handler or FcgidWrapper parser */
+    AP_DEBUG_ASSERT(wargv[0] != NULL);
     AP_DEBUG_ASSERT(strlen(wargv[0]) < sizeof(procnode->executable_path));
     apr_cpystrn(procnode->executable_path, wargv[0],
                 sizeof(procnode->executable_path));
