@@ -749,6 +749,18 @@ const char *set_access_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
+fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative)
+{
+    fcgid_dir_conf *config =
+        ap_get_module_config(r->per_dir_config, &fcgid_module);
+
+    if (config != NULL && config->access_info != NULL) {
+        *authoritative = config->access_authoritative;
+        return config->access_info;
+    }
+
+    return NULL;
+}
 
 #ifdef WIN32
 /* FcgidWin32PreventOrphans
@@ -813,19 +825,6 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
     return NULL;
 }
 #endif /* WIN32*/
-
-fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative)
-{
-    fcgid_dir_conf *config =
-        ap_get_module_config(r->per_dir_config, &fcgid_module);
-
-    if (config != NULL && config->access_info != NULL) {
-        *authoritative = config->access_authoritative;
-        return config->access_info;
-    }
-
-    return NULL;
-}
 
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                                const char *wrapper_cmdline,
