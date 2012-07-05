@@ -320,6 +320,10 @@ handle_request_ipc(request_rec *r, int role,
         return cond_status;
     }
 
+    if (role == FCGI_AUTHORIZER) {
+        return cond_status;
+    }
+
     /* Check redirect */
     location = apr_table_get(r->headers_out, "Location");
 
@@ -347,9 +351,8 @@ handle_request_ipc(request_rec *r, int role,
     }
 
     /* Now pass to output filter */
-    if (role == FCGI_RESPONDER
-        && (rv = ap_pass_brigade(r->output_filters,
-                                 brigade_stdout)) != APR_SUCCESS) {
+    if ((rv = ap_pass_brigade(r->output_filters,
+                              brigade_stdout)) != APR_SUCCESS) {
         if (!APR_STATUS_IS_ECONNABORTED(rv)) {
             ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                           "mod_fcgid: ap_pass_brigade failed in "
