@@ -6,6 +6,10 @@ Changes with mod_fcgid 2.3.8
      treat Location headers returned by scripts as an error since
      redirections are not meaningful in this mode.  [Chris Darroch]
 
+  *) Merge access control hook function logic into a common base, with
+     improved comments and logging, to reduce code duplication and
+     simplify future maintenance.  [Chris Darroch]
+
 Changes with mod_fcgid 2.3.7
 
   *) Introduce FcgidWin32PreventOrphans directive on Windows to use OS
