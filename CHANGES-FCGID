@@ -1,18 +1,18 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.8
 
-  *) Avoid making internal sub-requests and processing Location headers
-     when in FCGI_AUTHORIZER mode, as the auth hook functions already
-     treat Location headers returned by scripts as an error since
-     redirections are not meaningful in this mode.  [Chris Darroch]
+  *) Conform script response parsing with mod_cgid and ensure no response
+     body is sent when ap_meets_conditions() determines that request
+     conditions are met.  [Chris Darroch]
 
   *) Merge access control hook function logic into a common base, with
      improved comments and logging, to reduce code duplication and
      simplify future maintenance.  [Chris Darroch]
 
-  *) Conform script response parsing with mod_cgid and ensure no response
-     body is sent when ap_meets_conditions() determines that request
-     conditions are met.  [Chris Darroch]
+  *) Avoid making internal sub-requests and processing Location headers
+     when in FCGI_AUTHORIZER mode, as the auth hook functions already
+     treat Location headers returned by scripts as an error since
+     redirections are not meaningful in this mode.  [Chris Darroch]
 
 Changes with mod_fcgid 2.3.7
 
