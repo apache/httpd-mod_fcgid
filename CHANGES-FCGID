@@ -10,6 +10,10 @@ Changes with mod_fcgid 2.3.8
      improved comments and logging, to reduce code duplication and
      simplify future maintenance.  [Chris Darroch]
 
+  *) Conform script response parsing with mod_cgid and ensure no response
+     body is sent when ap_meets_conditions() determines that request
+     conditions are met.  [Chris Darroch]
+
 Changes with mod_fcgid 2.3.7
 
   *) Introduce FcgidWin32PreventOrphans directive on Windows to use OS

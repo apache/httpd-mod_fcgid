@@ -316,7 +316,42 @@ handle_request_ipc(request_rec *r, int role,
     /* Check the script header first; return immediately on error. */
     if ((cond_status =
          ap_scan_script_header_err_core(r, sbuf, getsfunc_fcgid_BRIGADE,
-                                        brigade_stdout)) >= 400) {
+                                        brigade_stdout))) {
+        /*
+         * cond_status could be HTTP_NOT_MODIFIED in the case that the FCGI
+         * script does not set an explicit status and ap_meets_conditions,
+         * which is called by ap_scan_script_header_err_brigade, detects that
+         * the conditions of the requests are met and the response is
+         * not modified.
+         * In this case set r->status and return OK in order to prevent
+         * running through the error processing stack as this would
+         * break with mod_cache, if the conditions had been set by
+         * mod_cache itself to validate a stale entity.
+         * BTW: We circumvent the error processing stack anyway if the
+         * FCGI script set an explicit status code (whatever it is) and
+         * the only possible values for cond_status here are:
+         *
+         * HTTP_NOT_MODIFIED          (set by ap_meets_conditions)
+         * HTTP_PRECONDITION_FAILED   (set by ap_meets_conditions)
+         * HTTP_GATEWAY_TIME_OUT      (script timed out, returned no headers)
+         * HTTP_INTERNAL_SERVER_ERROR (if something went wrong during the
+         * processing of the response of the FCGI script, e.g broken headers
+         * or a crashed FCGI process).
+         */
+        if (cond_status == HTTP_NOT_MODIFIED) {
+            /* We need to remove our fcgid_filter before returning this
+             * status and code; otherwise, when ap_process_async_request()
+             * invokes ap_finalize_request_protocol() and that calls
+             * ap_pass_brigade(), fcgid_filter notices it has an empty
+             * brigade and returns without calling ap_pass_brigade() itself,
+             * which incorrectly circumvents the standard output filters.
+             */
+            ap_remove_output_filter(r->output_filters);
+
+            r->status = cond_status;
+            return OK;
+        }
+
         return cond_status;
     }
 
@@ -340,17 +375,32 @@ handle_request_ipc(request_rec *r, int role,
          */
         apr_table_unset(r->headers_in, "Content-Length");
 
+        /* Setting this Location header value causes handle_request() to
+         * invoke ap_internal_redirect_handler(); that calls
+         * internal_internal_redirect() which sets the new sub-request's
+         * r->output_filters back to r->proto_output_filters before
+         * running the sub-request's handler.  Because we return here
+         * without invoking ap_pass_brigade(), our fcgid_filter is ignored.
+         */
         *location_ptr = location;
-        return HTTP_OK;
+        return OK;
     }
     else if (location && r->status == 200) {
         /* XX Note that if a script wants to produce its own Redirect
          * body, it now has to explicitly *say* "Status: 302"
          */
+
+        /* This return code causes ap_process_async_request() to invoke
+         * ap_die(); that calls ap_send_error_response(), which resets
+         * r->output_filters back to r->proto_output_filters, thus removing
+         * our fcgid_filter from the output chain before making a final call
+         * to ap_finalize_request_protocol(), which passes the brigade to
+         * the standard output filters.
+         */
         return HTTP_MOVED_TEMPORARILY;
     }
 
-    /* Now pass to output filter */
+    /* Now pass any remaining response body data to output filters */
     if ((rv = ap_pass_brigade(r->output_filters,
                               brigade_stdout)) != APR_SUCCESS) {
         if (!APR_STATUS_IS_ECONNABORTED(rv)) {
@@ -469,7 +519,7 @@ handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
         ap_internal_redirect_handler(location, r);
     }
 
-    /* Retrun condition status */
+    /* Return condition status */
     return cond_status;
 }
 
