@@ -5,9 +5,7 @@ Changes with mod_fcgid 2.3.8
      body is sent when ap_meets_conditions() determines that request
      conditions are met.  [Chris Darroch]
 
-  *) Merge access control hook function logic into a common base, with
-     improved comments and logging, to reduce code duplication and
-     simplify future maintenance.  [Chris Darroch]
+  *) Improve logging in access control hook functions.  [Chris Darroch]
 
   *) Avoid making internal sub-requests and processing Location headers
      when in FCGI_AUTHORIZER mode, as the auth hook functions already
