@@ -459,7 +459,7 @@ handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
             }
 
             /* Send a spawn request if I can't get a process slot */
-            procmgr_post_spawn_cmd(&fcgi_request, r);
+            procmgr_send_spawn_cmd(&fcgi_request, r);
         }
 
         /* Connect to the fastcgi server */

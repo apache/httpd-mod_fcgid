@@ -354,7 +354,7 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * configpool)
     fcgid_server_conf *sconf = ap_get_module_config(main_server->module_config,
                                                     &fcgid_module);
 
-    /* Calculate procmgr_peek_cmd wake up interval */
+    /* Calculate procmgr_fetch_cmd wake up interval */
     g_wakeup_timeout = fcgid_min(sconf->error_scan_interval,
                                  sconf->busy_scan_interval);
     g_wakeup_timeout = fcgid_min(sconf->idle_scan_interval,
@@ -457,7 +457,7 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }
 
-apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
+apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                                     request_rec * r)
 {
     apr_status_t rv;
@@ -515,7 +515,7 @@ apr_status_t procmgr_finish_notify(server_rec * main_server)
 }
 
 #define FOR_READ 1
-apr_status_t procmgr_peek_cmd(fcgid_command * command,
+apr_status_t procmgr_fetch_cmd(fcgid_command * command,
                               server_rec * main_server)
 {
     apr_status_t rv;

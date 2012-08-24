@@ -41,9 +41,9 @@ typedef struct {
 
 void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
                             fcgid_cmd_conf *cmd_conf);
-apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
+apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                                     request_rec * r);
-apr_status_t procmgr_peek_cmd(fcgid_command * command,
+apr_status_t procmgr_fetch_cmd(fcgid_command * command,
                               server_rec * main_server);
 apr_status_t procmgr_finish_notify(server_rec * main_server);
 
