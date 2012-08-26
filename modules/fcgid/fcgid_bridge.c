@@ -447,19 +447,19 @@ handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
             if (bucket_ctx->procnode)
                 break;
 
-            /* Avoid sleeping the very first time through if there are no
-               busy processes; the problem is just that we haven't spawned
-               anything yet, so waiting is pointless */
-            if (i > 0 || j > 0 || count_busy_processes(r, &fcgi_request)) {
-                apr_sleep(apr_time_from_sec(1));
-
+            /* Send a spawn request if I can't get a process slot */
+            /* procmgr_send_spawn_cmd() return APR_SUCCESS if a process is created */
+            if( procmgr_send_spawn_cmd(&fcgi_request, r)==APR_SUCCESS ) {
                 bucket_ctx->procnode = apply_free_procnode(r, &fcgi_request);
                 if (bucket_ctx->procnode)
                     break;
             }
-
-            /* Send a spawn request if I can't get a process slot */
-            procmgr_send_spawn_cmd(&fcgi_request, r);
+            else {
+                apr_sleep(apr_time_from_sec(1));
+                bucket_ctx->procnode = apply_free_procnode(r, &fcgi_request);
+                if (bucket_ctx->procnode)
+                    break;
+            }
         }
 
         /* Connect to the fastcgi server */

@@ -460,9 +460,10 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                                     request_rec * r)
 {
-    apr_status_t rv;
+    apr_status_t rv,result;
     char notifybyte;
     apr_size_t nbytes = sizeof(*command);
+    result = APR_SUCCESS;
 
     /* Get the global mutex before posting the request */
     if ((rv = apr_global_mutex_lock(g_pipelock)) != APR_SUCCESS) {
@@ -477,6 +478,7 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
         /* Just print some error log and fall through */
         ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                       "mod_fcgid: can't write spawn command");
+        result = rv;
     } else {
         /* Wait the finish notify while send the request successfully */
         nbytes = sizeof(notifybyte);
@@ -485,7 +487,9 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                            &nbytes)) != APR_SUCCESS) {
             ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                           "mod_fcgid: can't get notify from process manager");
-        }
+            result = rv;
+        } else if( nbytes!=PROCMGR_PROC_CREATED )
+            result = APR_CHILD_NOTDONE;
     }
 
     /* Release the lock */
@@ -495,17 +499,16 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
         exit(0);
     }
 
-    return APR_SUCCESS;
+    return result;
 }
 
-apr_status_t procmgr_finish_notify(server_rec * main_server)
+apr_status_t procmgr_finish_notify(server_rec * main_server, char proc_created)
 {
     apr_status_t rv;
-    char notifybyte = 'p';
-    apr_size_t nbytes = sizeof(notifybyte);
+    apr_size_t nbytes = sizeof(proc_created);
 
     if ((rv =
-         apr_file_write(g_pm_write_pipe, &notifybyte,
+         apr_file_write(g_pm_write_pipe, &proc_created,
                         &nbytes)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: can't send notify from process manager");

@@ -45,7 +45,10 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                                     request_rec * r);
 apr_status_t procmgr_fetch_cmd(fcgid_command * command,
                               server_rec * main_server);
-apr_status_t procmgr_finish_notify(server_rec * main_server);
+
+#define PROCMGR_PROC_CREATED 0
+#define PROCMGR_PROC_NOT_CREATED 1
+apr_status_t procmgr_finish_notify(server_rec * main_server, char proc_created);
 
 apr_status_t procmgr_child_init(server_rec * main_server,
                                 apr_pool_t * pchild);

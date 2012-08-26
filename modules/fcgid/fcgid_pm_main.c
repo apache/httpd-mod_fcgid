@@ -527,7 +527,7 @@ static void default_proc_env(apr_table_t * e)
 
 /* End of common to util_script.c */
 
-static void
+static apr_status_t
 fastcgi_spawn(fcgid_command * command, server_rec * main_server,
               apr_pool_t * configpool)
 {
@@ -547,7 +547,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
         proctable_pm_unlock(main_server);
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
                      "mod_fcgid: too much processes, please increase FCGID_MAX_APPLICATION");
-        return;
+        return APR_CHILD_NOTDONE;
     }
     procnode = &proctable_array[free_list_header->next_index];
     free_list_header->next_index = procnode->next_index;
@@ -589,7 +589,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
 
         ap_log_error(APLOG_MARK, APLOG_WARNING, rv, main_server,
                      "mod_fcgid: can't create pool for process");
-        return;
+        return APR_CHILD_NOTDONE;
     }
     /* Set up longer, system defaults before falling into parsing fixed-limit
      * request-by-request variables, so if any are overriden, they preempt
@@ -614,7 +614,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
         apr_pool_destroy(procnode->proc_pool);
         link_node_to_list(main_server, free_list_header,
                           procnode, proctable_array);
-        return;
+        return APR_CHILD_NOTDONE;
     }
     else {
         /* The job done */
@@ -628,6 +628,7 @@ fastcgi_spawn(fcgid_command * command, server_rec * main_server,
                      procnode->proc_id.pid);
         register_spawn(main_server, procnode);
     }
+    return APR_SUCCESS;
 }
 
 apr_status_t pm_main(server_rec * main_server, apr_pool_t * configpool)
@@ -635,15 +636,17 @@ apr_status_t pm_main(server_rec * main_server, apr_pool_t * configpool)
     fcgid_command command;
 
     while (1) {
+        char proc_created = PROCMGR_PROC_NOT_CREATED;
         if (procmgr_must_exit())
             break;
 
         /* Wait for command */
         if (procmgr_fetch_cmd(&command, main_server) == APR_SUCCESS) {
             if (is_spawn_allowed(main_server, &command))
-                fastcgi_spawn(&command, main_server, configpool);
+                if( fastcgi_spawn(&command, main_server, configpool)==APR_SUCCESS )
+                    proc_created = PROCMGR_PROC_CREATED;
 
-            procmgr_finish_notify(main_server);
+            procmgr_finish_notify(main_server, proc_created);
         }
 
         /* Move matched node to error list */
