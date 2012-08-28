@@ -136,8 +136,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     fcgid_server_conf *sconf =
         ap_get_module_config(r->server->module_config, &fcgid_module);
 
-    memset(command, 0, sizeof(*command));
-
     /* no truncation should ever occur */
     AP_DEBUG_ASSERT(sizeof command->cgipath > strlen(cmd_conf->cgipath));
     apr_cpystrn(command->cgipath, cmd_conf->cgipath, sizeof command->cgipath);

@@ -427,8 +427,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     fcgid_server_conf *sconf =
         ap_get_module_config(r->server->module_config, &fcgid_module);
 
-    memset(command, 0, sizeof(*command));
-
     /* suEXEC check */
     if ((ugid = ap_run_get_suexec_identity(r))) {
         command->uid = ugid->uid;

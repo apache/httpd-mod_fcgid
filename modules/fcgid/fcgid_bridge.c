@@ -429,14 +429,12 @@ handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
     bucket_ctx->ipc.request = r;
     apr_pool_cleanup_register(r->pool, bucket_ctx,
                               bucket_ctx_cleanup, apr_pool_cleanup_null);
+    procmgr_init_spawn_cmd(&fcgi_request, r, cmd_conf);
 
     /* Try to get a connected ipc handle */
     for (i = 0; i < FCGID_REQUEST_COUNT; i++) {
         /* Apply a free process slot, send a spawn request if I can't get one */
         for (j = 0; j < FCGID_APPLY_TRY_COUNT; j++) {
-            /* Init spawn request */
-            procmgr_init_spawn_cmd(&fcgi_request, r, cmd_conf);
-
             bucket_ctx->ipc.connect_timeout =
                 fcgi_request.cmdopts.ipc_connect_timeout;
             bucket_ctx->ipc.communation_timeout =
