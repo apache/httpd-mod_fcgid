@@ -486,7 +486,7 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
             ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
                           "mod_fcgid: can't get notify from process manager");
             result = rv;
-        } else if( nbytes!=PROCMGR_PROC_CREATED )
+        } else if( notifybyte!=PROCMGR_PROC_CREATED )
             result = APR_CHILD_NOTDONE;
     }
 
