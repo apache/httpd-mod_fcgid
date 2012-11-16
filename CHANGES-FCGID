@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.8
 
+  *) Honor quoted FcgidCmdOptions arguments (notably for InitialEnv
+     assignments).  PR 51657  [William Rowe]
+
   *) Conform script response parsing with mod_cgid and ensure no response
      body is sent when ap_meets_conditions() determines that request
      conditions are met.  [Chris Darroch]
@@ -13,7 +16,7 @@ Changes with mod_fcgid 2.3.8
      redirections are not meaningful in this mode.  [Chris Darroch]
      
   *) Avoid a 1 s sleep when spawning wrapper. PR 54000
-  [Bartosz Kwitniewski <zerg2000-apachebug astral org pl>]
+     [Bartosz Kwitniewski <zerg2000-apachebug astral org pl>]
 
 Changes with mod_fcgid 2.3.7
 

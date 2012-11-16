@@ -993,14 +993,14 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
     }
 
     while (*args) {
-        const char *option = ap_getword_white(cmd->pool, &args);
+        const char *option = ap_getword_conf(cmd->pool, &args);
         const char *val;
 
         /* TODO: Consider supporting BusyTimeout.
          */
 
         if (!strcasecmp(option, "ConnectTimeout")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "ConnectTimeout must have an argument";
             }
@@ -1009,7 +1009,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "IdleTimeout")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "IdleTimeout must have an argument";
             }
@@ -1021,7 +1021,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
             char *name;
             char *eql;
 
-            name = ap_getword_white(cmd->pool, &args);
+            name = ap_getword_conf(cmd->pool, &args);
             if (!strlen(name)) {
                 return "InitialEnv must have an argument";
             }
@@ -1040,7 +1040,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "IOTimeout")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "IOTimeout must have an argument";
             }
@@ -1049,7 +1049,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MaxProcesses")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MaxProcesses must have an argument";
             }
@@ -1058,7 +1058,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MaxProcessLifetime")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MaxProcessLifetime must have an argument";
             }
@@ -1067,7 +1067,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MaxRequestsPerProcess")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MaxRequestsPerProcess must have an argument";
             }
@@ -1076,7 +1076,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MinProcesses")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MinProcesses must have an argument";
             }
