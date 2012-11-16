@@ -831,11 +831,12 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                                const char *extension,
                                const char *virtual)
 {
-    const char *path, *tmp;
+    const char *path;
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_cmd_conf *wrapper = NULL;
     fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
+    char **args;
 
     /* Sanity checks */
 
@@ -854,8 +855,9 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return "Invalid wrapper file extension";
 
     /* Get wrapper path */
-    tmp = wrapper_cmdline;
-    path = ap_getword_white(cmd->temp_pool, &tmp);
+    apr_tokenize_to_argv(wrapper_cmdline, &args, cmd->temp_pool);
+    path = apr_pstrdup(cmd->pool, args[0]);
+
     if (path == NULL || *path == '\0')
         return "Invalid wrapper config";
 

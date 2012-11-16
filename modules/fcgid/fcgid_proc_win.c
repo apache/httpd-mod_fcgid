@@ -69,22 +69,10 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     apr_file_t *file;
     const char * const *proc_environ;
     char sock_path[FCGID_PATH_MAX];
-    int argc;
-    char const * wargv[APACHE_ARG_MAX + 1], *word; /* For wrapper */
-    const char *tmp;
+    const char **wargv;
 
     /* Build wrapper args */
-    argc = 0;
-    tmp = cmdline;
-    while (1) {
-        word = ap_getword_white(procnode->proc_pool, &tmp);
-        if (word == NULL || *word == '\0')
-            break;
-        if (argc >= APACHE_ARG_MAX)
-            break;
-        wargv[argc++] = word;
-    }
-    wargv[argc] = NULL;
+    apr_tokenize_to_argv(cmdline, (char ***)&wargv, procnode->proc_pool);
 
     memset(&SecurityAttributes, 0, sizeof(SecurityAttributes));
 

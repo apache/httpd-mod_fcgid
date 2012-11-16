@@ -204,23 +204,11 @@ apr_status_t proc_spawn_process(const char *cmdline, fcgid_proc_info *procinfo,
     char **proc_environ;
     struct sockaddr_un unix_addr;
     apr_procattr_t *procattr = NULL;
-    int argc, len;
-    const char *wargv[APACHE_ARG_MAX + 1];
-    const char *word; /* For wrapper */
-    const char *tmp;
+    int len;
+    const char **wargv;
 
     /* Build wrapper args */
-    argc = 0;
-    tmp = cmdline;
-    while (1) {
-        word = ap_getword_white(procnode->proc_pool, &tmp);
-        if (word == NULL || *word == '\0')
-            break;
-        if (argc >= APACHE_ARG_MAX)
-            break;
-        wargv[argc++] = word;
-    }
-    wargv[argc] = NULL;
+    apr_tokenize_to_argv(cmdline, (char ***)&wargv, procnode->proc_pool);
 
     /*
        Create UNIX domain socket before spawn

@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.8
 
+  *) Correctly parse quotation and escaped spaces in FcgidWrapper command
+     line argument, as currently documented.  PR 51194  [William Rowe]
+
   *) Honor quoted FcgidCmdOptions arguments (notably for InitialEnv
      assignments).  PR 51657  [William Rowe]
 
