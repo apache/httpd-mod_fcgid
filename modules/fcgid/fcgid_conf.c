@@ -621,9 +621,17 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+    const char *path;
+    char **args;
+
+    /* Get wrapper path */
+    apr_tokenize_to_argv(authenticator, &args, cmd->temp_pool);
+
+    if (*args == NULL || **args == '\0')
+        return "Invalid authenticator config";
 
     /* Fetch only required file details inode + device */
-    if ((rv = apr_stat(&finfo, authenticator, APR_FINFO_IDENT,
+    if ((rv = apr_stat(&finfo, args[0], APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Authenticator", authenticator, rv);
     }
@@ -632,10 +640,8 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     dirconfig->authenticator_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authenticator_info));
-    dirconfig->authenticator_info->cgipath =
-        apr_pstrdup(cmd->pool, authenticator);
-    dirconfig->authenticator_info->cmdline =
-        dirconfig->authenticator_info->cgipath;
+    dirconfig->authenticator_info->cgipath = apr_pstrdup(cmd->pool, args[0]);
+    dirconfig->authenticator_info->cmdline = authenticator;
     dirconfig->authenticator_info->inode = finfo.inode;
     dirconfig->authenticator_info->deviceid = finfo.device;
     return NULL;
@@ -670,9 +676,17 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+    const char *path;
+    char **args;
+
+    /* Get wrapper path */
+    apr_tokenize_to_argv(authorizer, &args, cmd->temp_pool);
+
+    if (*args == NULL || **args == '\0')
+        return "Invalid authorizer config";
 
     /* Fetch only required file details inode + device */
-    if ((rv = apr_stat(&finfo, authorizer, APR_FINFO_IDENT,
+    if ((rv = apr_stat(&finfo, args[0], APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Authorizer", authorizer, rv);
     }
@@ -681,10 +695,8 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     dirconfig->authorizer_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authorizer_info));
-    dirconfig->authorizer_info->cgipath =
-        apr_pstrdup(cmd->pool, authorizer);
-    dirconfig->authorizer_info->cmdline =
-        dirconfig->authorizer_info->cgipath;
+    dirconfig->authorizer_info->cgipath = apr_pstrdup(cmd->pool, args[0]);
+    dirconfig->authorizer_info->cmdline = authorizer;
     dirconfig->authorizer_info->inode = finfo.inode;
     dirconfig->authorizer_info->deviceid = finfo.device;
     return NULL;
@@ -719,9 +731,17 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+    const char *path;
+    char **args;
+
+    /* Get wrapper path */
+    apr_tokenize_to_argv(access, &args, cmd->temp_pool);
+
+    if (*args == NULL || **args == '\0')
+        return "Invalid access config";
 
     /* Fetch only required file details inode + device */
-    if ((rv = apr_stat(&finfo, access, APR_FINFO_IDENT,
+    if ((rv = apr_stat(&finfo, args[0], APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Access checker", access, rv);
     }
@@ -730,10 +750,8 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     dirconfig->access_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->access_info));
-    dirconfig->access_info->cgipath =
-        apr_pstrdup(cmd->pool, access);
-    dirconfig->access_info->cmdline =
-        dirconfig->access_info->cgipath;
+    dirconfig->access_info->cgipath = apr_pstrdup(cmd->pool, args[0]);
+    dirconfig->access_info->cmdline = access;
     dirconfig->access_info->inode = finfo.inode;
     dirconfig->access_info->deviceid = finfo.device;
     return NULL;
