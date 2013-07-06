@@ -18,10 +18,8 @@
 #ifndef FCGID_CONF_H
 #define FCGID_CONF_H
 
-#include "apr_general.h" /* stringify */
-
 #define MODFCGID_COPYRIGHT \
-  "Copyright 2012 The Apache Software Foundation."
+  "Copyright 2013 The Apache Software Foundation."
 
 #define MODFCGID_VERSION_MAJOR  2
 #define MODFCGID_VERSION_MINOR  3
@@ -32,6 +30,14 @@
 #define MODFCGID_VERSION_DEVSTR "-dev"
 #else
 #define MODFCGID_VERSION_DEVSTR ""
+#endif
+
+/* APR_STRINGIFY is defined here, and also in apr_general.h, so wrap it */
+#ifndef APR_STRINGIFY
+/** Properly quote a value as a string in the C preprocessor */
+#define APR_STRINGIFY(n) APR_STRINGIFY_HELPER(n)
+/** Helper macro for APR_STRINGIFY */
+#define APR_STRINGIFY_HELPER(n) #n
 #endif
 
 #define MODFCGID_REVISION      APR_STRINGIFY(MODFCGID_VERSION_MAJOR) \

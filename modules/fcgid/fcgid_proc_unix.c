@@ -19,7 +19,8 @@
 #include <sys/un.h>
 #include <sys/types.h>
 #include <netinet/tcp.h>        /* For TCP_NODELAY */
-#include <sys/poll.h>
+//#include <sys/poll.h>
+#include <poll.h>
 #include <sys/stat.h>
 #define CORE_PRIVATE
 #include "httpd.h"
