@@ -26,7 +26,7 @@ apr_status_t fcgid_filter(ap_filter_t * f, apr_bucket_brigade * bb)
 {
     apr_status_t rv;
     apr_bucket_brigade *tmp_brigade;
-    int save_size = 0;
+    apr_size_t save_size = 0;
     conn_rec *c = f->c;
     server_rec *s = f->r->server;
     fcgid_server_conf *sconf = ap_get_module_config(s->module_config,

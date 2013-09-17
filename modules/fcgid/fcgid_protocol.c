@@ -25,7 +25,7 @@
 static size_t init_environment(char *buf, char **envp)
 {
     char *spliter;
-    int namelen, valuelen;
+    apr_size_t namelen, valuelen;
     char *cur_buf = buf;
     size_t buffer_size = 0;
 

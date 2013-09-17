@@ -621,7 +621,6 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
-    const char *path;
     char **args;
 
     /* Get wrapper path */
@@ -676,7 +675,6 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
-    const char *path;
     char **args;
 
     /* Get wrapper path */
@@ -731,7 +729,6 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
-    const char *path;
     char **args;
 
     /* Get wrapper path */
