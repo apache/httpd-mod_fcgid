@@ -1,6 +1,8 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.8
 
+  *) Add experimental cmake-based build system for Windows.  [Jeff Trawick]
+
   *) Correctly parse quotation and escaped spaces in FcgidWrapper and the
      AAA Authenticator/Authorizor/Access directives' command line argument,
      as currently documented.  PR 51194  [William Rowe]

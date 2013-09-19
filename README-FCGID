@@ -30,6 +30,8 @@ and proceed as usual.
 Win32 Build Instructions
 ------------------------
 
+1. Win32 build based on Visual Studio
+
 The windows packages prior to 2.2.7 (or 2.0.62) left out the file
 include\mod_log_config.h, just copy these from the source tree
 or you can export them from subversion, just change to your
@@ -90,6 +92,35 @@ Note that mod_fcgid.so needs to be added to the module installation
 lines in Makefile.win, or you must manually copy the .so module from 
 modules\fcgid\Release after compiling.
 
+2. Win32 build based on cmake:
+
+Note: This support is experimental and may not build mod_fcgid in a
+      manner compatible with the existing Windows build support.  The
+      build interfaces may change as feedback is received and bugs are
+      resolved.  Currently a .conf file is not created.
+
+Install httpd and APR to a common prefix, and point CMAKE_INSTALL_PREFIX
+to that prefix when configuring mod_fcgid.
+
+Example using the "NMake Makefiles" generator from a Visual Studio command
+prompt:
+
+  cd some-build-directory
+  cmake -G "NMake Makefiles" ^
+        -DCMAKE_INSTALL_PREFIX=C:\Apache246 ^
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
+        C:\path\to\fcgid-sources\modules\fcgid
+  nmake && nmake install
+
+The last argument to cmake in the example is the directory "modules\fcgid"
+within your svn checkout or tarball/zip extract of mod_fcgid.
+
+Add -DINSTALL_PDB=OFF to the cmake invocation to leave mod_fcgid.pdb (if
+generated) in the build directory.
+
+Add the following LoadModule directive to your configuration:
+
+  LoadModule fcgid_module modules/mod_fcgid.so
 
 Documentation Build
 -------------------
