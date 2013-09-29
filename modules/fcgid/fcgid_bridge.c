@@ -124,35 +124,6 @@ return_procnode(request_rec *r,
     proctable_unlock(r);
 }
 
-static int count_busy_processes(request_rec *r, fcgid_command *command)
-{
-    int result = 0;
-    fcgid_procnode *previous_node, *current_node, *next_node;
-    fcgid_procnode *proc_table = proctable_get_table_array();
-    fcgid_procnode *busy_list_header = proctable_get_busy_list();
-
-    proctable_lock(r);
-
-    previous_node = busy_list_header;
-    current_node = &proc_table[previous_node->next_index];
-    while (current_node != proc_table) {
-        if (current_node->inode == command->inode
-            && current_node->deviceid == command->deviceid
-            && !strcmp(current_node->cmdline, command->cmdline)
-            && current_node->vhost_id == command->vhost_id
-            && current_node->uid == command->uid
-            && current_node->gid == command->gid) {
-            result++;
-        }
-        next_node = &proc_table[current_node->next_index];
-        current_node = next_node;
-    }
-
-    proctable_unlock(r);
-
-    return result;
-}
-
 apr_status_t bucket_ctx_cleanup(void *thectx)
 {
     /* Cleanup jobs:
