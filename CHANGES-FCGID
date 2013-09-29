@@ -1,4 +1,7 @@
                                                          -*- coding: utf-8 -*-
+Changes with mod_fcgid 2.3.9
+
+
 Changes with mod_fcgid 2.3.8
 
   *) SECURITY: CVE-2013-4365 (cve.mitre.org)
