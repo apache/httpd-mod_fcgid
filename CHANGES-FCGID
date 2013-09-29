@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.8
 
+  *) SECURITY: CVE-2013-4365 (cve.mitre.org)
+     Fix possible heap buffer overwrite.  Reported and solved by:
+     [Robert Matthews <rob tigertech.com>]
+
   *) Add experimental cmake-based build system for Windows.  [Jeff Trawick]
 
   *) Correctly parse quotation and escaped spaces in FcgidWrapper and the

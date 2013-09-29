@@ -112,10 +112,12 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
     if (header.type == FCGI_STDERR) {
         char *logbuf = apr_bucket_alloc(APR_BUCKET_BUFF_SIZE, b->list);
         char *line;
+        apr_size_t hasput;
 
         memset(logbuf, 0, APR_BUCKET_BUFF_SIZE);
 
         hasread = 0;
+        hasput = 0;
         while (hasread < bodysize) {
             char *buffer;
             apr_size_t bufferlen, canput, willput;
@@ -130,9 +132,10 @@ static apr_status_t fcgid_header_bucket_read(apr_bucket * b,
 
             canput = fcgid_min(bufferlen, bodysize - hasread);
             willput =
-                fcgid_min(canput, APR_BUCKET_BUFF_SIZE - hasread - 1);
-            memcpy(logbuf + hasread, buffer, willput);
+                fcgid_min(canput, APR_BUCKET_BUFF_SIZE - hasput - 1);
+            memcpy(logbuf + hasput, buffer, willput);
             hasread += canput;
+            hasput += willput;
 
             /* Ignore the "canput" bytes */
             fcgid_ignore_bytes(ctx, canput);
