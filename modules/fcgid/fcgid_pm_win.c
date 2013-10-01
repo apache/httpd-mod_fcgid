@@ -150,6 +150,9 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         apr_cpystrn(command->server_hostname, r->server->server_hostname,
                     sizeof command->server_hostname);
     }
+    else {
+        command->server_hostname[0] = '\0';
+    }
 
     get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }
