@@ -1,4 +1,7 @@
                                                          -*- coding: utf-8 -*-
+Changes with mod_fcgid 2.3.10
+
+
 Changes with mod_fcgid 2.3.9
 
   *) Revert fix for PR 53693, added in 2.3.8 but undocumented.  Fix
