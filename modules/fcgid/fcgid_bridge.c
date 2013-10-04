@@ -124,6 +124,35 @@ return_procnode(request_rec *r,
     proctable_unlock(r);
 }
 
+static int count_busy_processes(request_rec *r, fcgid_command *command)
+{
+    int result = 0;
+    fcgid_procnode *previous_node, *current_node, *next_node;
+    fcgid_procnode *proc_table = proctable_get_table_array();
+    fcgid_procnode *busy_list_header = proctable_get_busy_list();
+
+    proctable_lock(r);
+
+    previous_node = busy_list_header;
+    current_node = &proc_table[previous_node->next_index];
+    while (current_node != proc_table) {
+        if (current_node->inode == command->inode
+            && current_node->deviceid == command->deviceid
+            && !strcmp(current_node->cmdline, command->cmdline)
+            && current_node->vhost_id == command->vhost_id
+            && current_node->uid == command->uid
+            && current_node->gid == command->gid) {
+            result++;
+        }
+        next_node = &proc_table[current_node->next_index];
+        current_node = next_node;
+    }
+
+    proctable_unlock(r);
+
+    return result;
+}
+
 apr_status_t bucket_ctx_cleanup(void *thectx)
 {
     /* Cleanup jobs:
@@ -416,19 +445,19 @@ handle_request(request_rec * r, int role, fcgid_cmd_conf *cmd_conf,
             if (bucket_ctx->procnode)
                 break;
 
-            /* Send a spawn request if I can't get a process slot */
-            /* procmgr_send_spawn_cmd() return APR_SUCCESS if a process is created */
-            if( procmgr_send_spawn_cmd(&fcgi_request, r)==APR_SUCCESS ) {
-                bucket_ctx->procnode = apply_free_procnode(r, &fcgi_request);
-                if (bucket_ctx->procnode)
-                    break;
-            }
-            else {
+            /* Avoid sleeping the very first time through if there are no
+               busy processes; the problem is just that we haven't spawned
+               anything yet, so waiting is pointless */
+            if (i > 0 || j > 0 || count_busy_processes(r, &fcgi_request)) {
                 apr_sleep(apr_time_from_sec(1));
+
                 bucket_ctx->procnode = apply_free_procnode(r, &fcgi_request);
                 if (bucket_ctx->procnode)
                     break;
             }
+
+            /* Send a spawn request if I can't get a process slot */
+            procmgr_send_spawn_cmd(&fcgi_request, r);
         }
 
         /* Connect to the fastcgi server */

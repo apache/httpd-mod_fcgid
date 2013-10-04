@@ -160,7 +160,6 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
 apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                                     request_rec * r)
 {
-     char *notifybyte = NULL;
     if (g_thread && g_msgqueue && !g_must_exit
         && g_reqlock && g_notifyqueue) {
         apr_status_t rv;
@@ -191,6 +190,8 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
             return rv;
         } else {
             /* Wait the respond from process manager */
+            char *notifybyte = NULL;
+
             if ((rv =
                  apr_queue_pop(g_notifyqueue,
                                (void **)&notifybyte)) != APR_SUCCESS) {
@@ -210,22 +211,13 @@ apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
         }
     }
 
-    if( notifybyte && *notifybyte==PROCMGR_PROC_CREATED )
-        return APR_SUCCESS;
-    else
-        return APR_CHILD_NOTDONE;
+    return APR_SUCCESS;
 }
 
-static char g_proc_created = PROCMGR_PROC_CREATED;
-static char g_proc_not_created = PROCMGR_PROC_NOT_CREATED;
-apr_status_t procmgr_finish_notify(server_rec * main_server, char proc_created)
+apr_status_t procmgr_finish_notify(server_rec * main_server)
 {
     apr_status_t rv;
     char *notify = NULL;
-    if( proc_created==PROCMGR_PROC_CREATED )
-        notify = &g_proc_created;
-    else
-        notify = &g_proc_not_created;
 
     if ((rv = apr_queue_push(g_notifyqueue, notify)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_EMERG, rv, main_server,
