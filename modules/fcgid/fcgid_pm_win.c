@@ -142,6 +142,8 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     AP_DEBUG_ASSERT(sizeof command->cmdline > strlen(cmd_conf->cmdline));
     apr_cpystrn(command->cmdline, cmd_conf->cmdline, sizeof command->cmdline);
 
+    command->inode = (apr_ino_t) -1;
+    command->deviceid = (dev_t) -1;
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
