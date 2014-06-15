@@ -61,9 +61,9 @@
   </summary>
 
   <!-- References to other documents or directives -->
-  <seealso><a href="../howto/cgi.html">Dynamic Content With CGI</a></seealso>
-  <seealso><module>mod_cgi</module></seealso>
-  <seealso><module>mod_cgid</module></seealso>
+  <seealso><a href="http://httpd.apache.org/docs/howto/cgi.html">Dynamic Content With CGI</a></seealso>
+  <seealso><a href="http://httpd.apache.org/docs/mod/mod_cgi.html">mod_cgi</a></seealso>
+  <seealso><a href="http://httpd.apache.org/docs/mod/mod_cgid.html">mod_cgid</a></seealso>
 
   <section id="upgrade">
     <title>Upgrade Notes</title>
