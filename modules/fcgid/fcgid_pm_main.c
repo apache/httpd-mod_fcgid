@@ -333,7 +333,11 @@ static void scan_errorlist(server_rec * main_server)
                                   current_node->proc_pool);
         }
         else {
++#ifndef WIN32
             ap_log_error(APLOG_MARK, APLOG_WARNING, 0, main_server,
++#else
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server,
++#endif
                          "mod_fcgid: process %" APR_PID_T_FMT
                          " graceful kill fail, sending SIGKILL",
                          current_node->proc_id.pid);
