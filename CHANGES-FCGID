@@ -1,6 +1,10 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.10
 
+  *) Use an alternate, lower severity log message when a failure to
+     forward a response is due to the client connection being aborted.
+     [Eric Covener]
+
   *) Windows: "graceful kill fail, sending SIGKILL" log message is now
      debug level instead of warning.  PR 54597.  [Mario Brandt]
 

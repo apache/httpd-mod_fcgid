@@ -403,11 +403,15 @@ handle_request_ipc(request_rec *r, int role,
     /* Now pass any remaining response body data to output filters */
     if ((rv = ap_pass_brigade(r->output_filters,
                               brigade_stdout)) != APR_SUCCESS) {
-        if (!APR_STATUS_IS_ECONNABORTED(rv)) {
-            ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
-                          "mod_fcgid: ap_pass_brigade failed in "
-                          "handle_request_ipc function");
-        }
+        if (r->connection->aborted) {
+            ap_log_rerror(APLOG_MARK, APLOG_TRACE1, rv, r,
+                      "mod_fcgid: ap_pass_brigade failed "
+                      "(client aborted connection)");
+            return OK;
+        } 
+        ap_log_rerror(APLOG_MARK, APLOG_WARNING, rv, r,
+                      "mod_fcgid: ap_pass_brigade failed in "
+                      "handle_request_ipc function");
 
         return HTTP_INTERNAL_SERVER_ERROR;
     }
