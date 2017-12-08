@@ -39,15 +39,8 @@ apr_status_t fcgid_mutex_create(apr_global_mutex_t **mutex,
                                 apr_pool_t *pconf,
                                 server_rec *main_server)
 {
-    apr_status_t rv;
-
-    rv = ap_global_mutex_create(mutex, lockfile, mutex_type, NULL, main_server,
-                                pconf, 0);
-    if (rv != APR_SUCCESS) {
-        return rv;
-    }
-
-    return APR_SUCCESS;
+    return ap_global_mutex_create(mutex, lockfile, mutex_type, NULL,
+                                  main_server, pconf, 0);
 }
 
 #else
