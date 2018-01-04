@@ -19,7 +19,7 @@
 #define FCGID_CONF_H
 
 #define MODFCGID_COPYRIGHT \
-  "Copyright 2009-2017 The Apache Software Foundation."
+  "Copyright 2009-2018 The Apache Software Foundation."
 
 #define MODFCGID_VERSION_MAJOR  2
 #define MODFCGID_VERSION_MINOR  3
