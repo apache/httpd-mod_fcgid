@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.10
 
+  *) Fix memory consumption for large requests.  PR 51747.
+     [Dominic Benson, Jan Stürtz]
+
   *) Use an alternate, lower severity log message when a failure to
      forward a response is due to the client connection being aborted.
      [Eric Covener]

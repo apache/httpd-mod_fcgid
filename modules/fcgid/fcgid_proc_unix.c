@@ -762,14 +762,18 @@ apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
     struct iovec vec[FCGID_VEC_COUNT];
     int nvec = 0;
     apr_bucket *e;
+    apr_bucket_brigade *tmpbb = apr_brigade_create(output_brigade->p,
+                                                   output_brigade->bucket_alloc);
 
-    for (e = APR_BRIGADE_FIRST(output_brigade);
-         e != APR_BRIGADE_SENTINEL(output_brigade);
-         e = APR_BUCKET_NEXT(e)) {
+    while (!APR_BRIGADE_EMPTY(output_brigade))
+    {
+        e = APR_BRIGADE_FIRST(output_brigade);
+
         apr_size_t len;
         const char* base;
 
         if (APR_BUCKET_IS_METADATA(e)) {
+            apr_bucket_delete(e);
             continue;
         }
 
@@ -780,6 +784,9 @@ apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
             return rv;
         }
 
+        APR_BUCKET_REMOVE(e);
+        APR_BRIGADE_INSERT_TAIL(tmpbb, e);
+
         vec[nvec].iov_len = len;
         vec[nvec].iov_base = (char*) base;
         if (nvec == (FCGID_VEC_COUNT - 1)) {
@@ -789,6 +796,7 @@ apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
                                FCGID_VEC_COUNT)) != APR_SUCCESS)
                 return rv;
             nvec = 0;
+            apr_brigade_cleanup(tmpbb);
         }
         else
             nvec++;
@@ -800,6 +808,7 @@ apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
             return rv;
     }
 
+    apr_brigade_destroy(tmpbb);
     return APR_SUCCESS;
 }
 

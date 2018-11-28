@@ -380,19 +380,22 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
     apr_bucket *bucket_request;
     apr_status_t rv;
     DWORD transferred;
+    apr_bucket_brigade *tmpbb = apr_brigade_create(birgade_send->p, 
+                                                   birgade_send->bucket_alloc);
 
     handle_info = (fcgid_namedpipe_handle *) ipc_handle->ipc_handle_info;
 
-    for (bucket_request = APR_BRIGADE_FIRST(birgade_send);
-         bucket_request != APR_BRIGADE_SENTINEL(birgade_send);
-         bucket_request = APR_BUCKET_NEXT(bucket_request))
-    {
+    while (!APR_BRIGADE_EMPTY(birgade_send)) {
         const char *write_buf;
         apr_size_t write_buf_len;
         apr_size_t has_write;
 
-        if (APR_BUCKET_IS_METADATA(bucket_request))
+        bucket_request = APR_BRIGADE_FIRST(birgade_send);
+
+        if (APR_BUCKET_IS_METADATA(bucket_request)) {
+            apr_bucket_delete(bucket_request);
             continue;
+        }
 
         if ((rv = apr_bucket_read(bucket_request, &write_buf, &write_buf_len,
                                   APR_BLOCK_READ)) != APR_SUCCESS) {
@@ -400,6 +403,9 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                           "mod_fcgid: can't read request from bucket");
             return rv;
         }
+
+        APR_BUCKET_REMOVE(bucket_request);
+        APR_BRIGADE_INSERT_TAIL(tmpbb, bucket_request);
 
         /* Write the buffer to fastcgi server */
         has_write = 0;
@@ -411,6 +417,7 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                           write_buf_len - has_write,
                           &byteswrite, &handle_info->overlap_write)) {
                 has_write += byteswrite;
+                apr_brigade_cleanup(tmpbb);
                 continue;
             } else if ((rv = GetLastError()) != ERROR_IO_PENDING) {
                 ap_log_rerror(APLOG_MARK, APLOG_WARNING,
@@ -437,6 +444,7 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
                         return APR_ESPIPE;
                     }
                     has_write += transferred;
+                    apr_brigade_cleanup(tmpbb);
                     continue;
                 } else {
                     ap_log_rerror(APLOG_MARK, APLOG_WARNING, 0,
@@ -448,6 +456,7 @@ apr_status_t proc_write_ipc(fcgid_ipc * ipc_handle,
         }
     }
 
+    apr_brigade_destroy(tmpbb);
     return APR_SUCCESS;
 }
 
