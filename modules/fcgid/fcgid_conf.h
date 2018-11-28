@@ -138,7 +138,7 @@ typedef struct {
  * to limit shared memory use
  */
 #define INITENV_KEY_LEN 64
-#define INITENV_VAL_LEN 128
+#define INITENV_VAL_LEN 256
 #define INITENV_CNT 64
 typedef struct {
     char initenv_key[INITENV_CNT][INITENV_KEY_LEN];
