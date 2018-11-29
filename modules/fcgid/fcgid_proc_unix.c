@@ -767,10 +767,10 @@ apr_status_t proc_write_ipc(fcgid_ipc *ipc_handle,
 
     while (!APR_BRIGADE_EMPTY(output_brigade))
     {
-        e = APR_BRIGADE_FIRST(output_brigade);
-
         apr_size_t len;
-        const char* base;
+        const char *base;
+
+        e = APR_BRIGADE_FIRST(output_brigade);
 
         if (APR_BUCKET_IS_METADATA(e)) {
             apr_bucket_delete(e);
