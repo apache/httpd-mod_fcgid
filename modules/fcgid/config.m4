@@ -43,6 +43,11 @@ APACHE_MODULE(fcgid, [FastCGI support (mod_fcgid)], $fcigd_objs, , no, [
     AC_CHECK_HEADERS(sys/mman.h)
     AC_CHECK_HEADERS(sys/mutex.h)
     AC_CHECK_HEADERS(sys/shm.h)
+    if test "x$enable_fcgid" = "xshared"; then
+       # The only symbol which needs to be exported is the module
+       # structure, so ask libtool to hide everything else:
+       APR_ADDTO(MOD_FCGID_LDADD, [-export-symbols-regex fcgid_module])
+    fi
 ])
 
 dnl #  end of module specific part
