@@ -1,6 +1,9 @@
                                                          -*- coding: utf-8 -*-
 Changes with mod_fcgid 2.3.10
 
+  *) Send Content-Length to backend for chunked request bodies.  PR 53332.
+     [Dominic Benson, Joe Orton]
+
   *) Fix memory consumption for large requests.  PR 51747.
      [Dominic Benson, Jan Stürtz]
 
